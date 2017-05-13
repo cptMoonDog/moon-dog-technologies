@@ -1,5 +1,4 @@
 @lazyglobal off.
-run kernel.ks.
 runpath("throttleControl.ks").
 run steeringControl.ks.
 run rangeControl.ks.
@@ -22,23 +21,21 @@ run maneuver.ks.
       "pOverV0", 30, 
       "pOverVf", 150
    )).
+   //INTERRUPTS:add().
 
 
-   local SCHEDULE is list(range_ctl["countdown"]).
-   SCHEDULE:add(staging_ctl["launch"]()).
-   SCHEDULE:add({
+   MISSION_PLAN:add(range_ctl["countdown"]).
+   MISSION_PLAN:add(staging_ctl["launch"]()).
+   MISSION_PLAN:add({
       staging_ctl["staging"]().
       return throttle_ctl["throttle_monitor"]().
    }).
-   SCHEDULE:add({
+   MISSION_PLAN:add({
       if ship:altitude > 70000 {
          return guidance_ctl["add_burn"]("ap", "circularize", 345, 17.73419501).
       }
    }).
-   SCHEDULE:add(guidance_ctl["burn_monitor"]).
+   MISSION_PLAN:add(guidance_ctl["burn_monitor"]).
 
-   kernel_add_modal_proc(SCHEDULE).
-   //kernel_add_proc("terminal", function_name_here@).
-   start_kernel().
 }
 

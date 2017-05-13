@@ -2,15 +2,7 @@
 //James McConnel
 //TODO Get these runmodes coherent.  Call as delegates in a list/lexicon, or globally exported functions?
 @LAZYGLOBAL OFF.
-runoncepath("knu.ks"). // Use KNU library system
 
-local range_ctl is import_namespace("rangeControl").
-
-// local steering_ctl is import_ns_from("ascent", "steeringControl").
-local throttle_ctl is import_ns_from("ascent", "throttleControl").
-local staging_ctl  is import_ns_from("ascent", "stagingControl").
-local guidance_ctl is import_namespace("maneuver").
-local mission_ctl is lexicon().
 wait 1.
 
 global SCHEDULE is list().
