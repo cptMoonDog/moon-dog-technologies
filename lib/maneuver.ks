@@ -2,7 +2,7 @@
 //TODO doesn't account for cosine losses.
 @LAZYGLOBAL off.
 {
-   run general.ks.
+   run once general.ks.
    global guidance_ctl is lexicon().
 
    local burn_queue is queue().
@@ -64,10 +64,10 @@
       if end <= time:seconds {
          lock throttle to 0.
          burn_queue:pop().
-         if burn_queue:empty return EXIT_MODE.
+         if burn_queue:empty return OP_FINISHED.
          else reset_for_next_burn().
       }
-      return CONTINUE_MODE.
+      return OP_CONTINUE.
    }
    guidance_ctl:add("burn_monitor", execute@).
 }

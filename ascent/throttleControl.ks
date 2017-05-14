@@ -29,11 +29,11 @@
                if ship:apoapsis < profile[step] set step to step-2.
             } else {
                set ship:control:pilotmainthrottle to 0.
-               return NEXT_MODE.
+               return OP_FINISHED.
             }
          }
       } 
-      return CONTINUE_MODE.
+      return OP_CONTINUE.
    }
    throttle_ctl:add("throttle_monitor", advanceStep@).
 

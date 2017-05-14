@@ -9,7 +9,7 @@
 @LAZYGLOBAL off.
 {
 
-   run general.ks.
+   run once general.ks.
 
    global steering_ctl is lexicon().
    local orbit_parameters is lexicon("alt", 80000, "inc", 225, "pOverDeg", 4, "pOverV0", 30, "pOverVf", 150).

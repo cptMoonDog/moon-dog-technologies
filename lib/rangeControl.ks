@@ -11,7 +11,7 @@
          set lastTime to time:seconds.
          return CONTINUE_MODE.
       }else if time:seconds-lastTime > 1 {
-         return NEXT_MODE.
+         return OP_FINISHED.
       }
    }
    range_ctl:add("countdown", do_countdown@).

@@ -12,7 +12,7 @@
       if ship:airspeed < 0.1 { //Some crafts (Kerbal X) throttles up before releasing clamps.
          stage.
       } 
-      return NEXT_MODE.
+      return OP_FINISHED.
    }
    staging_ctl:add("launch", launch@).
 
@@ -41,8 +41,8 @@
                }
             }
          }
-         return CONTINUE_MODE.
-      } else return NEXT_MODE.
+         return OP_CONTINUE.
+      } else return OP_FINISHED.
    }
    staging_ctl:add("staging", genStaging@).
 }
