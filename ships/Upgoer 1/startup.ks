@@ -1,9 +1,9 @@
 @lazyglobal off.
 runpath("throttleControl.ks").
-run steeringControl.ks.
-run rangeControl.ks.
-run stagingControl.ks.
-run maneuver.ks.
+runpath("steeringControl.ks").
+runpath("rangeControl.ks").
+runpath("stagingControl.ks").
+runpath("maneuver.ks").
 {
    throttle_ctl["init"](list(
       20000, 1,
@@ -25,7 +25,7 @@ run maneuver.ks.
 
 
    MISSION_PLAN:add(range_ctl["countdown"]).
-   MISSION_PLAN:add(staging_ctl["launch"]()).
+   MISSION_PLAN:add(staging_ctl["launch"]).
    MISSION_PLAN:add({
       staging_ctl["staging"]().
       return throttle_ctl["throttle_monitor"]().
