@@ -9,9 +9,12 @@
 //  Ex:
 @LAZYGLOBAL OFF.
 {
+   print "enter kernel for init.".
    global OP_FINISHED is 1.
    global OP_CONTINUE is 0.
    global OP_PREVIOUS is -1.
+
+   global kernel_ctl is lexicon().
 
    declare function set_runmode {
       parameter n.
@@ -19,17 +22,22 @@
       set runmode to runmode+n.
    }
 
-   set runmode to 0.
-   until FALSE {
-      //Runmodes
-      if runmode > MISSION_PLAN:length {
-         set_runmode(MISSION_PLAN[runmode]()).
-      }
-      else break.
+   local runmode is 0.
+   declare function run {
+      parameter missionPlan is list().
+      parameter interrupts is list().
+      until FALSE {
+         //Runmodes
+         if runmode < missionPlan:length {
+            set_runmode(missionPlan[runmode]()).
+         }
+         else break.
 
-      //Interrupts
-      for subroutine in INTERRUPTS {
-         subroutine().
+         //Interrupts
+         for subroutine in INTERRUPTS {
+            subroutine().
+         }
       }
    }
+   kernel_ctl:add("start", run@).
 }

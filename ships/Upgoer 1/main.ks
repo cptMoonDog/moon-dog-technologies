@@ -4,6 +4,7 @@ runpath("steeringControl.ks").
 runpath("rangeControl.ks").
 runpath("stagingControl.ks").
 runpath("maneuver.ks").
+runpath("kernel.ks").
 {
    throttle_ctl["init"](list(
       20000, 1,
@@ -24,6 +25,7 @@ runpath("maneuver.ks").
    //INTERRUPTS:add().
 
 
+   local MISSION_PLAN is list().
    MISSION_PLAN:add(range_ctl["countdown"]).
    MISSION_PLAN:add(staging_ctl["launch"]).
    MISSION_PLAN:add({
@@ -36,6 +38,6 @@ runpath("maneuver.ks").
       }
    }).
    MISSION_PLAN:add(guidance_ctl["burn_monitor"]).
-
+   kernel_ctl["start"](MISSION_PLAN).
 }
 

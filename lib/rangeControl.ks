@@ -9,7 +9,7 @@
          hudtext(count+"...", 1, 2, 20, white, false).
          set count to count -1.
          set lastTime to time:seconds.
-         return CONTINUE_MODE.
+         return OP_CONTINUE.
       }else if time:seconds-lastTime > 1 {
          return OP_FINISHED.
       }
