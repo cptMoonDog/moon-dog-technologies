@@ -18,6 +18,7 @@ runpath("kernel.ks").
    steering_ctl["init"](lexicon(
       "alt", 80000, 
       "inc", 90, 
+      "azWeight", 0.7,
       "pOverDeg", 4, 
       "pOverV0", 30, 
       "pOverVf", 150
@@ -34,8 +35,9 @@ runpath("kernel.ks").
    }).
    MISSION_PLAN:add({
       if ship:altitude > 70000 {
-         return guidance_ctl["add_burn"]("ap", "circularize", 345, 17.73419501).
-      }
+         guidance_ctl["add_burn"]("ap", "circularize", 345, 17.73419501).
+         return OP_FINISHED.
+      } else return OP_CONTINUE.
    }).
    MISSION_PLAN:add(guidance_ctl["burn_monitor"]).
    kernel_ctl["start"](MISSION_PLAN).

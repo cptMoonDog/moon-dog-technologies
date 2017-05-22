@@ -2,7 +2,7 @@
 //TODO doesn't account for cosine losses.
 @LAZYGLOBAL off.
 {
-   run once general.ks.
+   runoncepath("general.ks").
    global guidance_ctl is lexicon().
 
    local burn_queue is queue().
@@ -21,16 +21,16 @@
    }
    declare function get_dV {
       if burn_queue:peek()["dv"] = "circularize" 
-         return OVatAlt(Kerbin, ship:apoapsis) - VatAlt(Kerbin, ship:apoapsis).
+         return phys_lib["OVatAlt"](Kerbin, ship:apoapsis) - phys_lib["VatAlt"](Kerbin, ship:apoapsis).
    }
    declare function m2 {
-      return ship:mass*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
+      return ship:mass*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"])))).
    }
    declare function burn_length_first_half {
       return ((ship:mass-m2())/(burn_queue:peek()["ff"]/1000)).
    }
    declare function burn_length_second_half {
-      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*g0))).//*constant:e^(-(dV/2)/(isp*g0)).
+      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"]))).//*constant:e^(-(dV/2)/(isp*g0)).
       return ((m2()-m3)/(burn_queue:peek()["ff"]/1000)).
    }
    declare function schedule_burn {
@@ -49,6 +49,7 @@
    }
 
    declare function execute {
+      print "T"+(time:seconds-start) at(1, 0).
       if start < time:seconds+180 AND start > time:seconds+10 { // between 3 minutes and 10 seconds out.
          lockto_impulse_direction(burn_queue:peek()["dv"]).
       }

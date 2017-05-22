@@ -9,77 +9,110 @@
 @LAZYGLOBAL off.
 {
 
-   run once general.ks.
+   runoncepath("general.ks").
 
    global steering_ctl is lexicon().
-   local orbit_parameters is lexicon("alt", 80000, "inc", 225, "pOverDeg", 4, "pOverV0", 30, "pOverVf", 150).
+   local orbit_parameters is lexicon("alt", 80000, "inc", 225, "azWeight", 0.5, "pOverDeg", 4, "pOverV0", 30, "pOverVf", 150).
 
+   local a is 0.
+   local azimuth is 0.
    declare function init {
       parameter p.
-      set orbit_parameters to p.
+      if p:istype("Lexicon") {
+         set orbit_parameters to p.
+      }
+      set a to ship:altitude.
+      set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]).
       lock steering to steeringProgram().
    }
    steering_ctl:add("init", init@).
 
+   //The purpose of this function is to adjust for the 90 degree difference between inclination and heading angles
+   //for inclinations < 180.
    declare function inc_to_heading {
-      declare parameter i is 90.
-      if i <= 90 
-         return 90 - i.
-      if i > 90  
-         return 90 - i + 360.
+      declare parameter i.
+      declare parameter hemisphere is "NORTH".
+      if i < 0 or i > 180 
+         return "INDEX OUT OF RANGE: NOT AN INCLINATION".
+      if hemisphere:toupper = "NORTH" {
+         if i <= 90 
+            return 90 - i.
+         if i > 90  
+            return 90 - i + 360.
+      }
+       if hemisphere:toupper = "SOUTH" {
+         return 90 + i.
+      }
+  }
+   //Due to certain properties of inclination this will return a value between 0 and 180.
+   declare function heading_to_inclination {
+      declare parameter h.
+      if h < 0 or h > 360 return "INDEX OUT OF RANGE: NOT A HEADING".
+      if h < 90 return (90 - h) + ":N".
+      if h > 90 and h < 270 {
+         return (h-90) + ":S".
+      }
+      if h > 270 return (450 - h) + ":N".
    }
+
 
    declare function launchAzimuth {
       parameter OV.
       parameter inc.
-      local Vx is (0.75*OV)*sin(inc_to_heading(inc))-174.97. //174.97: Rotational Velocity of Kerbin.
-      local Vy is (0.75*OV)*cos(inc_to_heading(inc)).
+      // OV is the velocity which, once attained, will have the rocket in the correct inclination.
+      // Rotational velocity is subtracted, because that amount of velocity is already there.
+      local Vx is (orbit_parameters["azWeight"]*OV)*sin(inc_to_heading(inc))-174.97. //174.97: Rotational Velocity of Kerbin at equator.
+      local Vy is (orbit_parameters["azWeight"]*OV)*cos(inc_to_heading(inc)).
 
       print "Vx: "+Vx at(0, 15).
       print "Vy: "+Vy at(0, 16).
       print "inc: "+ship:orbit:inclination at(0, 17).
-      if Vy = 0 if Vx < 0 return 270. else return 90.
-      if Vx = 0 if Vy < 0 return 180. else return 0.
-      if Vy < 0 return arctan(Vx/Vy)+180.
+      //Avoid div by zero error
+      if Vy = 0 
+         if Vx < 0 return 270.
+         else return 90.
+      if Vx < 0 or Vy < 0 return arctan(Vx/Vy)+360.
       else return arctan(Vx/Vy).
    }
 
-   //Due to the way inclination is reported, this will return a value between 0 and 180.
-   declare function heading_to_inclination {
-      declare parameter h is 0.
-      if h <= 270 return abs(90 - h).
-      else return 90 - h + 360.
-   }
-
-   local a to ship:altitude.
+   local progradeVector is ship:srfprograde.
+   local inclinationReached is FALSE.
    declare function steeringProgram {
       if ship:altitude < a + 10 {
          return ship:facing.
          //TODO Fix these references to altitude, not robust.  But they fix these cases getting tripped toward the end of ascent.
-      }else if ship:altitude < 10000 AND (vang(ship:facing:starvector, heading(launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]), 90):starvector) > 0.5 OR ship:airspeed < orbit_parameters["pOverV0"]) {
-         return heading(launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]), 90).
+      }else if ship:altitude < 10000
+               AND (vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 
+               OR ship:airspeed < orbit_parameters["pOverV0"]) {
+         return heading(azimuth, 90).
       }else if ship:altitude < 35000 AND ship:airspeed < orbit_parameters["pOverVf"] {
-         return heading(launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]), 90-orbit_parameters["pOverDeg"]).
+         return heading(azimuth, 90-orbit_parameters["pOverDeg"]).
       }else {
-         local progradeVector is ship:srfprograde.
-         local progradePitch is 90-vectorangle(up:forevector, progradeVector:forevector).
           //Change ProgradeVector
          if ship:altitude >= 35000 {
             print "switch Vector" at(0, 14).
             set progradeVector to ship:prograde.
-         }
+         } else set progradeVector to ship:srfprograde.
+         local progradePitch is 90-vectorangle(up:forevector, progradeVector:forevector).
          print progradePitch at(0, 7).
-         if ship:orbit:inclination >= heading_to_inclination(orbit_parameters["inc"]-0.1) AND ship:orbit:inclination <= heading_to_inclination(orbit_parameters["inc"]+0.1) {
+         //TODO: Fix this, so that headings of 90 or 270 do not give one sided results; for heading of 90, 90-0.01 is a pos inclination, so is 90-0.01.
+         //Am I in midband, or on one side?
+         if inclinationReached {
+            if ship:orbit:inclination <= orbit_parameters["inc"]-0.05 {
+               return progradeVector*R(0,-1,0).
+            } else if ship:orbit:inclination >= orbit_parameters["inc"]+0.05 {
+               return progradeVector*R(0, 1, 0).
+            } else {
+               return progradeVector.
+            }
+         } else if ship:orbit:inclination >= orbit_parameters["inc"]-0.1 AND ship:orbit:inclination <= orbit_parameters["inc"]+0.1 {
+            set inclinationReached to TRUE.
             print "progradeVector" at(0, 12).
             return progradeVector.
-         } else if ship:orbit:inclination >= heading_to_inclination(orbit_parameters["inc"]) {
-            print "adjust           " at(0, 12).
-            return heading(inc_to_heading(orbit_parameters["inc"]+1), progradePitch).
-         }
-           else {
-            print "Azimuth: "+launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]) at(0, 12).
-            print "tgt inc: "+heading_to_inclination(orbit_parameters["inc"]) at(0, 13).
-            return heading(launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]), progradePitch). 
+         } else {
+            print "Azimuth: "+azimuth at(0, 12).
+            print "tgt inc: "+orbit_parameters["inc"] at(0, 13).
+            return heading(azimuth, progradePitch). 
          }
       }
    }

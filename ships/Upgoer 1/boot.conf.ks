@@ -8,5 +8,5 @@ global systemFiles is list(
    "lib/rangeControl.ks",
    "lib/maneuver.ks",
    "lib/general.ks", //Library of general purpose functions 
-   "kernel.ks"
+   "lib/kernel.ks"
 ).
