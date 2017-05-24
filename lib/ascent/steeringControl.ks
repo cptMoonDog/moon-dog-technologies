@@ -24,6 +24,7 @@
       set a to ship:altitude.
       if orbit_parameters["inc"] < abs(ship:geoposition:lat) 
          set orbit_parameters["inc"] to abs(ship:geoposition:lat).
+      //The following is to reduce the calls to launchAzimuth.  Also, remember you cannot launch to an inclination less than abs(latitude)
       set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["alt"]), orbit_parameters["inc"]).
       lock steering to steeringProgram().
    }
@@ -64,6 +65,9 @@
    }
 
 
+   declare function srfRadialVel {
+      return (2*constant:pi*(Kerbin:radius)*cos(ship:latitude))/Kerbin:rotationperiod.
+   }
    declare function launchAzimuth {
       parameter OV.
       parameter inc.
@@ -73,7 +77,7 @@
       if xtemp < 0.000001 set xtemp to 0.
       local ytemp is cos(inc_to_heading(inc)).
       if ytemp < 0.000001 set ytemp to 0.
-      local Vx is (orbit_parameters["azWeight"]*OV)*xtemp-174.97. //174.97: Rotational Velocity of Kerbin at equator.
+      local Vx is (orbit_parameters["azWeight"]*OV)*xtemp-srfRadialVel(). //174.97: Rotational Velocity of Kerbin at equator.
       local Vy is (orbit_parameters["azWeight"]*OV)*ytemp.
 
       //Avoid div by zero error
