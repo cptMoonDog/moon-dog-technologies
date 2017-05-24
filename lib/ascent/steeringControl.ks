@@ -105,7 +105,7 @@
          local progradePitch is 90-vectorangle(up:forevector, progradeVector:forevector).
          print progradePitch at(0, 7).
          //TODO: Fix this, so that headings of 90 or 270 do not give one sided results; for heading of 90, 90-0.01 is a pos inclination, so is 90-0.01.
-         //Am I in midband, or on one side?
+         //e.g. Am I in midband, or on one side?
          print "Compass: " + compass_heading() at(0, 11).
          if inclinationReached {
             if compass_heading() <= 90 OR compass_heading() >= 270 { //Pointing toward the North.
