@@ -17,7 +17,7 @@ runpath("kernel.ks").
 
    steering_ctl["init"](lexicon(
       "alt", 80000, 
-      "inc", 90, 
+      "inc", 0, 
       "azWeight", 0.7,
       "pOverDeg", 4, 
       "pOverV0", 30, 
