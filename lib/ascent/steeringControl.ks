@@ -30,38 +30,10 @@
    }
    steering_ctl:add("init", init@).
 
-   //The purpose of this function is to adjust for the 90 degree difference between inclination and heading angles
-   //for inclinations < 180.
-   declare function inc_to_heading {
-      declare parameter i.
-      declare parameter hemisphere is "NORTH".
-      if i < 0 or i > 180 
-         return "INDEX OUT OF RANGE: NOT AN INCLINATION".
-      if hemisphere:toupper = "NORTH" {
-         if i <= 90 
-            return 90 - i.
-         if i > 90  
-            return 90 - i + 360.
-      }
-       if hemisphere:toupper = "SOUTH" {
-         return 90 + i.
-      }
-  }
-   //Due to certain properties of inclination this will return a value between 0 and 180.
-   declare function heading_to_inclination {
-      declare parameter h.
-      if h < 0 or h > 360 return "INDEX OUT OF RANGE: NOT A HEADING".
-      if h <= 90 return (90 - h) + ":N".
-      if h > 90 and h < 270 {
-         return (h-90) + ":S".
-      }
-      if h > 270 return (450 - h) + ":N".
-   }
    declare function compass_heading {
-      //local Npole is latlng(90, 0).
       local temp is (-1*ship:bearing).
       if temp < 0 return temp + 360.
-      return temp. //360-Npole:bearing.
+      return temp. 
    }
 
 
@@ -71,21 +43,22 @@
    declare function launchAzimuth {
       parameter OV.
       parameter inc.
-      // OV is the velocity which, once attained, will have the rocket in the correct inclination.
-      // Rotational velocity is subtracted, because that amount of velocity is already there.
-      local xtemp is sin(inc_to_heading(inc)).
-      if xtemp < 0.000001 set xtemp to 0.
-      local ytemp is cos(inc_to_heading(inc)).
-      if ytemp < 0.000001 set ytemp to 0.
-      local Vx is (orbit_parameters["azWeight"]*OV)*xtemp-srfRadialVel(). //174.97: Rotational Velocity of Kerbin at equator.
-      local Vy is (orbit_parameters["azWeight"]*OV)*ytemp.
+      parameter south is false.
+      
+      local inertial is arcsin(cos(inc)/cos(ship:latitude)).
+      if inertial < 0 AND south { //Retrograde South
+         set inertial to 270-(90-inertial).
+      } else if inertial < 0 { //Retrograde North
+         set inertial to 360-inertial.
+      }
+      //Should be the circumference of the cirle of latitude divided by the sidereal rotation period.
+      local Vrot is body:rotationperiod/(2*pi()*(body:radius+ship:altitude)*cos(ship:latitude)).
+      local Vy is OV*cos(inertial).
+      local Vx is OV*sin(inertial)-Vrot.
 
-      //Avoid div by zero error
-      if Vy = 0 
-         if Vx < 0 return 270.
-         else return 90.
-      if Vx < 0 or Vy < 0 return arctan(Vx/Vy)+360.
-      else return arctan(Vx/Vy).
+      local rotAzimuth is atan(Vx/Vy).
+      if south return rotAzimuth + 180.
+      if rotAzimuth < 0 return rotAzimuth + 360.
    }
 
    local progradeVector is ship:srfprograde.
