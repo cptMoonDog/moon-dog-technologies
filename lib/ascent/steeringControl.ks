@@ -23,7 +23,7 @@
       }
       set a to ship:altitude.
       //The following is to reduce the calls to launchAzimuth.
-      set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]), orbit_parameters["inclination"], true).
+      set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]), true).
       print azimuth.
       lock steering to steeringProgram().
    }
@@ -37,20 +37,22 @@
 
    declare function launchAzimuth {
       parameter OV.
-      parameter south is false.
+      parameter south.
       local inclination is orbit_parameters["inclination"].
 
       //It is impossible to launch into an orbit with an inclination < the latitude at the launch site, so if necessary ignore the inclination parameter.
       if abs(ship:latitude) > inclination set inclination to abs(ship:latitude).
       
       local inertialAzimuth is arcsin(cos(inclination)/cos(ship:latitude)).
-      print "IA: " + inertialAzimuth.
       //Adjust the IA to a valid compass heading.
       if inertialAzimuth < 0 AND south { //Retrograde South
          set inertialAzimuth to 270-(90-inertialAzimuth).
       } else if inertialAzimuth < 0 { //Retrograde North
          set inertialAzimuth to 360-inertialAzimuth.
+      } else if south {
+         set inertialAzimuth to 180-inertialAzimuth.
       }
+      print "IA: " + inertialAzimuth.
       //Should be the circumference of the cirle of latitude divided by the sidereal rotation period.
       local Vrot is (2*constant:pi*(body:radius+ship:altitude)*cos(ship:latitude))/body:rotationperiod.
       local Vy is OV*cos(inertialAzimuth).
