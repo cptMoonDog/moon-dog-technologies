@@ -12,13 +12,12 @@ runpath("kernel.ks").
       50000, 0.5,
       60000, 0.3,
       70000, 0.25,
-      80000, 0.1
+      80000, 0.2
    )).
 
    steering_ctl["init"](lexicon(
-      "alt", 80000, 
-      "inc", 0, 
-      "azWeight", 0.7,
+      "altitude", 80000, 
+      "inclination", 90, 
       "pOverDeg", 4, 
       "pOverV0", 30, 
       "pOverVf", 150

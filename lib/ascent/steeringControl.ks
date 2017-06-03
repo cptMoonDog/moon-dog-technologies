@@ -23,7 +23,8 @@
       }
       set a to ship:altitude.
       //The following is to reduce the calls to launchAzimuth.
-      set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]), orbit_parameters["inclination"]).
+      set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]), orbit_parameters["inclination"], true).
+      print azimuth.
       lock steering to steeringProgram().
    }
    steering_ctl:add("init", init@).
@@ -36,13 +37,14 @@
 
    declare function launchAzimuth {
       parameter OV.
-      local inclination is orbit_parameters["inclination"].
       parameter south is false.
+      local inclination is orbit_parameters["inclination"].
 
       //It is impossible to launch into an orbit with an inclination < the latitude at the launch site, so if necessary ignore the inclination parameter.
-      if abs(ship:latitude) > inclination set inclination to ship:latitude.
+      if abs(ship:latitude) > inclination set inclination to abs(ship:latitude).
       
       local inertialAzimuth is arcsin(cos(inclination)/cos(ship:latitude)).
+      print "IA: " + inertialAzimuth.
       //Adjust the IA to a valid compass heading.
       if inertialAzimuth < 0 AND south { //Retrograde South
          set inertialAzimuth to 270-(90-inertialAzimuth).
@@ -50,13 +52,14 @@
          set inertialAzimuth to 360-inertialAzimuth.
       }
       //Should be the circumference of the cirle of latitude divided by the sidereal rotation period.
-      local Vrot is (2*pi()*(body:radius+ship:altitude)*cos(ship:latitude))/body:rotationperiod.
-      local Vy is OV*cos(inertial).
-      local Vx is OV*sin(inertial)-Vrot.
+      local Vrot is (2*constant:pi*(body:radius+ship:altitude)*cos(ship:latitude))/body:rotationperiod.
+      local Vy is OV*cos(inertialAzimuth).
+      local Vx is OV*sin(inertialAzimuth)-Vrot.
 
-      local rotatingAzimuth is atan(Vx/Vy).
+      local rotatingAzimuth is arctan(Vx/Vy).
       if south return rotatingAzimuth + 180.
       if rotatingAzimuth < 0 return rotatingAzimuth + 360.
+      return rotatingAzimuth.
    }
 
    local progradeVector is ship:srfprograde.
@@ -85,40 +88,41 @@
          print "Compass: " + facing_compass_heading() at(0, 11).
          if inclinationReached {
             if facing_compass_heading() <= 90 OR facing_compass_heading() >= 270 { //Pointing toward the North.
-               if orbit_parameters["inc"] = 0 {
+               if orbit_parameters["inclination"] = 0 {
                   if ship:orbit:inclination < 0.1 return progradeVector.
                   else return progradeVector*R(0, 0.5, 0). // Steer right.
-               } else if orbit_parameters["inc"] = 180 {
+               } else if orbit_parameters["inclination"] = 180 {
                   if ship:orbit:inclination < 180 AND ship:orbit:inclination > 180-0.1 return progradeVector.
                   else return progradeVector*R(0, -0.5, 0). // Steer left.
-               } else if ship:orbit:inclination < orbit_parameters["inc"]-0.01 {
+               } else if ship:orbit:inclination < orbit_parameters["inclination"]-0.01 {
                   return progradeVector*R(0, -1, 0). // Steer left.
-               } else if ship:orbit:inclination >= orbit_parameters["inc"]+0.01 {
+               } else if ship:orbit:inclination >= orbit_parameters["inclination"]+0.01 {
                   return progradeVector*R(0, 1, 0). // Steer right.
                } else {
                   return progradeVector.
                }
             } else { //Pointing toward the south.
-               if orbit_parameters["inc"] = 0 {
+               if orbit_parameters["inclination"] = 0 {
                   if ship:orbit:inclination < 0.02 return progradeVector.
                   else return progradeVector*R(0, -0.5, 0). // Steer left.
-               } else if orbit_parameters["inc"] = 180 {
+               } else if orbit_parameters["inclination"] = 180 {
                   if ship:orbit:inclination < 180 AND ship:orbit:inclination > 180-0.02 return progradeVector.
                   else return progradeVector*R(0, 0.5, 0). // Steer right.
-               } else if ship:orbit:inclination < orbit_parameters["inc"]-0.01 {
+               } else if ship:orbit:inclination < orbit_parameters["inclination"]-0.01 {
                   return progradeVector*R(0, 1, 0). // Steer right.
-               } else if ship:orbit:inclination >= orbit_parameters["inc"]+0.01 {
+               } else if ship:orbit:inclination >= orbit_parameters["inclination"]+0.01 {
                   return progradeVector*R(0, -1, 0). // Steer left.
                } else {
                   return progradeVector.
                }
             }
-         } else if ship:orbit:inclination >= orbit_parameters["inc"]-0.1 AND ship:orbit:inclination <= orbit_parameters["inc"]+0.1 {
+         } else if ship:orbit:inclination >= orbit_parameters["inclination"]-0.1 AND ship:orbit:inclination <= orbit_parameters["inclination"]+0.1 {
             set inclinationReached to TRUE.
             return progradeVector.
          } else {
             print "Azimuth: "+azimuth at(0, 12).
-            print "tgt inc: "+orbit_parameters["inc"] at(0, 13).
+            print "tgt inc: "+orbit_parameters["inclination"] at(0, 13).
+            print "inc: "+ship:orbit:inclination at(0,14).
             return heading(azimuth, progradePitch). 
          }
       }
