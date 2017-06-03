@@ -23,7 +23,7 @@
       }
       set a to ship:altitude.
       //The following is to reduce the calls to launchAzimuth.
-      set azimuth to launchAzimuth(phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]), true).
+      set azimuth to launchAzimuth(true).
       print azimuth.
       lock steering to steeringProgram().
    }
@@ -36,29 +36,37 @@
    }
 
    declare function launchAzimuth {
-      parameter OV.
       parameter south.
+
+      local OV is phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]).
       local inclination is orbit_parameters["inclination"].
 
       //It is impossible to launch into an orbit with an inclination < the latitude at the launch site, so if necessary ignore the inclination parameter.
       if abs(ship:latitude) > inclination set inclination to abs(ship:latitude).
       
       local inertialAzimuth is arcsin(cos(inclination)/cos(ship:latitude)).
+
       //Adjust the IA to a valid compass heading.
       if inertialAzimuth < 0 AND south { //Retrograde South
-         set inertialAzimuth to 270-(90-inertialAzimuth).
+         set inertialAzimuth to 180+inertialAzimuth.
       } else if inertialAzimuth < 0 { //Retrograde North
          set inertialAzimuth to 360-inertialAzimuth.
-      } else if south {
+      } else if south { //Prograde South
          set inertialAzimuth to 180-inertialAzimuth.
-      }
+      } //else Prograde North
       print "IA: " + inertialAzimuth.
+
       //Should be the circumference of the cirle of latitude divided by the sidereal rotation period.
       local Vrot is (2*constant:pi*(body:radius+ship:altitude)*cos(ship:latitude))/body:rotationperiod.
       local Vy is OV*cos(inertialAzimuth).
       local Vx is OV*sin(inertialAzimuth)-Vrot.
+      local rotatingAzimuth is 0.
 
-      local rotatingAzimuth is arctan(Vx/Vy).
+      //Trig functions generally do not return exactly 0, even if they did, Vy=0 would produce a div by zero error.
+      //Also, microscopic values of Vy that are < 0, will produce +90.
+      if Vx < 0 and Vy < 0.0001 set rotatingAzimuth to -90.
+      else set rotatingAzimuth to arctan(Vx/Vy).
+
       if south return rotatingAzimuth + 180.
       if rotatingAzimuth < 0 return rotatingAzimuth + 360.
       return rotatingAzimuth.
