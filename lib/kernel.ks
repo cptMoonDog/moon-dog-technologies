@@ -9,7 +9,6 @@
 //  Ex:
 @LAZYGLOBAL OFF.
 {
-   print "enter kernel for init.".
    global OP_FINISHED is 1.
    global OP_CONTINUE is 0.
    global OP_PREVIOUS is -1.

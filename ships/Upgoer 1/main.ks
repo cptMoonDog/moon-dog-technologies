@@ -15,13 +15,18 @@ runpath("kernel.ks").
       80000, 0.2
    )).
 
-   steering_ctl["init"](lexicon(
-      "altitude", 80000, 
-      "inclination", 90, 
-      "pOverDeg", 4, 
-      "pOverV0", 30, 
-      "pOverVf", 150
-   )).
+   steering_ctl["init"](
+      lexicon( //Orbit parameters
+         "altitude", 80000, 
+         "inclination", 45
+      ), 
+      lexicon( //Ascent Parameters
+         "hemisphere", "south",
+         "pOverDeg", 5, 
+         "pOverV0", 30, 
+         "pOverVf", 135
+      )
+   ).
    //INTERRUPTS:add().
 
 
