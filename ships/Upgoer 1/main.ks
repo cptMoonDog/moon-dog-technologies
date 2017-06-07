@@ -21,10 +21,10 @@ runpath("kernel.ks").
          "inclination", 45
       ), 
       lexicon( //Ascent Parameters
-         "hemisphere", "south",
-         "pOverDeg", 5, 
+         "hemisphere", "north",
+         "pOverDeg", 4.5, 
          "pOverV0", 30, 
-         "pOverVf", 135
+         "pOverVf", 145
       )
    ).
    //INTERRUPTS:add().

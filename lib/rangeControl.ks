@@ -1,6 +1,10 @@
 @lazyglobal off.
 {
    global range_ctl is lexicon().
+   declare function setLaunchTarget {
+      parameter LAN.
+      
+   }
 
    local count is 10.
    local lastTime is time:seconds-1.
