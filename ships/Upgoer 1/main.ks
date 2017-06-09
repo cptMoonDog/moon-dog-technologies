@@ -7,21 +7,22 @@ runpath("maneuver.ks").
 runpath("kernel.ks").
 {
    throttle_ctl["init"](list(
-      20000, 1,
-      40000, 0.75,
+      10000, 1,
+      20000, 0.75,
+      40000, 0.6,
       50000, 0.5,
-      60000, 0.3,
-      70000, 0.25,
-      80000, 0.2
+      60000, 0.25,
+      70000, 0.2,
+      80000, 0.15
    )).
 
    steering_ctl["init"](
       lexicon( //Orbit parameters
          "altitude", 80000, 
-         "inclination", 45
+         "inclination", 6 
       ), 
       lexicon( //Ascent Parameters
-         "hemisphere", "north",
+         "hemisphere", "south",
          "pOverDeg", 4.5, 
          "pOverV0", 30, 
          "pOverVf", 145
