@@ -10,6 +10,10 @@
    local end is 0.
 
              
+   declare function transfer {
+      local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
+      local angle is p*360.
+   }
    declare function impulse_time {
       declare parameter ip is "ap".
       if ip = "ap" return time:seconds + eta:apoapsis.
@@ -43,6 +47,7 @@
       reset_for_next_burn().
    }
    guidance_ctl:add("add_burn", schedule_burn@).
+   
    declare function reset_for_next_burn {
       set start to impulse_time(burn_queue:peek()["ip"]) - burn_length_first_half().
       set end to impulse_time(burn_queue:peek()["ip"]) + burn_length_second_half().

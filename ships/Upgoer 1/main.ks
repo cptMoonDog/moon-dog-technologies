@@ -6,6 +6,28 @@ runpath("stagingControl.ks").
 runpath("maneuver.ks").
 runpath("kernel.ks").
 {
+   local hemisphere is "south".
+   local inclination is 45.33087.
+   range_ctl["init"](lexicon(
+         "lan", 40,
+         "inclination", inclination,
+         "tof", 140,
+         "hemisphere", hemisphere
+      )
+   ).
+   steering_ctl["init"](
+      lexicon( //Orbit parameters
+         "altitude", 80000, 
+         "inclination", inclination 
+      ), 
+      lexicon( //Ascent Parameters
+         "hemisphere", hemisphere,
+         "pOverDeg", 4.5, 
+         "pOverV0", 30, 
+         "pOverVf", 145
+      )
+   ).
+  
    throttle_ctl["init"](list(
       10000, 1,
       20000, 0.75,
@@ -16,18 +38,6 @@ runpath("kernel.ks").
       80000, 0.15
    )).
 
-   steering_ctl["init"](
-      lexicon( //Orbit parameters
-         "altitude", 80000, 
-         "inclination", 6 
-      ), 
-      lexicon( //Ascent Parameters
-         "hemisphere", "south",
-         "pOverDeg", 4.5, 
-         "pOverV0", 30, 
-         "pOverVf", 145
-      )
-   ).
    //INTERRUPTS:add().
 
 

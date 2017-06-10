@@ -1,45 +1,50 @@
 @lazyglobal off.
 {
    global range_ctl is lexicon().
+   local window_params is lexicon("lan", 0, "inclination", 0, "tof", 0, "hemisphere", "north").
    local count is 10.
 
    declare function init {
-      parameter c.
-      set count to c.
+      parameter w.
+      if w:istype("Lexicon") {
+         set window_params to w.
+      } else if w:istype("Scalar") {
+         set count to c.
+      }
    }
    range_ctl:add("init", init@).
 
+   //
    local lastTime is time:seconds-1.
-   declare function do_countdown {
-      parameter type.
-      if type = "a" { //arbitrary
-         if count > -1 and time:seconds-lastTime > 1 {
-            hudtext(count+"...", 1, 2, 20, white, false).
-            set count to count - 1.
-            set lastTime to time:seconds.
-            return OP_CONTINUE.
-         } else if count < 0 {
-            return OP_FINISHED.
-         } else return OP_CONTINUE.
-      }
-      if type = "w" { //window
-         local ttw is time_to_window(minmus:orbit:LAN, minmus:orbit:inclination, 130, "south").
-         if ttw:seconds > 180 {
-            if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate <= 1 {
-               kuniverse:timewarp:warpto(time:seconds+ttw:seconds - 179).
-            }
-            return OP_CONTINUE.
-         }
-         if time:seconds-lastTime > 1 {
-            hudtext("T-"+ttw:clock, 1, 2, 20, white, false).
-            set lastTime to time:seconds.
-         } 
-         if ttw:seconds < 0.01 {
-            return OP_FINISHED.
-         } else return OP_CONTINUE.
-      }
+   declare function countdown_tensec {
+      if count > -1 and time:seconds-lastTime > 1 {
+         hudtext(count+"...", 1, 2, 20, white, false).
+         set count to count - 1.
+         set lastTime to time:seconds.
+         return OP_CONTINUE.
+      } else if count < 0 {
+         return OP_FINISHED.
+      } else return OP_CONTINUE.
    }
-   range_ctl:add("countdown", (do_countdown@):bind("w")).
+
+   declare function countdown_launchWindow {
+      local ttw is time_to_window(window_params["lan"], window_params["inclination"], window_params["tof"], window_params["hemisphere"]).
+      print ttw at(0,7).
+      if ttw:seconds > 180 {
+         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate <= 1 {
+            kuniverse:timewarp:warpto(time:seconds+ttw:seconds - 179).
+         }
+         return OP_CONTINUE.
+      }
+      if time:seconds-lastTime > 1 {
+         hudtext("T-"+ttw:clock, 1, 2, 20, white, false).
+         set lastTime to time:seconds.
+      } 
+      if ttw:seconds < 0.01 {
+         return OP_FINISHED.
+      } else return OP_CONTINUE.
+   }
+   range_ctl:add("countdown", countdown_launchWindow@).
 
    declare function normalizeAngle {
       parameter theta.
@@ -50,7 +55,7 @@
    declare function time_to_window {
       parameter RAAN. //LAN
       parameter i. //inclination
-      parameter tof. //Time of Flight, correction factor, need to call it something.
+      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination.
       parameter allowable is "all". 
 
       //Longitude correction of launch window due to latitude.
