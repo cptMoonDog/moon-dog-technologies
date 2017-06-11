@@ -10,23 +10,51 @@
    local end is 0.
 
              
-   declare function transfer {
+   declare function transferFinder {
+      parameter tgt is body("Mun").
+      local t is time:seconds + 180.
+      local radial is 0.
+      local normal is 0.
+      local pro is 0.
+      local n is node(t, radial, normal, pro).
+      add(n).
+      until n:orbit:transition = "ENCOUNTER" {
+         if (n:orbit:apoapsis+ship:body:radius) < tgt:orbit:semimajoraxis {
+            set pro to pro + 1.
+         } else if (n:orbit:apoapsis+ship:body:radius) > tgt:orbit:semimajoraxis+1 {
+            set pro to pro - 1.
+         }
+         if (n:orbit:apoapsis+ship:body:radius) >= tgt:orbit:semimajoraxis {
+           set to t + 1.
+         }
+      }
+   }
+   guidance_ctl:add("findtransfer", transferFinder@).
+
+   declare function phaseAngle {
+      parameter startAlt.
+      parameter finalAlt.
+
       local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
       local angle is p*360.
+      print angle at(0, 10).
    }
    declare function impulse_time {
-      declare parameter ip is "ap".
+      declare parameter ip.
       if ip = "ap" return time:seconds + eta:apoapsis.
       if ip = "pe" return time:seconds + eta:periapsis.
    }
    declare function lockto_impulse_direction {
-      declare parameter dv is "circularize".
+      declare parameter dv.
       if dv = "circularize" lock steering to ship:prograde.
    }
    declare function get_dV {
       if burn_queue:peek()["dv"] = "circularize" 
          return phys_lib["OVatAlt"](Kerbin, ship:apoapsis) - phys_lib["VatAlt"](Kerbin, ship:apoapsis).
    }
+   
+   ///////Functions for calculating a better non-impulsive maneuver.
+   //mass after first half of burn
    declare function m2 {
       return ship:mass*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"])))).
    }
@@ -34,10 +62,16 @@
       return ((ship:mass-m2())/(burn_queue:peek()["ff"]/1000)).
    }
    declare function burn_length_second_half {
-      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"]))).//*constant:e^(-(dV/2)/(isp*g0)).
+      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"]))).
       return ((m2()-m3)/(burn_queue:peek()["ff"]/1000)).
    }
-   declare function schedule_burn {
+
+   declare function reset_for_next_burn {
+      set start to impulse_time(burn_queue:peek()["ip"]) - burn_length_first_half().
+      set end to impulse_time(burn_queue:peek()["ip"]) + burn_length_second_half().
+   }
+
+  declare function schedule_burn {
       declare parameter ip is "ap". //Acceptable values: ap, pe, rel, raw.
       declare parameter dv is "circularize". //Acceptable values: circularize, node, d_inclination, number
       declare parameter isp is 345. // Engine ISP
@@ -48,11 +82,6 @@
    }
    guidance_ctl:add("add_burn", schedule_burn@).
    
-   declare function reset_for_next_burn {
-      set start to impulse_time(burn_queue:peek()["ip"]) - burn_length_first_half().
-      set end to impulse_time(burn_queue:peek()["ip"]) + burn_length_second_half().
-   }
-
    declare function execute {
       print "T"+(time:seconds-start) at(1, 0).
       if start < time:seconds+180 AND start > time:seconds+10 { // between 3 minutes and 10 seconds out.

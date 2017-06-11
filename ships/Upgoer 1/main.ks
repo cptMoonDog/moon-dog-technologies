@@ -55,6 +55,7 @@ runpath("kernel.ks").
       } else return OP_CONTINUE.
    }).
    MISSION_PLAN:add(guidance_ctl["burn_monitor"]).
+   MISSION_PLAN:add(guidance_ctl["findtransfer"]).
    kernel_ctl["start"](MISSION_PLAN).
 }
 
