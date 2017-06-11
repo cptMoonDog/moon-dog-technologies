@@ -6,15 +6,16 @@ runpath("stagingControl.ks").
 runpath("maneuver.ks").
 runpath("kernel.ks").
 {
-   local hemisphere is "south".
-   local inclination is 45.33087.
-   range_ctl["init"](lexicon(
-         "lan", 40,
-         "inclination", inclination,
-         "tof", 140,
-         "hemisphere", hemisphere
-      )
-   ).
+   local hemisphere is "north".
+   local inclination is 0.
+   range_ctl["init"](10).
+   //lexicon(
+   //      "lan", 0,
+   //      "inclination", inclination,
+   //      "tof", 0,
+   //      "hemisphere", hemisphere
+   //   )
+   //).
    steering_ctl["init"](
       lexicon( //Orbit parameters
          "altitude", 80000, 

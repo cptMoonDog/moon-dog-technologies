@@ -12,22 +12,43 @@
              
    declare function transferFinder {
       parameter tgt is body("Mun").
+
       local t is time:seconds + 180.
       local radial is 0.
       local normal is 0.
       local pro is 0.
       local n is node(t, radial, normal, pro).
+
+      local munPe is 2429600.
+      local lastPe is 2429600.
       add(n).
-      until n:orbit:transition = "ENCOUNTER" {
-         if (n:orbit:apoapsis+ship:body:radius) < tgt:orbit:semimajoraxis {
-            set pro to pro + 1.
-         } else if (n:orbit:apoapsis+ship:body:radius) > tgt:orbit:semimajoraxis+1 {
-            set pro to pro - 1.
+      until false {
+         if n:orbit:hasnextpatch {
+            print "true munPe: "+n:orbit:nextpatch:periapsis at(0, 15).
+            print "munPe: "+munPe at(0, 16).
+            if n:orbit:nextpatch:periapsis < 10000 or lastPe < n:orbit:nextpatch:periapsis {
+               return OP_FINISHED.
+            }
+            if n:orbit:nextpatch:periapsis < munPe {
+               set munPe to n:orbit:nextpatch:periapsis.
+            }else if n:orbit:nextpatch:periapsis > munPe {
+              set lastPe to n:orbit:nextpatch:periapsis.
+              set t to t + 1.
+            }
+         } else {
+            if (n:orbit:apoapsis+ship:body:radius) < tgt:orbit:semimajoraxis {
+               set pro to pro + 1.
+            } else if (n:orbit:apoapsis+ship:body:radius) > tgt:orbit:semimajoraxis+1 {
+               set pro to pro - 1.
+            }
+            if (n:orbit:apoapsis+ship:body:radius) >= tgt:orbit:semimajoraxis {
+              set t to t + 1.
+            }
          }
-         if (n:orbit:apoapsis+ship:body:radius) >= tgt:orbit:semimajoraxis {
-           set to t + 1.
-         }
+         set n:eta to t-time:seconds.
+         set n:prograde to pro.
       }
+      return OP_FINISHED.
    }
    guidance_ctl:add("findtransfer", transferFinder@).
 
