@@ -11,29 +11,35 @@
              
    declare function hillclimb_patch {
       parameter mnode.
-      parameter high.
-      parameter low.
+      parameter target.
+
       local step is 1.
       local last is mnode:orbit:nextpatch:periapsis.
       until false {
-         if mnode:orbit:nextpatch:periapsis < low and mnode:orbit:nextpatch:periapsis >= last {
-            set last to mnode:orbit:nextpatch:periapsis.
-            set mnode:prograde to mnode:prograde - step.
-            if mnode:orbit:nextpatch:periapsis > high {
-               set mnode:prograde to mnode:prograde + step.
-               set step to step/2.
-               set last to mnode:orbit:nextpatch:periapsis.
-            }
-         } else if mnode:orbit:nextpatch:periapsis > high and mnode:orbit:nextpatch:periapsis <= last{
-            set last to mnode:orbit:nextpatch:periapsis.
-            set mnode:prograde to mnode:prograde + step.
-            if mnode:orbit:nextpatch:periapsis < low {
+         local current is abs(target - mnode:orbit:nextpatch:periapsis).
+         local right is 0.
+         local left is 0.
+         set mnode:prograde to mnode:prograde + step.
+         if mnode:orbit:hasnextpatch set right to abs(target - mnode:orbit:nextpatch:periapsis).
+         set mnode:prograde to mnode:prograde - step.
+            
+         set mnode:prograde to mnode:prograde - step.
+         if mnode:orbit:hasnextpatch set left to abs(target - mnode:orbit:nextpatch:periapsis).
+         set mnode:prograde to mnode:prograde + step.
+
+         if (left = 0 AND right = 0) OR last <= current {
+            if step < 0.0001 return OP_FINISHED.
+            set step to step/2.
+         } else if  current > right OR current > left {
+            if right > left {
                set mnode:prograde to mnode:prograde - step.
-               set step to step/2.
-               set last to mnode:orbit:nextpatch:periapsis.
+            } else {
+               set mnode:prograde to mnode:prograde + step.
             }
+         } else {
+            return OP_FINISHED.
          }
-         if mnode:orbit:nextpatch:periapsis > low and mnode:orbit:nextpatch:periapsis < high break.
+         set last to current.
       }
    }
 
@@ -51,7 +57,7 @@
       add(n).
       until false {
          if n:orbit:hasnextpatch {
-            return hillclimb_patch(n, 10000, 5000).
+            return hillclimb_patch(n, 10000).
             print "true munPe: "+n:orbit:nextpatch:periapsis at(0, 15).
             print "munPe: "+munPe at(0, 16).
             if n:orbit:nextpatch:periapsis < 10000 or lastPe < n:orbit:nextpatch:periapsis {
