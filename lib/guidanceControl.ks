@@ -8,8 +8,35 @@
    local burn_queue is queue().
    local start is 0.
    local end is 0.
-
              
+   declare function hillclimb_patch {
+      parameter mnode.
+      parameter high.
+      parameter low.
+      local step is 1.
+      local last is mnode:orbit:nextpatch:periapsis.
+      until false {
+         if mnode:orbit:nextpatch:periapsis < low and mnode:orbit:nextpatch:periapsis >= last {
+            set last to mnode:orbit:nextpatch:periapsis.
+            set mnode:prograde to mnode:prograde - step.
+            if mnode:orbit:nextpatch:periapsis > high {
+               set mnode:prograde to mnode:prograde + step.
+               set step to step/2.
+               set last to mnode:orbit:nextpatch:periapsis.
+            }
+         } else if mnode:orbit:nextpatch:periapsis > high and mnode:orbit:nextpatch:periapsis <= last{
+            set last to mnode:orbit:nextpatch:periapsis.
+            set mnode:prograde to mnode:prograde + step.
+            if mnode:orbit:nextpatch:periapsis < low {
+               set mnode:prograde to mnode:prograde - step.
+               set step to step/2.
+               set last to mnode:orbit:nextpatch:periapsis.
+            }
+         }
+         if mnode:orbit:nextpatch:periapsis > low and mnode:orbit:nextpatch:periapsis < high break.
+      }
+   }
+
    declare function transferFinder {
       parameter tgt is body("Mun").
 
@@ -24,6 +51,7 @@
       add(n).
       until false {
          if n:orbit:hasnextpatch {
+            return hillclimb_patch(n, 10000, 5000).
             print "true munPe: "+n:orbit:nextpatch:periapsis at(0, 15).
             print "munPe: "+munPe at(0, 16).
             if n:orbit:nextpatch:periapsis < 10000 or lastPe < n:orbit:nextpatch:periapsis {
@@ -59,6 +87,7 @@
       local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
       local angle is p*360.
       print angle at(0, 10).
+      return angle.
    }
    declare function impulse_time {
       declare parameter ip.

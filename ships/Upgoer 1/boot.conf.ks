@@ -6,7 +6,7 @@ global systemFiles is list(
    "lib/ascent/steeringControl.ks",
    "lib/ascent/stagingControl.ks",
    "lib/rangeControl.ks",
-   "lib/maneuver.ks",
+   "lib/guidanceControl.ks",
    "lib/general.ks", //Library of general purpose functions 
    "lib/kernel.ks"
 ).

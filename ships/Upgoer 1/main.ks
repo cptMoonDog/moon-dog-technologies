@@ -3,7 +3,7 @@ runpath("throttleControl.ks").
 runpath("steeringControl.ks").
 runpath("rangeControl.ks").
 runpath("stagingControl.ks").
-runpath("maneuver.ks").
+runpath("guidanceControl.ks").
 runpath("kernel.ks").
 {
    local hemisphere is "north".
