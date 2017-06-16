@@ -35,6 +35,8 @@ when ship:control:pilotyaw then {
    preserve.
 }
 lock throttle to tPID:update(time:seconds, ship:airspeed).
+clearscreen.
+print "Command: ".
 until false {
   if vSpeedSP = 0 {
      //Mode 1: Control Altitude and Speed
@@ -53,12 +55,17 @@ until false {
      } else if ch = terminal:input:leftcursorone {
         headingLeft().
      }else {
+        print ch at(9, 0).
         set command to ch.
         set numStr to "".
         until FALSE {
            set ch to terminal:input:getchar().
-           if ch = terminal:input:RETURN break.
-           else set numStr to numStr+ch.
+           print ch at(10+numStr:length, 0).
+           if ch = terminal:input:RETURN {
+               clearscreen.
+               print "Command: ".
+               break.
+           } else set numStr to numStr+ch.
         }
         if command:toupper = "V" {
            set vSpeedSP to numStr:toNumber(vSpeedSP).
