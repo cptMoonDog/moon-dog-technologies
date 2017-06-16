@@ -16,6 +16,11 @@
       local step is 1.
       local last is mnode:orbit:nextpatch:periapsis.
       until false {
+         if not mnode:orbit:hasnextpatch {
+            clearscreen.
+            print mnode.
+            return OP_FINISHED.
+         }
          local current is abs(target - mnode:orbit:nextpatch:periapsis).
          local right is 0.
          local left is 0.
@@ -32,9 +37,9 @@
             set step to step/2.
          } else if  current > right OR current > left {
             if right > left {
-               set mnode:prograde to mnode:prograde - step.
-            } else {
                set mnode:prograde to mnode:prograde + step.
+            } else {
+               set mnode:prograde to mnode:prograde - step.
             }
          } else {
             return OP_FINISHED.
