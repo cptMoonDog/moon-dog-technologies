@@ -156,6 +156,7 @@
       print "T-"+(start-time:seconds) at(0, 11).
       if  start <= time:seconds AND time:seconds < start+10 { // Will only attempt to lock throttle for 10 seconds.
          lock throttle to 1.
+         print "throttle: "+ throttle at(0, 15).
       }
       if end <= time:seconds {
          lock throttle to 0.
