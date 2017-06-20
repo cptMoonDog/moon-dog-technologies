@@ -7,21 +7,18 @@
 //     Staging
 //     User input
 //  Ex:
+//Mon Jun 19 21:37:58 PDT 2017
 @LAZYGLOBAL OFF.
 {
+   global kernel_ctl is lexicon().
+   
    global OP_FINISHED is 1.
    global OP_CONTINUE is 0.
    global OP_PREVIOUS is -1.
 
-   global kernel_ctl is lexicon().
-
-   declare function set_runmode {
-      parameter n.
-      if n >= -1 and n <= 1
-      set runmode to runmode+n.
-   }
-
    local runmode is 0.
+
+///Public functions
    declare function run {
       parameter missionPlan is list().
       parameter interrupts is list().
@@ -39,4 +36,11 @@
       }
    }
    kernel_ctl:add("start", run@).
+
+///Private functions
+   declare function set_runmode {
+      parameter n.
+      if n >= -1 and n <= 1
+      set runmode to runmode+n.
+   }
 }

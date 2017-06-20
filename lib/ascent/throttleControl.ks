@@ -1,53 +1,66 @@
 //James McConnel
-//3/24/2017
+//Mon Jun 19 19:36:56 PDT 2017
 @LAZYGLOBAL OFF.
 {
+   /// This library's list of  exported functions.
    global throttle_ctl is lexicon().
-   local profile is list( //Believe it or not, list seems better in this application.
-      20000, 1,
-      40000, 0.75,
-      50000, 0.5,
-      60000, 0.3,
-      70000, 0.25,
-      80000, 0.1
-   ).
+   
+   /// Parameters
+   local profile is list(). //Believe it or not, list seems better in this application.
+   
+   // Initializer
    declare function init {
       parameter p.
       set profile to p.
-      lock throttle to throttleSmoother(step).
    }
    throttle_ctl:add("init", init@).
 
+   /// Local variables
    local step is 0.
 
+///Public functions
+   
+   //Stub that calls the lookup table monitor and then the throttle control.
+   declare function stub {
+      parameter pvar.
+      throttleSmoother(pvar).
+      return advanceStep(pvar).
+   }
+   throttle_ctl:add("throttle_monitor", stub@).
+
+///Private functions
+
+   // Takes the value of the input buffer compare with the lookup table, and sets the output buffer.
    declare function advanceStep {
-      if ship:apoapsis > profile[step] {
-         if step+2 < profile:length {
+      parameter pvar.
+
+      if pvar > profile[step] {
+         if step+2 < profile:length { //Another step exists
             set step to step+2.
          } else {
-            if ship:altitude < 70000 {
-               if ship:apoapsis < profile[step] set step to step-2.
-            } else {
+            //This prevents the program from shutting down if drag could still have an influence.
+            if not ship:orbit:body:atm:exists or ship:altitude > ship:orbit:body:atm:height  {
                set ship:control:pilotmainthrottle to 0.
                return OP_FINISHED.
             }
          }
-      } 
+      } else if pvar < profile[step-2] set step to step-2. //pvar has regressed past the previous value.
       return OP_CONTINUE.
    }
-   throttle_ctl:add("throttle_monitor", advanceStep@).
-
+   
+   // Primary throttle control function 
    declare function throttleSmoother {
-      declare parameter step.
+      parameter pvar.
+      
       if step = 0 return profile[step+1].
       else if step >= profile:length return 0.
       else {
-         if ship:apoapsis > profile[profile:length-2] return 0. 
+         if pvar > profile[profile:length-2] return 0. 
          else {
-            local altPct is (ship:apoapsis-profile[step-2])/
+            local altPct is (pvar-profile[step-2])/
                           (profile[step]-profile[step-2]).
             local thrott is altPct*(profile[step+1] - profile[step-1])+profile[step-1].
-            return thrott.
+            set throttle to thrott.
          }
       }
    }

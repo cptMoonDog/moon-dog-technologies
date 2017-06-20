@@ -42,6 +42,7 @@ runpath("kernel.ks").
    //INTERRUPTS:add().
 
 
+   lock steering to steering_ctl["steering_monitor"]().
    local MISSION_PLAN is list().
    MISSION_PLAN:add(range_ctl["countdown"]).
    MISSION_PLAN:add(staging_ctl["launch"]).

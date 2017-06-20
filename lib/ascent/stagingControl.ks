@@ -1,10 +1,25 @@
 // Staging control staging_ctlrary for ascending rockets.
+//Mon Jun 19 21:01:08 PDT 2017
 // James McConnel
 
-{ // Start Library
+@LAZYGLOBAL OFF.
+// Start Library
+{ 
    // Open a lexicon to collect the exportable functions.
    declare global staging_ctl is lexicon().
 
+   // Local variables
+   local engList is 0.
+   local lastTime is time:seconds.
+   local fairingJettisoned is false.
+   local utilActive is false.
+
+   //Init
+   list Engines in engList.
+
+///Public functions
+
+   //Launch sequence
    declare function launch {
       print "launch initiated.".
       stage.
@@ -16,22 +31,7 @@
    }
    staging_ctl:add("launch", launch@).
 
-   declare function install_seqStaging { // TODO: Bad...fuel check will always come back true.
-      print "installing Sequential Staging...".
-      when (stage:liquidfuel < 0.05 OR stage:solidfuel < 0.05) AND stage:ready then {   //Sequential Staging
-         list Engines in engList.
-         if engList:length > 0 {
-            stage.
-            preserve.
-         }
-      }
-   }
-   
-   local engList is 0.
-   local lastTime is time:seconds.
-   local fairingJettisoned is false.
-   local utilActive is false.
-   list Engines in engList.
+   //current staging trigger
    declare function genStaging {
       parameter fairing is false.
       parameter utilAG is false.
@@ -57,4 +57,17 @@
       } else return OP_FINISHED.
    }
    staging_ctl:add("staging", genStaging@).
+
+///Private functions
+
+   declare function install_seqStaging { // TODO: Bad...fuel check will always come back true.
+      print "installing Sequential Staging...".
+      when (stage:liquidfuel < 0.05 OR stage:solidfuel < 0.05) AND stage:ready then {   //Sequential Staging
+         list Engines in engList.
+         if engList:length > 0 {
+            stage.
+            preserve.
+         }
+      }
+   }
 }
