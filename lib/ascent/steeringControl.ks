@@ -41,7 +41,7 @@
    }
 
    declare function launchAzimuth {
-      local OV is phys_lib["OVatAlt"](Kerbin, orbit_parameters["altitude"]).
+      local OV is phys_lib["OVatAlt"](Kerbin, 70000).//orbit_parameters["altitude"]).
       local south is false.
       if ascent_parameters["hemisphere"] = "south" set south to true.
 
@@ -103,12 +103,10 @@
          //TODO Fix these references to altitude, not robust.  But they fix these cases getting tripped toward the end of ascent.
          //What I need, is some reference to detect the next stage.
       //Roll to Azimuth
-      }else if ship:altitude < 10000
-               AND (vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 
-               OR ship:airspeed < ascent_parameters["pOverV0"]) {
+      }else if ship:airspeed < ascent_parameters["pOverV0"] AND vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 AND ship:apoapsis < 35000 {
          return heading(azimuth, 90).
       //Pitchover
-      }else if ship:altitude < 35000 AND ship:airspeed < ascent_parameters["pOverVf"] {
+      }else if ship:apoapsis < 35000 AND ship:airspeed < ascent_parameters["pOverVf"] {
          return heading(azimuth, 90-ascent_parameters["pOverDeg"]).
       }else {
           //Change ProgradeVector

@@ -29,8 +29,20 @@
    
    local engList is 0.
    local lastTime is time:seconds.
+   local fairingJettisoned is false.
+   local utilActive is false.
    list Engines in engList.
    declare function genStaging {
+      parameter fairing is false.
+      parameter utilAG is false.
+      if fairing and not fairingJettisoned and ship:altitude > 60000 {
+         stage.
+         set fairingJettisoned to true.
+      }
+      if utilAG and not utilActive and ship:altitude > 65000 {
+         AG1 on.
+         set utilActive to true.
+      }
       if engList:length > 0 {
          if time:seconds > lastTime + 0.5 {
             for eng in engList {

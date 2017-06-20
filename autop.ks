@@ -37,50 +37,43 @@ when ship:control:pilotyaw then {
 lock throttle to tPID:update(time:seconds, ship:airspeed).
 clearscreen.
 print "Command: ".
+local SP is ship:altitude.
+lock p to pPID:update(time:seconds, SP). 
+local command is "".
+local numStr is "".
 until false {
   if vSpeedSP = 0 {
      //Mode 1: Control Altitude and Speed
-     set pPID:setpoint to altSP.
-     lock p to pPID:update(time:seconds, ship:altitude). 
+     set SP to ship:altitude.
   }else{
      //Mode 2: Control rate of Descent/Ascent
-     set pPID:setpoint to vSpeedSP. 
-     lock p to pPID:update(time:seconds, ship:verticalSpeed).
+     set SP to ship:verticalSpeed.
   }
   if terminal:input:haschar() {
-     set command to "".
-     set ch to terminal:input:getchar().
+     local ch is terminal:input:getchar().
      if ch = terminal:input:rightcursorone {
         headingRight().
      } else if ch = terminal:input:leftcursorone {
         headingLeft().
      }else {
-        print ch at(9, 0).
-        set command to ch.
-        set numStr to "".
-        until FALSE {
-           set ch to terminal:input:getchar().
-           print ch at(10+numStr:length, 0).
+        if command:length {
            if ch = terminal:input:RETURN {
-               clearscreen.
-               print "Command: ".
-               break.
-           } else set numStr to numStr+ch.
+              parseCommand(command, numStr).
+              set command to "".
+              set numStr to "".
+              clearscreen.
+              print "Command: ".
+           } else {
+              set numStr to numStr+ch.
+              print ch at(0, 9+numStr:length).
+           }
+        } else {
+           set command to ch.
+           print ch at(0, 9).
         }
-        if command:toupper = "V" {
-           set vSpeedSP to numStr:toNumber(vSpeedSP).
-        }else if command:toUpper = "A" {
-           set altSP to numStr:toNumber(altSP).
-           set pPID:setpoint to altSP. 
-        }else if command:toUpper = "S" {
-           set speedSP to numStr:toNumber(speedSP).
-           set tPID:setpoint to speedSP. 
-        }else if command:toUpper = "L" {
-           set pitchLimiter to numStr:toNumber(pitchLimiter).
-           set pPID:maxOutput to pitchLimiter.
-           set pPID:minOutput to -pitchLimiter.
-        }
+        
      }
+     wait 0.01.
   }
 }
 declare function headingRight {
@@ -90,4 +83,38 @@ declare function headingRight {
 declare function headingLeft {
   set h to h-1.
   if h < 0 set h to 359.
+}
+declare function parseCommand {
+   parameter command.
+   parameter numStr.
+   if command:toupper = "V" {
+      set vSpeedSP to numStr:toNumber(vSpeedSP).
+      if vSpeedSP = 0 {
+         //Mode 1: Control Altitude and Speed
+         set pPID:setpoint to altSP.
+         set SP to ship:altitude.
+      }else {
+         //Mode 2: Control rate of Descent/Ascent
+         set pPID:setpoint to vSpeedSP. 
+         set SP to ship:verticalSpeed.
+      }
+   }else if command:toUpper = "A" {
+      set altSP to numStr:toNumber(altSP).
+      if vSpeedSP = 0 {
+         //Mode 1: Control Altitude and Speed
+         set pPID:setpoint to altSP.
+         set SP to ship:altitude.
+      }else {
+         //Mode 2: Control rate of Descent/Ascent
+         set pPID:setpoint to vSpeedSP. 
+         set SP to ship:verticalSpeed.
+      }
+   }else if command:toUpper = "S" {
+      set speedSP to numStr:toNumber(speedSP).
+      set tPID:setpoint to speedSP. 
+   }else if command:toUpper = "L" {
+      set pitchLimiter to numStr:toNumber(pitchLimiter).
+      set pPID:maxOutput to pitchLimiter.
+      set pPID:minOutput to -pitchLimiter.
+   }
 }

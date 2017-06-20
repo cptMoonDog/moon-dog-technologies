@@ -26,7 +26,7 @@
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }
-   range_ctl:add("countdown", countdown_tensec@).
+   //range_ctl:add("countdown", countdown_tensec@).
 
    declare function countdown_launchWindow {
       local ttw is time_to_window(window_params["lan"], window_params["inclination"], window_params["tof"], window_params["hemisphere"]).
@@ -45,7 +45,7 @@
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }
-   //range_ctl:add("countdown", countdown_launchWindow@).
+   range_ctl:add("countdown", countdown_launchWindow@).
 
    declare function normalizeAngle {
       parameter theta.
