@@ -16,16 +16,17 @@
    global OP_CONTINUE is 0.
    global OP_PREVIOUS is -1.
 
+   global MISSIONPLAN is list().
+   global INTERRUPTS is list().
+
    local runmode is 0.
 
 ///Public functions
    declare function run {
-      parameter missionPlan is list().
-      parameter interrupts is list().
       until FALSE {
          //Runmodes
-         if runmode < missionPlan:length {
-            set_runmode(missionPlan[runmode]()).
+         if runmode < MISSIONPLAN:length {
+            set_runmode(MISSIONPLAN[runmode]()).
          }
          else break.
 
@@ -36,6 +37,12 @@
       }
    }
    kernel_ctl:add("start", run@).
+
+   declare function addObjective {
+      parameter o.
+      MISSIONPLAN:add(o).
+   }
+   kernel_ctl:add("add_step", addObjective@).
 
 ///Private functions
    declare function set_runmode {

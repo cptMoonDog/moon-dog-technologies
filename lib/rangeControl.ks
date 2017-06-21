@@ -11,6 +11,7 @@
       } else if w:istype("Scalar") {
          set count to w.
       }
+      kernel_ctl["add_step"](range_ctl["countdown"]).
    }
    range_ctl:add("init", init@).
 

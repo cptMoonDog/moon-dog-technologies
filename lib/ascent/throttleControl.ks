@@ -3,17 +3,11 @@
 @LAZYGLOBAL OFF.
 {
    /// This library's list of  exported functions.
-   global throttle_ctl is lexicon().
+   if not defined ascent_ctl 
+      global ascent_ctl is lexicon().
    
    /// Parameters
-   local profile is list(). //Believe it or not, list seems better in this application.
-   
-   // Initializer
-   declare function init {
-      parameter p.
-      set profile to p.
-   }
-   throttle_ctl:add("init", init@).
+   parameter profile. //Expecting list. Believe it or not, list seems better in this application.
 
    /// Local variables
    local step is 0.
@@ -26,7 +20,7 @@
       throttleSmoother(pvar).
       return advanceStep(pvar).
    }
-   throttle_ctl:add("throttle_monitor", stub@).
+   ascent_ctl:add("throttle_monitor", stub@).
 
 ///Private functions
 

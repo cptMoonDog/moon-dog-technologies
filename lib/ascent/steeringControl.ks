@@ -10,10 +10,14 @@
 //Mon Jun 19 21:16:05 PDT 2017
 @LAZYGLOBAL off.
 {
+   parameter p.
+   parameter a.
+  
    runoncepath("general.ks").
-
+ 
    //Library's exportable functions
-   global steering_ctl is lexicon().
+   if not defined ascent_ctl 
+      global ascent_ctl is lexicon().
 
    //Local variables
    local orbit_parameters is lexicon("altitude", 80000, "inclination", 90).
@@ -24,21 +28,31 @@
    local progradeVector is ship:srfprograde.
    local inclinationReached is FALSE.
 
-   //Init
-   declare function init {
-      parameter p.
-      parameter a.
-      if p:istype("Lexicon") {
-         set orbit_parameters to p.
-      }
-      if a:istype("Lexicon") {
-         set ascent_parameters to a.
-      }
-      set h0 to ship:altitude.
-      //The following is to reduce the calls to launchAzimuth.
-      set azimuth to launchAzimuth().
+   if p:istype("Lexicon") {
+      set orbit_parameters to p.
    }
-   steering_ctl:add("init", init@).
+   if a:istype("Lexicon") {
+      set ascent_parameters to a.
+   }
+   set h0 to ship:altitude.
+   //The following is to reduce the calls to launchAzimuth.
+   set azimuth to launchAzimuth().
+
+   //Init
+   //declare function init {
+      //parameter p.
+      //parameter a.
+      //if p:istype("Lexicon") {
+         //set orbit_parameters to p.
+      //}
+      //if a:istype("Lexicon") {
+         //set ascent_parameters to a.
+      //}
+      //set h0 to ship:altitude.
+      ////The following is to reduce the calls to launchAzimuth.
+      //set azimuth to launchAzimuth().
+   //}
+   //ascent_ctl:add("init", init@).
 
 
 ///Public functions
@@ -76,7 +90,7 @@
          }
       }
    }
-   steering_ctl:add("steering_monitor", steeringProgram@).
+   ascent_ctl:add("steering_monitor", steeringProgram@).
    
 ///Private functions
    declare function facing_compass_heading {

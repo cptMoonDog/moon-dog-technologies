@@ -6,7 +6,8 @@
 // Start Library
 { 
    // Open a lexicon to collect the exportable functions.
-   declare global staging_ctl is lexicon().
+   if not defined ascent_ctl 
+      declare global ascent_ctl is lexicon().
 
    // Local variables
    local engList is 0.
@@ -29,7 +30,7 @@
       } 
       return OP_FINISHED.
    }
-   staging_ctl:add("launch", launch@).
+   ascent_ctl:add("launch", launch@).
 
    //current staging trigger
    declare function genStaging {
@@ -56,7 +57,7 @@
          return OP_CONTINUE.
       } else return OP_FINISHED.
    }
-   staging_ctl:add("staging", genStaging@).
+   ascent_ctl:add("staging", genStaging@).
 
 ///Private functions
 
