@@ -10,13 +10,8 @@
 //Mon Jun 19 21:16:05 PDT 2017
 @LAZYGLOBAL off.
 {
-   parameter p.
-   parameter a.
-  
-   runoncepath("general.ks").
- 
    //Library's exportable functions
-   if not defined ascent_ctl 
+   if not (defined ascent_ctl)
       global ascent_ctl is lexicon().
 
    //Local variables
@@ -28,34 +23,25 @@
    local progradeVector is ship:srfprograde.
    local inclinationReached is FALSE.
 
-   if p:istype("Lexicon") {
-      set orbit_parameters to p.
-   }
-   if a:istype("Lexicon") {
-      set ascent_parameters to a.
-   }
-   set h0 to ship:altitude.
-   //The following is to reduce the calls to launchAzimuth.
-   set azimuth to launchAzimuth().
-
    //Init
-   //declare function init {
-      //parameter p.
-      //parameter a.
-      //if p:istype("Lexicon") {
-         //set orbit_parameters to p.
-      //}
-      //if a:istype("Lexicon") {
-         //set ascent_parameters to a.
-      //}
-      //set h0 to ship:altitude.
-      ////The following is to reduce the calls to launchAzimuth.
-      //set azimuth to launchAzimuth().
-   //}
-   //ascent_ctl:add("init", init@).
+   declare function init {
+      parameter p.
+      parameter a.
+      if p:istype("Lexicon") {
+         set orbit_parameters to p.
+      }
+      if a:istype("Lexicon") {
+         set ascent_parameters to a.
+      }
+      set h0 to ship:altitude.
+      //The following is to reduce the calls to launchAzimuth.
+      set azimuth to launchAzimuth().
+   }
+   ascent_ctl:add("init_steering", init@).
 
 
 ///Public functions
+   local statusMon is 0.
    declare function steeringProgram {
       //Prior to clearing the tower
       if ship:altitude < h0 + 10 {
@@ -74,23 +60,17 @@
             set progradeVector to ship:prograde.
          } else set progradeVector to ship:srfprograde.
          local progradePitch is 90-vectorangle(up:forevector, progradeVector:forevector).
-         print progradePitch at(0, 7).
-         print "Compass: " + facing_compass_heading() at(0, 11).
-         print orbit_parameters["inclination"] at(0,14).
          if inclinationReached {
             return progradeVector.
          } else if ship:orbit:inclination >= orbit_parameters["inclination"]-0.001 {
             set inclinationReached to TRUE.
             return progradeVector.
          } else {
-            print "Azimuth: "+azimuth at(0, 12).
-            print "tgt inc: "+orbit_parameters["inclination"] at(0, 13).
-            print "inc: "+ship:orbit:inclination at(0,14).
             return heading(azimuth, progradePitch). 
          }
       }
    }
-   ascent_ctl:add("steering_monitor", steeringProgram@).
+   ascent_ctl:add("steeringProgram", steeringProgram@).
    
 ///Private functions
    declare function facing_compass_heading {

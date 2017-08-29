@@ -6,8 +6,9 @@
 // Start Library
 { 
    // Open a lexicon to collect the exportable functions.
-   if not defined ascent_ctl 
+   if not (defined ascent_ctl) {
       declare global ascent_ctl is lexicon().
+   }
 
    // Local variables
    local engList is 0.
@@ -45,11 +46,12 @@
          set utilActive to true.
       }
       if engList:length > 0 {
-         if time:seconds > lastTime + 0.5 {
+         if time:seconds > lastTime + 1 {
             for eng in engList {
                if eng:ignition and eng:flameout {
                   stage.
                   list Engines in engList.
+                  print engList.
                   break.
                }
             }

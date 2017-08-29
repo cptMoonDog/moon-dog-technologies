@@ -8,16 +8,20 @@
       parameter w.
       if w:istype("Lexicon") {
          set window_params to w.
+         if window_params["inclination"] < abs(ship:latitude) {
+            set window_params["inclination"] to abs(ship:latitude).
+         }
+         range_ctl:add("countdown", countdown_launchWindow@).
       } else if w:istype("Scalar") {
          set count to w.
+         range_ctl:add("countdown", countdown_scalar@).
       }
-      kernel_ctl["add_step"](range_ctl["countdown"]).
    }
    range_ctl:add("init", init@).
 
    //
    local lastTime is time:seconds-1.
-   declare function countdown_tensec {
+   declare function countdown_scalar {
       if count > -1 and time:seconds-lastTime > 1 {
          hudtext(count+"...", 1, 2, 20, white, false).
          set count to count - 1.
@@ -27,7 +31,6 @@
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }
-   //range_ctl:add("countdown", countdown_tensec@).
 
    declare function countdown_launchWindow {
       local ttw is time_to_window(window_params["lan"], window_params["inclination"], window_params["tof"], window_params["hemisphere"]).
@@ -46,7 +49,6 @@
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }
-   range_ctl:add("countdown", countdown_launchWindow@).
 
    declare function normalizeAngle {
       parameter theta.
@@ -61,6 +63,8 @@
       parameter allowable is "all". 
 
       //Longitude correction of launch window due to latitude.
+      print ship:latitude.
+      print i.
       local lonOffset is arcsin(tan(ship:latitude)/tan(i)).
       local astroLon is normalizeAngle((ship:orbit:body:rotationangle+ship:longitude)).
       local degFromAN is normalizeAngle(astroLon - RAAN).

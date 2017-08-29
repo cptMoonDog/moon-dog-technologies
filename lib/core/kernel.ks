@@ -23,12 +23,12 @@
 
 ///Public functions
    declare function run {
+      parameter mp.
       until FALSE {
          //Runmodes
-         if runmode < MISSIONPLAN:length {
-            set_runmode(MISSIONPLAN[runmode]()).
-         }
-         else break.
+         if runmode < mp:length {
+            set_runmode(mp[runmode]()).
+         } else break.
 
          //Interrupts
          for subroutine in INTERRUPTS {
@@ -37,12 +37,6 @@
       }
    }
    kernel_ctl:add("start", run@).
-
-   declare function addObjective {
-      parameter o.
-      MISSIONPLAN:add(o).
-   }
-   kernel_ctl:add("add_step", addObjective@).
 
 ///Private functions
    declare function set_runmode {

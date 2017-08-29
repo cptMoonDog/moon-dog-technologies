@@ -16,7 +16,7 @@ runpath("kernel.ks").
    //      "hemisphere", hemisphere
    //   )
    //).
-   steering_ctl["init"](
+   ascent_ctl["init_steering"](
       lexicon( //Orbit parameters
          "altitude", 80000, 
          "inclination", inclination 
@@ -28,27 +28,25 @@ runpath("kernel.ks").
          "pOverVf", 145
       )
    ).
+   lock steering to ascent_ctl["steeringProgram"]().
   
-   throttle_ctl["init"](list(
+   ascent_ctl["init_throttle"](list(
       10000, 1,
-      20000, 0.75,
-      40000, 0.6,
-      50000, 0.5,
-      60000, 0.25,
-      70000, 0.2,
       80000, 0.15
    )).
+   lock throttle to ascent_ctl["throttleProgram"]().
+   set ship:control:pilotmainthrottle to 0.
+   list.
 
    //INTERRUPTS:add().
 
 
-   lock steering to steering_ctl["steering_monitor"]().
    local MISSION_PLAN is list().
    MISSION_PLAN:add(range_ctl["countdown"]).
-   MISSION_PLAN:add(staging_ctl["launch"]).
+   MISSION_PLAN:add(ascent_ctl["launch"]).
    MISSION_PLAN:add({
-      staging_ctl["staging"]().
-      return throttle_ctl["throttle_monitor"]().
+     ascent_ctl["staging"]().
+     return ascent_ctl["throttle_monitor"]().
    }).
    MISSION_PLAN:add({
       if ship:altitude > 70000 {
@@ -57,7 +55,6 @@ runpath("kernel.ks").
       } else return OP_CONTINUE.
    }).
    MISSION_PLAN:add(guidance_ctl["burn_monitor"]).
-   MISSION_PLAN:add(guidance_ctl["findtransfer"]).
    kernel_ctl["start"](MISSION_PLAN).
 }
 

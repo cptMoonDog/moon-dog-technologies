@@ -1,13 +1,9 @@
 @lazyglobal off.
 //Remote 
-runpath("0:/lib/rangeControl.ks").
+linkRemoteSystem("rangeControl").
 //Local
-runpath("ascent/ascentControl.ks").
-runpath("guidanceControl.ks").
-runpath("kernel.ks").
-{
-   local hemisphere is "north".
-   local inclination is 0.
+installToShip("ascentControl").
+installToShip("guidanceControl").
    range_ctl["init"](10).
    ascent_ctl["init"](
       lexicon( //Orbit parameters
@@ -29,4 +25,3 @@ runpath("kernel.ks").
    guidance_ctl["init_orbit_insertion"]().
 
    kernel_ctl["start"]().
-} 
