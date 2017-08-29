@@ -15,8 +15,7 @@
       global ascent_ctl is lexicon().
 
    //Local variables
-   local orbit_parameters is lexicon("altitude", 80000, "inclination", 90).
-   local ascent_parameters is lexicon("hemisphere", "north", "pOverDeg", 4, "pOverV0", 30, "pOverVf", 150).
+   local ascent_parameters is lexicon("inclination", 90, "hemisphere", "north", "pOverDeg", 4, "pOverV0", 30, "pOverVf", 150).
 
    local h0 is 0.
    local azimuth is 0.
@@ -25,23 +24,18 @@
 
    //Init
    declare function init {
-      parameter p.
       parameter a.
-      if p:istype("Lexicon") {
-         set orbit_parameters to p.
-      }
       if a:istype("Lexicon") {
          set ascent_parameters to a.
       }
       set h0 to ship:altitude.
       //The following is to reduce the calls to launchAzimuth.
-      set azimuth to launchAzimuth().
+      set azimuth to range_ctl["launchAzimuth"](ascent_parameters["inclination"], ascent_parameters["hemisphere"]).
    }
    ascent_ctl:add("init_steering", init@).
 
 
 ///Public functions
-   local statusMon is 0.
    declare function steeringProgram {
       //Prior to clearing the tower
       if ship:altitude < h0 + 10 {
@@ -62,7 +56,7 @@
          local progradePitch is 90-vectorangle(up:forevector, progradeVector:forevector).
          if inclinationReached {
             return progradeVector.
-         } else if ship:orbit:inclination >= orbit_parameters["inclination"]-0.001 {
+         } else if ship:orbit:inclination >= ascent_parameters["inclination"]-0.001 {
             set inclinationReached to TRUE.
             return progradeVector.
          } else {
@@ -77,59 +71,5 @@
       local temp is (-1*ship:bearing).
       if temp < 0 return temp + 360.
       return temp. 
-   }
-
-   declare function launchAzimuth {
-      local OV is phys_lib["OVatAlt"](Kerbin, 70000).//orbit_parameters["altitude"]).
-      local south is false.
-      if ascent_parameters["hemisphere"] = "south" set south to true.
-
-      //It is impossible to launch into an orbit with an inclination < the latitude at the launch site, so if necessary ignore the inclination parameter.
-      //Therefore acceptable inclinations are >= abs(latitude) and =< 180-abs(latitude).
-      //TODO Maybe not a good idea clobbering an input value, but on the other hand, this value will need to be corrected program wide.
-      //Would it be better to throw an error and force user intelligence?
-      if abs(ship:latitude) > orbit_parameters["inclination"] set orbit_parameters["inclination"] to abs(ship:latitude).
-      else if abs(ship:latitude)+orbit_parameters["inclination"]  > 180 set orbit_parameters["inclination"] to 180-abs(ship:latitude).
-      
-      local inertialAzimuth is arcsin(cos(orbit_parameters["inclination"])/cos(ship:latitude)).
-
-      //Adjust the IA to a valid compass heading.
-      if south { 
-         if inertialAzimuth < 0 { 
-            set inertialAzimuth to -180-inertialAzimuth.
-         } else set inertialAzimuth to 180-inertialAzimuth. 
-      } 
-      if inertialAzimuth < 0 set inertialAzimuth to 360+inertialAzimuth.
-      //Here we give up precision for the sake of correctness.
-      if inertialAzimuth < 0.0001 and inertialAzimuth > -0.0001 set inertialAzimuth to 0.
-      if inertialAzimuth < 90.001 and inertialAzimuth > 89.999 set inertialAzimuth to 90.
-      print "IA: "+inertialAzimuth.
-
-      //Should be the circumference of the cirle of latitude divided by the sidereal rotation period.
-      local Vrot is (2*constant:pi*(body:radius+ship:altitude)*cos(ship:latitude))/body:rotationperiod.
-      local Vx is OV*sin(inertialAzimuth)-Vrot.
-      local Vy is OV*cos(inertialAzimuth).
-      local rotatingAzimuth is 0.
-
-      //Trig functions generally do not return exactly 0, even if they did, Vy=0 would produce a div by zero error.
-      //Also, microscopic values of Vy that are < 0, will produce +90.
-      if south {
-         //inclination: 0
-         if Vx < 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
-         //inclination: 180
-         else if Vx > 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to -90.
-         //inclination: everything else
-         else set rotatingAzimuth to arctan(Vx/Vy).
-         return 180+rotatingAzimuth.
-      } else {
-         //inclination: 180
-         if Vx < 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to -90.
-         //inclination: 0
-         else if Vx > 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
-         //inclination: everything else
-         else set rotatingAzimuth to arctan(Vx/Vy).
-         if rotatingAzimuth < 0 return 360+rotatingAzimuth.
-         else return rotatingAzimuth.
-      }
    }
 }

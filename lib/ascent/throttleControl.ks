@@ -2,7 +2,7 @@
 //Mon Jun 19 19:36:56 PDT 2017
 @LAZYGLOBAL OFF.
 {
-   runoncepath("general.ks").
+//   runoncepath("general.ks").
    /// This library's list of  exported functions.
    if not (defined ascent_ctl)
       global ascent_ctl is lexicon().

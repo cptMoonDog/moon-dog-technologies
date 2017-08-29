@@ -1,34 +1,9 @@
 @lazyglobal off.
-//Libraries that do not need to be copied to the ship
-runpath("0:/lib/rangeControl.ks").
-
-//Libraries that DO need to be copied to the ship
-copypath("0:/lib/core/kernel.ks", "").
-runpath("kernel.ks").
-
-copypath("0:/lib/ascent/stagingControl.ks", "").
-runpath("stagingControl.ks").
-
-copypath("0:/lib/ascent/steeringControl.ks", "").
-runpath("steeringControl.ks").
-
-copypath("0:/lib/general.ks", "").
-runpath("general.ks").
-
-copypath("0:/lib/ascent/throttleControl.ks", "").
-runpath("throttleControl.ks").
-
-copypath("0:/lib/guidanceControl.ks", "").
-runpath("guidanceControl.ks").
-
 {
-   range_ctl["init"](10).
+   range_ctl["init"](lexicon("lan", 0, "inclination", 45, "tof", 120, "hemisphere", "north")).
    ascent_ctl["init_steering"](
-      lexicon( //Orbit parameters
-         "altitude", 80000, 
-         "inclination", 0 
-      ), 
       lexicon( //Ascent Parameters
+         "inclination", 45,
          "hemisphere", "north",
          "pOverDeg", 4.25, 
          "pOverV0", 40, 

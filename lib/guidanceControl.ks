@@ -3,7 +3,7 @@
 
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
-runoncepath("general.ks").
+//runoncepath("general.ks").
 {
    global guidance_ctl is lexicon().
 
