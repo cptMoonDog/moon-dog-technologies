@@ -38,7 +38,7 @@
    }).
    MISSION_PLAN:add({
       if ship:altitude > 70000 {
-         guidance_ctl["add_burn"]("ap", "circularize", 345, 17.73419501).
+         guidance_ctl["add_burn"]("ap", "circularize", 250, 72.83687236).
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }).

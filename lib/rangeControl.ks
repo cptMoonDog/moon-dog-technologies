@@ -34,7 +34,6 @@
 
    declare function countdown_launchWindow {
       local ttw is time_to_window(window_params["lan"], window_params["inclination"], window_params["tof"], window_params["hemisphere"]).
-      print ttw at(0,7).
       if ttw:seconds > 180 {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate <= 1 {
             kuniverse:timewarp:warpto(time:seconds+ttw:seconds - 179).
@@ -63,8 +62,6 @@
       parameter allowable is "all". 
 
       //Longitude correction of launch window due to latitude.
-      print ship:latitude.
-      print i.
       local lonOffset is arcsin(tan(ship:latitude)/tan(i)).
       local astroLon is normalizeAngle((ship:orbit:body:rotationangle+ship:longitude)).
       local degFromAN is normalizeAngle(astroLon - RAAN).
