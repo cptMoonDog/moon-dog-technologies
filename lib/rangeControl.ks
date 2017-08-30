@@ -1,28 +1,34 @@
 @lazyglobal off.
 {
    global range_ctl is lexicon().
-   local window_params is lexicon("lan", 0, "inclination", 0, "tof", 0, "hemisphere", "north").
+   local window_params is lexicon("countdown", 10, "lan", 0, "inclination", 0, "tof", 0, "hemisphere", "north").
    local count is 10.
+   local lastTime is time:seconds.
 
    declare function init {
+      parameter launchType.
       parameter w.
-      if w:istype("Lexicon") {
-         set window_params to w.
-         if window_params["inclination"] < abs(ship:latitude) {
-            set window_params["inclination"] to abs(ship:latitude).
-         }
+
+      set window_params to w.
+      if window_params["inclination"] < abs(ship:latitude) {
+         set window_params["inclination"] to abs(ship:latitude).
+      }
+      range_ctl:add("param", window_params).
+      if launchType = "window" {
          range_ctl:add("countdown", countdown_launchWindow@).
-      } else if w:istype("Scalar") {
-         set count to w.
+      } else if launchType = "countdown" {
+         set count to window_params["countdown"].
          range_ctl:add("countdown", countdown_scalar@).
       }
    }
    range_ctl:add("init", init@).
 
    //
-   local lastTime is time:seconds-1.
    declare function countdown_scalar {
-      if count > -1 and time:seconds-lastTime > 1 {
+      if count = window_params["countdown"] {
+         set lastTime to time:seconds-1.
+      }
+      if count > -1 and time:seconds-lastTime >= 1 {
          hudtext(count+"...", 1, 2, 20, white, false).
          set count to count - 1.
          set lastTime to time:seconds.
@@ -59,22 +65,22 @@
       parameter RAAN. //LAN
       parameter i. //inclination
       parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination.
-      parameter allowable is "all". 
+      parameter allowableTrajectories is "all". 
 
       //Longitude correction of launch window due to latitude.
-      local lonOffset is arcsin(tan(ship:latitude)/tan(i)).
+      local lonOffset is arcsin(min(1, tan(ship:latitude)/tan(i))). //min function prevents NAN
       local astroLon is normalizeAngle((ship:orbit:body:rotationangle+ship:longitude)).
       local degFromAN is normalizeAngle(astroLon - RAAN).
       local degToDN is normalizeAngle((180-degFromAN)-lonOffset).
       local degToAN is normalizeAngle((360-degFromAN)+lonOffset).
 
-      if allowable = "all" {
+      if allowableTrajectories = "all" {  /////////////Arithmetic on time below functions as a defacto cast to object of type TIME.
          if degToDN < degToAN {
             return time-time+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
          } else {
             return time-time+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
          }
-      } else if allowable = "north" {
+      } else if allowableTrajectories = "north" {
          return time-time+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
       } else {
          return time-time+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
@@ -100,7 +106,7 @@
       if abs(ship:latitude) > inclination set inclination to abs(ship:latitude).
       else if abs(ship:latitude)+inclination  > 180 set inclination to 180-abs(ship:latitude).
       
-      local inertialAzimuth is arcsin(cos(inclination)/cos(ship:latitude)).
+      local inertialAzimuth is arcsin(min(1, cos(inclination)/cos(ship:latitude))). //min function prevents NAN
 
       //Adjust the IA to a valid compass heading.
       if south { 
@@ -121,13 +127,14 @@
 
       //Trig functions generally do not return exactly 0, even if they did, Vy=0 would produce a div by zero error.
       //Also, microscopic values of Vy that are < 0, will produce +90.
+      local adjustmentForTOF is 1.
       if south {
          //inclination: 0
          if Vx < 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
          //inclination: 180
          else if Vx > 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to -90.
          //inclination: everything else
-         else set rotatingAzimuth to arctan(Vx/Vy).
+         else set rotatingAzimuth to arctan(Vx/Vy)+adjustmentForTOF.
          return 180+rotatingAzimuth.
       } else {
          //inclination: 180
@@ -136,7 +143,7 @@
          else if Vx > 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
          //inclination: everything else
          else set rotatingAzimuth to arctan(Vx/Vy).
-         if rotatingAzimuth < 0 return 360+rotatingAzimuth.
+         if rotatingAzimuth < 0 return 360+rotatingAzimuth-adjustmentForTOF.
          else return rotatingAzimuth.
       }
    }

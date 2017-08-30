@@ -1,17 +1,17 @@
 @lazyglobal off.
 {
-   range_ctl["init"](lexicon("lan", 78, "inclination", 6, "tof", 150, "hemisphere", "north")).
+   range_ctl["init"]("window", lexicon("lan", 78, "inclination", 6, "tof", 90, "hemisphere", "north")).
    ascent_ctl["init_steering"](
       lexicon( //Ascent Parameters
          "inclination", 6,
          "hemisphere", "north",
-         "pOverDeg", 4.5, 
-         "pOverV0", 35, 
-         "pOverVf", 130
+         "pOverDeg", 5, 
+         "pOverV0", 30, 
+         "pOverVf", 100
       )).
   ascent_ctl["init_throttle"]( "tableAPO", list(
-     40000, 1,
-     60000, 0.5,
+     30000, 1,
+     50000, 0.5,
      70000, 0.25,
      80000, 0.1
 
@@ -38,7 +38,7 @@
    }).
    MISSION_PLAN:add({
       if ship:altitude > 70000 {
-         guidance_ctl["add_burn"]("ap", "circularize", 250, 72.83687236).
+         guidance_ctl["add_burn"]("ap", "circularize", 350, 72.83687236).
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }).
