@@ -4,7 +4,6 @@
    if not (defined launch_ctl)
       global launch_ctl is lexicon().
 
-   global launch_ctl is lexicon().
    local countdown is 180.
    local lastTime is time:seconds.
    local ttw is 0. 
@@ -24,7 +23,7 @@
          print "launch time is Scalar, IMPLEMENT ME!".
          //TODO 
       }
-      if launch_param:haskey("countdown") set countdown to launch_param["countdown"].
+      if launch_param:haskey("countdownLength") set countdown to launch_param["countdownLength"].
    }
    launch_ctl:add("init_range", init@).
 
@@ -137,7 +136,7 @@
 
       //Trig functions generally do not return exactly 0, even if they did, Vy=0 would produce a div by zero error.
       //Also, microscopic values of Vy that are < 0, will produce +90.
-      local adjustmentForTOF is 1.
+      local adjustmentForTOF is 0.
       if south {
          //inclination: 0
          if Vx < 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.

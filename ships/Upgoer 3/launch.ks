@@ -11,7 +11,7 @@
               //Launch options
               "azimuthHemisphere",   "north",
               //Fudge factor
-              "timeOfFlight",         0, 
+              "timeOfFlight",         45, 
               //Gravity turn parameters
               "pOverDeg",             5, 
               "pOverV0",              30, 
