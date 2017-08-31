@@ -12,29 +12,26 @@
    local end is 0.
 
 ///Public functions
-  declare function orbitInsertion {
-      if not ship:orbit:body:atm:exists or ship:altitude > ship:orbit:body:atm:height {
-         maneuver_ctl["add_burn"]("ap", "circularize", isp, ff).
-         return OP_FINISHED.
-      } else return OP_CONTINUE.
-  }
-  maneuver_ctl:add("insertion_monitor", orbitInsertion@).
 
   declare function schedule_burn {
       declare parameter ip is "ap". //Acceptable values: ap, pe, rel, raw.
       declare parameter dv is "circularize". //Acceptable values: circularize, node, d_inclination, number
       declare parameter isp is 345. // Engine ISP
       declare parameter ff is 17.73419501.
+      declare parameter steeringProgram is "prograde".
+
+      local program is 0.
+      if steeringProgram = "prograde" set program to {return ship:prograde.}.
+      else set program to steeringProgram.
       
-      burn_queue:push(lexicon("ip", ip, "dv", dv, "isp", isp, "ff", ff)).
+      burn_queue:push(lexicon("ip", ip, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
       reset_for_next_burn().
    }
    maneuver_ctl:add("add_burn", schedule_burn@).
    
    declare function execute {
-      print "T"+(time:seconds-start) at(1, 0).
       if start < time:seconds+180 AND start > time:seconds+10 { // between 3 minutes and 10 seconds out.
-         lockto_impulse_direction(burn_queue:peek()["dv"]).
+         lock steering to burn_queue:peek()["steeringProgram"]().
       }
       if start < time:seconds+30 AND start > time:seconds+25 {
          reset_for_next_burn(). // recalculates to improve precision
@@ -48,6 +45,7 @@
       }
       if end <= time:seconds {
          lock throttle to 0.
+         unlock steering.
          burn_queue:pop().
          if burn_queue:empty return OP_FINISHED.
          else reset_for_next_burn().
@@ -63,10 +61,6 @@
       declare parameter ip.
       if ip = "ap" return time:seconds + eta:apoapsis.
       if ip = "pe" return time:seconds + eta:periapsis.
-   }
-   declare function lockto_impulse_direction {
-      declare parameter dv.
-      if dv = "circularize" lock steering to ship:prograde.
    }
    declare function get_dV {
       if burn_queue:peek()["dv"] = "circularize" 

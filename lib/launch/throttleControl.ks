@@ -25,7 +25,7 @@
       } else if launch_param["throttleProgramType"] = "etaApo" {
          set program to vETAapo@.
          set pid to PIDLOOP().
-         set pid:setpoint to launch_param["throttleProfile"].
+         set pid:setpoint to launch_param["throttleProfile"][2].
          set pid:minoutput to 0.
          set pid:maxoutput to 1.
          launch_ctl:add("throttle_monitor", genericMonitor@).
