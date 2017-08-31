@@ -1,11 +1,16 @@
 @lazyglobal off.
 //Remote 
-runpath("0:/lib/rangeControl.ks").
+linkRemoteSystem("rangeControl").
 //Local
+<<<<<<< HEAD
 runpath("ascent/ascentControl.ks").
 runpath("guidanceControl.ks").
 runpath("kernel.ks").
 {
+=======
+installToShip("ascentControl").
+installToShip("guidanceControl").
+>>>>>>> 32d18d119b8cc53f9935eaad1cedcde4df15a922
    range_ctl["init"](10).
    ascent_ctl["init"](
       lexicon( //Orbit parameters
@@ -27,4 +32,3 @@ runpath("kernel.ks").
    guidance_ctl["init_orbit_insertion"]().
 
    kernel_ctl["start"]().
-} 
