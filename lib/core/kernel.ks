@@ -9,25 +9,24 @@
 //  Ex:
 //Mon Jun 19 21:37:58 PDT 2017
 @LAZYGLOBAL OFF.
+global kernel_ctl is lexicon().
+
+global OP_FINISHED is 1.
+global OP_CONTINUE is 0.
+global OP_PREVIOUS is -1.
+
+global MISSION_PLAN is list().
+global INTERRUPTS is list().
+
 {
-   global kernel_ctl is lexicon().
-   
-   global OP_FINISHED is 1.
-   global OP_CONTINUE is 0.
-   global OP_PREVIOUS is -1.
-
-   global MISSIONPLAN is list().
-   global INTERRUPTS is list().
-
    local runmode is 0.
 
 ///Public functions
    declare function run {
-      parameter mp.
       until FALSE {
          //Runmodes
-         if runmode < mp:length {
-            set_runmode(mp[runmode]()).
+         if runmode < MISSION_PLAN:length {
+            set_runmode(MISSION_PLAN[runmode]()).
          } else break.
 
          //Interrupts
@@ -41,7 +40,6 @@
 ///Private functions
    declare function set_runmode {
       parameter n.
-      if n >= -1 and n <= 1
-      set runmode to runmode+n.
+      if n >= -1 and n <= 1 set runmode to runmode+n.
    }
 }

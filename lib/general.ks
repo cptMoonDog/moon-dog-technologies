@@ -1,5 +1,12 @@
 @LAZYGLOBAL off.
 {
+   
+      declare function facing_compass_heading {
+      local temp is (-1*ship:bearing).
+      if temp < 0 return temp + 360.
+      return temp. 
+   }
+
    global phys_lib is lexicon().
    declare function OVatAlt {
       parameter bod is Kerbin.

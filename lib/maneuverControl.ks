@@ -20,15 +20,6 @@
   }
   maneuver_ctl:add("insertion_monitor", orbitInsertion@).
 
-  declare function setupOrbitInsertion {
-     parameter isp.
-     parameter ff.
-
-   kernel_ctl["add_step"](orbitInsertion@).
-   kernel_ctl["add_step"](execute@).
-  }
-  maneuver_ctl:add("init_orbit_insertion", setupOrbitInsertion@).
-
   declare function schedule_burn {
       declare parameter ip is "ap". //Acceptable values: ap, pe, rel, raw.
       declare parameter dv is "circularize". //Acceptable values: circularize, node, d_inclination, number

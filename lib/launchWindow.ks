@@ -1,3 +1,4 @@
+//Find launch time by state vector method.  Credit to someone else, this is not mine.
 FUNCTION launchWindow {
     PARAMETER tgt.
     LOCAL lat IS SHIP:LATITUDE.

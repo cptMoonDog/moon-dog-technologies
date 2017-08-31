@@ -11,12 +11,10 @@
 @LAZYGLOBAL off.
 {
    //Library's exportable functions
-   if not (defined ascent_ctl)
-      global ascent_ctl is lexicon().
+   if not (defined launch_ctl)
+      global launch_ctl is lexicon().
 
    //Local variables
-   local ascent_parameters is lexicon("inclination", 90, "hemisphere", "north", "pOverDeg", 4, "pOverV0", 30, "pOverVf", 150).
-
    local h0 is 0.
    local azimuth is 0.
    local progradeVector is ship:srfprograde.
@@ -24,15 +22,11 @@
 
    //Init
    declare function init {
-      parameter a.
-      if a:istype("Lexicon") {
-         set ascent_parameters to a.
-      }
       set h0 to ship:altitude.
       //The following is to reduce the calls to launchAzimuth.
-      set azimuth to range_ctl["launchAzimuth"](ascent_parameters["inclination"], ascent_parameters["hemisphere"]).
+      set azimuth to launch_ctl["launchAzimuth"]().
    }
-   ascent_ctl:add("init_steering", init@).
+   launch_ctl:add("init_steering", init@).
 
 
 ///Public functions
@@ -43,11 +37,11 @@
          //TODO Fix these references to altitude, not robust.  But they fix these cases getting tripped toward the end of ascent.
          //What I need, is some reference to detect the next stage.
       //Roll to Azimuth
-      }else if ship:airspeed < ascent_parameters["pOverV0"] AND vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 AND ship:apoapsis < 35000 {
+      }else if ship:airspeed < launch_param["pOverV0"] AND vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 AND ship:apoapsis < 35000 {
          return heading(azimuth, 90).
       //Pitchover
-      }else if ship:apoapsis < 35000 AND ship:airspeed < ascent_parameters["pOverVf"] {
-         return heading(azimuth, 90-ascent_parameters["pOverDeg"]).
+      }else if ship:apoapsis < 35000 AND ship:airspeed < launch_param["pOverVf"] {
+         return heading(azimuth, 90-launch_param["pOverDeg"]).
       }else {
           //Change ProgradeVector
          if ship:altitude >= 35000 {
@@ -56,7 +50,7 @@
          local progradePitch is 90-vectorangle(up:forevector, progradeVector:forevector).
          if inclinationReached {
             return progradeVector.
-         } else if ship:orbit:inclination >= ascent_parameters["inclination"]-0.001 {
+         } else if ship:orbit:inclination >= launch_param["inclination"]-0.001 {
             set inclinationReached to TRUE.
             return progradeVector.
          } else {
@@ -64,12 +58,5 @@
          }
       }
    }
-   ascent_ctl:add("steeringProgram", steeringProgram@).
-   
-///Private functions
-   declare function facing_compass_heading {
-      local temp is (-1*ship:bearing).
-      if temp < 0 return temp + 360.
-      return temp. 
-   }
+   launch_ctl:add("steeringProgram", steeringProgram@).
 }

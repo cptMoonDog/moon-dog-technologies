@@ -2,13 +2,11 @@
 //Mon Jun 19 19:36:56 PDT 2017
 @LAZYGLOBAL OFF.
 {
-//   runoncepath("general.ks").
    /// This library's list of  exported functions.
-   if not (defined ascent_ctl)
-      global ascent_ctl is lexicon().
+   if not (defined launch_ctl)
+      global launch_ctl is lexicon().
    
    local program is 0.
-   local profile is list(). //Expecting list. Believe it or not, list seems better in this application.
 
    /// Local variables
    local tableType is "none".
@@ -16,42 +14,39 @@
 
 ///Public functions
    declare function init {
-      parameter c.
-      parameter p.
-      set profile to p.
-      if c = "tableMET" {
+      if launch_param["throttleProgramType"] = "tableMET" {
          set tableType to "MET".
          set program to throttleSmoother@.
-         ascent_ctl:add("throttle_monitor", advanceStep@).
-      } else if c = "tableAPO" {
+         launch_ctl:add("throttle_monitor", advanceStep@).
+      } else if launch_param["throttleProgramType"] = "tableAPO" {
          set tableType to "APO".
          set program to throttleSmoother@.
-         ascent_ctl:add("throttle_monitor", advanceStep@).
-      } else if c = "etaApo" {
+         launch_ctl:add("throttle_monitor", advanceStep@).
+      } else if launch_param["throttleProgramType"] = "etaApo" {
          set program to vETAapo@.
          set pid to PIDLOOP().
-         set pid:setpoint to profile[2].
+         set pid:setpoint to launch_param["throttleProfile"].
          set pid:minoutput to 0.
          set pid:maxoutput to 1.
-         ascent_ctl:add("throttle_monitor", genericMonitor@).
-      } else if c = "vOV" {
+         launch_ctl:add("throttle_monitor", genericMonitor@).
+      } else if launch_param["throttleProgramType"] = "vOV" {
          set program to vOV@.
          set pid to PIDLOOP().
          set pid:minoutput to 0.
          set pid:maxoutput to 1.
-         ascent_ctl:add("throttle_monitor", genericMonitor@).
+         launch_ctl:add("throttle_monitor", genericMonitor@).
       }
          
-      ascent_ctl:add("throttleProgram", program).
+      launch_ctl:add("throttleProgram", program).
    }
-   ascent_ctl:add("init_throttle", init@).
+   launch_ctl:add("init_throttle", init@).
    
 
    // Takes the value of the input buffer compare with the lookup table, and sets the output buffer.
    local step is 0.
    declare function advanceStep {
-      if getTableInput() > profile[step] {
-         if step+2 < profile:length { //Another step exists
+      if getTableInput() > launch_param["throttleProfile"][step] {
+         if step+2 < launch_param["throttleProfile"]:length { //Another step exists
             set step to step+2.
          } else {
             //This prevents the program from shutting down if drag could still have an influence.
@@ -75,14 +70,14 @@
    // Lookup table throttle control 
    declare function throttleSmoother {
       if step = 0 {
-         return profile[step+1].
+         return launch_param["throttleProfile"][step+1].
       } else {
-         if getTableInput() > profile[profile:length-2] {
+         if getTableInput() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2] {
             return 0. 
          } else {
-            local Pct is (getTableInput()-profile[step-2])/
-                          (profile[step]-profile[step-2]).
-            return Pct*(profile[step+1] - profile[step-1])+profile[step-1].
+            local Pct is (getTableInput()-launch_param["throttleProfile"][step-2])/
+                          (launch_param["throttleProfile"][step]-launch_param["throttleProfile"][step-2]).
+            return Pct*(launch_param["throttleProfile"][step+1] - launch_param["throttleProfile"][step-1])+launch_param["throttleProfile"][step-1].
          }
       }
    }
@@ -100,19 +95,19 @@
    //Apoapsis value beyond which the function will apply.  Full throttle prior.
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
    declare function vETAapo {
-      if ship:apoapsis < profile[0] return 1.
-      else if ship:apoapsis > profile[1] return 0.
+      if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
+      else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
       else {
          return pid:update(time:seconds, eta:apoapsis).
-         //local val is (eta:apoapsis/profile[2])*0.5.
+         //local val is (eta:apoapsis/launch_param["throttleProfile"][2])*0.5.
          //if val > 0.9 return 0.
          //else return 1-val.
       }
    }
 
    declare function vOV {
-      if ship:apoapsis < profile[0] return 1.
-      else if ship:apoapsis > profile[1] return 0.
+      if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
+      else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
       else {
          return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
       }

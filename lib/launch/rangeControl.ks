@@ -1,56 +1,68 @@
 @lazyglobal off.
 {
-   global range_ctl is lexicon().
-   local window_params is lexicon("countdown", 10, "lan", 0, "inclination", 0, "tof", 0, "hemisphere", "north").
-   local count is 10.
+   /// This library's list of  exported functions.
+   if not (defined launch_ctl)
+      global launch_ctl is lexicon().
+
+   global launch_ctl is lexicon().
+   local countdown is 180.
    local lastTime is time:seconds.
-
+   local ttw is 0. 
+   local V0 is getvoice(0).
+   
    declare function init {
-      parameter launchType.
-      parameter w.
 
-      set window_params to w.
-      if window_params["inclination"] < abs(ship:latitude) {
-         set window_params["inclination"] to abs(ship:latitude).
+      if launch_param["inclination"] < abs(ship:latitude) {
+         set launch_param["inclination"] to abs(ship:latitude).
       }
-      range_ctl:add("param", window_params).
-      if launchType = "window" {
-         range_ctl:add("countdown", countdown_launchWindow@).
-      } else if launchType = "countdown" {
-         set count to window_params["countdown"].
-         range_ctl:add("countdown", countdown_scalar@).
+      if launch_param["launchTime"] = "window" {
+         set ttw to time_of_window(launch_param["lan"], launch_param["inclination"], launch_param["timeOfFlight"], launch_param["azimuthHemisphere"]).
+         launch_ctl:add("countdown", countdown_launchWindow@).
+      } else if launch_param["launchTime"] = "now" {
+         launch_ctl:add("countdown", countdown_scalar@).
+      } else if launch_param["launchTimes"]:istype("Scalar") {
+         print "launch time is Scalar, IMPLEMENT ME!".
+         //TODO 
       }
+      if launch_param:haskey("countdown") set countdown to launch_param["countdown"].
    }
-   range_ctl:add("init", init@).
+   launch_ctl:add("init_range", init@).
 
    //
    declare function countdown_scalar {
-      if count = window_params["countdown"] {
+      if countdown = launch_param["countdown"] {
          set lastTime to time:seconds-1.
       }
-      if count > -1 and time:seconds-lastTime >= 1 {
-         hudtext(count+"...", 1, 2, 20, white, false).
-         set count to count - 1.
+      if countdown > -1 and time:seconds-lastTime >= 1 {
+         hudtext("T-"+countdown+"...", 1, 2, 20, white, false).
+         set countdown to countdown - 1.
          set lastTime to time:seconds.
+         V0:play(note("C5", 0.1)).
          return OP_CONTINUE.
-      } else if count < 0 {
+      } else if countdown < 0 {
+         V0:play(note("C5", 1)).
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }
 
    declare function countdown_launchWindow {
-      local ttw is time_to_window(window_params["lan"], window_params["inclination"], window_params["tof"], window_params["hemisphere"]).
-      if ttw:seconds > 180 {
-         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate <= 1 {
-            kuniverse:timewarp:warpto(time:seconds+ttw:seconds - 179).
+      if ttw-time:seconds > countdown+1 {
+         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
+            kuniverse:timewarp:warpto(ttw - countdown).
          }
          return OP_CONTINUE.
       }
       if time:seconds-lastTime > 1 {
-         hudtext("T-"+ttw:clock, 1, 2, 20, white, false).
+         hudtext("T-"+(time-time+ttw-time:seconds):clock+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
+         if ttw-time:seconds < 11 {
+            if ttw-time:seconds > 1 {
+               V0:play(note("C5", 0.1)).
+            } 
+         }
          set lastTime to time:seconds.
       } 
-      if ttw:seconds < 0.01 {
+      if ttw-time:seconds < 0.01 {
+         V0:play(note("C5", 1)).
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }
@@ -61,7 +73,7 @@
       else return theta.
    }
 
-   declare function time_to_window {
+   declare function time_of_window {
       parameter RAAN. //LAN
       parameter i. //inclination
       parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination.
@@ -76,23 +88,21 @@
 
       if allowableTrajectories = "all" {  /////////////Arithmetic on time below functions as a defacto cast to object of type TIME.
          if degToDN < degToAN {
-            return time-time+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+            return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
          } else {
-            return time-time+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+            return time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
          }
       } else if allowableTrajectories = "north" {
-         return time-time+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+         return time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
       } else {
-         return time-time+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+         return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
       }
    }  
    
    declare function launchAzimuth {
-      parameter inclination is 90.
-      parameter hemisphere is "north".
 
       local south is false.
-      if hemisphere = "south" set south to true.
+      if launch_param["AzimuthHemisphere"] = "south" set south to true.
 
       local atmHeight is 0.
       if ship:body:atm:exists
@@ -103,10 +113,10 @@
       //Therefore acceptable inclinations are >= abs(latitude) and <= 180-abs(latitude).
       //TODO Maybe not a good idea clobbering an input value, but on the other hand, this value will need to be corrected program wide.
       //Would it be better to throw an error and force user intelligence?
-      if abs(ship:latitude) > inclination set inclination to abs(ship:latitude).
-      else if abs(ship:latitude)+inclination  > 180 set inclination to 180-abs(ship:latitude).
+      if abs(ship:latitude) > launch_param["inclination"] set launch_param["inclination"] to abs(ship:latitude).
+      else if abs(ship:latitude)+launch_param["inclination"]  > 180 set launch_param["inclination"] to 180-abs(ship:latitude).
       
-      local inertialAzimuth is arcsin(min(1, cos(inclination)/cos(ship:latitude))). //min function prevents NAN
+      local inertialAzimuth is arcsin(min(1, cos(launch_param["inclination"])/cos(ship:latitude))). //min function prevents NAN
 
       //Adjust the IA to a valid compass heading.
       if south { 
@@ -144,8 +154,8 @@
          //inclination: everything else
          else set rotatingAzimuth to arctan(Vx/Vy).
          if rotatingAzimuth < 0 return 360+rotatingAzimuth-adjustmentForTOF.
-         else return rotatingAzimuth.
+         else return rotatingAzimuth-adjustmentForTOF.
       }
    }
-   range_ctl:add("launchAzimuth", launchAzimuth@).
+   launch_ctl:add("launchAzimuth", launchAzimuth@).
 }
