@@ -30,6 +30,13 @@
    maneuver_ctl:add("add_burn", schedule_burn@).
    
    declare function execute {
+      if start > time:seconds+180 {
+         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
+            kuniverse:timewarp:warpto(start-181).
+         }
+         return OP_CONTINUE.
+      }
+      reset_for_next_burn().
       if start < time:seconds+180 AND start > time:seconds+10 { // between 3 minutes and 10 seconds out.
          lock steering to burn_queue:peek()["steeringProgram"]().
       }
@@ -47,8 +54,10 @@
          lock throttle to 0.
          unlock steering.
          burn_queue:pop().
-         if burn_queue:empty return OP_FINISHED.
-         else reset_for_next_burn().
+         if burn_queue:empty {
+            print "burn finished".
+            return OP_FINISHED.
+         } else reset_for_next_burn().
       }
       return OP_CONTINUE.
    }
@@ -65,6 +74,9 @@
    declare function get_dV {
       if burn_queue:peek()["dv"] = "circularize" 
          return phys_lib["OVatAlt"](Kerbin, ship:apoapsis) - phys_lib["VatAlt"](Kerbin, ship:apoapsis).
+      else if burn_queue:peek()["dv"]:istype("Scalar") {
+         return burn_queue:peek()["dv"].
+      }
    }
    
    ///////Functions for calculating a better non-impulsive maneuver.
@@ -86,3 +98,5 @@
    }
 
 }
+
+
