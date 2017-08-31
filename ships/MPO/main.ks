@@ -6,8 +6,6 @@ runpath("ascent/ascentControl.ks").
 runpath("guidanceControl.ks").
 runpath("kernel.ks").
 {
-   local hemisphere is "north".
-   local inclination is 0.
    range_ctl["init"](10).
    ascent_ctl["init"](
       lexicon( //Orbit parameters
