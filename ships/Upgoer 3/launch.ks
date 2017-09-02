@@ -13,16 +13,17 @@
               //Fudge factor
               "timeOfFlight",         100, 
               //Gravity turn parameters
-              "pOverDeg",             5, 
+              "pOverDeg",             7, 
               "pOverV0",              30, 
               "pOverVf",              100,
               //Throttle program parameters
               "throttleProgramType", "tableAPO", 
               "throttleProfile", list(
-                                      30000, 1,
-                                      50000, 0.5,
-                                      70000, 0.25,
-                                      80000, 0.1
+                                      15000, 1,
+                                      30000, 0.5,
+                                      50000, 0.3,
+                                      55000, 0.75,
+                                      80000, 0.5
 
 //              "throttleProgramType", "tableMET", 
 //              "throttleProfile", list(
@@ -51,7 +52,9 @@
    }).
    MISSION_PLAN:add({
       if ship:altitude > 70000 {
+         
          maneuver_ctl["add_burn"]("ap", "circularize", 350, 72.83687236, launch_ctl["steeringProgram"]).
+
          maneuver_ctl["add_burn"]("pe", 900, 350, 72.83687236, "prograde").
          return OP_FINISHED.
       } else return OP_CONTINUE.

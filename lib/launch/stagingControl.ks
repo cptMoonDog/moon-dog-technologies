@@ -51,7 +51,6 @@
                if eng:ignition and eng:flameout {
                   stage.
                   list Engines in engList.
-                  print engList.
                   break.
                }
             }
