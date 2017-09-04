@@ -54,8 +54,8 @@
       if ship:altitude > 70000 {
          
          maneuver_ctl["add_burn"]("ap", "circularize", 350, 72.83687236, launch_ctl["steeringProgram"]).
-
-         maneuver_ctl["add_burn"]("pe", 900, 350, 72.83687236, "prograde").
+         local n is node(time:seconds+eta:periapsis, 0, 0, 900).
+         maneuver_ctl["add_burn"]("node", 350, 72.83687236, n).
          return OP_FINISHED.
       } else return OP_CONTINUE.
    }).

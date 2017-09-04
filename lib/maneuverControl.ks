@@ -10,42 +10,37 @@
    local burn_queue is queue().
    local start is 0.
    local end is 0.
+   local mnvNode is 0.
 
 ///Public functions
 
-  declare function schedule_burn {
-      declare parameter impulsePoint is "ap". //Acceptable values: ap, pe, raw time, true anomaly angle. 
-      declare parameter dv is "circularize". //Acceptable values: circularize, node, d_inclination, number
-      declare parameter isp is 345. // Engine ISP
-      declare parameter ff is 17.73419501.
-      declare parameter steeringProgram is "prograde".
+   declare function schedule_burn {
+      declare parameter steeringProgram. // A string indicating direction ("prograde", "retrograde", "normal", "antinormal", etc) 
+                                         // or a delegate which returns an object that steering can be locked to.
+      declare parameter isp.             // Engine ISP
+      declare parameter ff.              // Fuel Flow
+      declare parameter impulsePoint.    // Acceptable values: ap, pe, AN, DN, raw time. 
+      declare parameter dv.              // Acceptable values: circularize, d_inclination, scalar
 
       local program is 0.
       if steeringProgram = "prograde" set program to {return ship:prograde.}.
+      else if steeringProgram = "retrograde" set program to {return ship:retrograde.}.
+      else if steeringProgram = "normal" set program to {return ship:normal.}.
+      else if steeringProgram = "antinormal" set program to {return ship:antinormal.}.
+      else if steeringProgram = "radial" set program to {return ship:radial.}.
+      else if steeringProgram = "antiradial" set program to {return ship:antiradial.}.
+      else if steeringProgram = "node" set program to {return mnvNode:burnvector.}.
       else set program to steeringProgram.
-      
-      burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
+
+      if impulsePoint:istype("ManeuverNode") {
+         set mnvNode to impulsePoint.
+         burn_queue:push(lexicon("ip", impulsePoint:eta+time:seconds, "dv", impulsePoint:deltaV, 
+                                 "isp", isp, "ff", ff, "steeringProgram", program)).
+      } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
       reset_for_next_burn().
    }
-   //maneuver_ctl:add("add_burn", schedule_burn@).
+   maneuver_ctl:add("add_burn", schedule_burn@).
 
-
-   declare function schedule_node {
-      declare parameter n.
-      declare parameter isp.
-      declare parameter ff.
-      declare parameter steeringProgram.
-
-      local program is 0.
-      if steeringProgram = "prograde" set program to {return ship:prograde.}.
-      else if steeringProgram = "node" set program to {return nextnode:burnvector.}.
-      else set program to steeringProgram.
-      
-      burn_queue:push(lexicon("ip", n:eta+time:seconds, "dv", n:deltav:mag, "isp", isp, "ff", ff, "steeringProgram", program)).
-      reset_for_next_burn().
-   }
-   maneuver_ctl:add("add_burn", schedule_node@).
-   
    declare function execute {
       if time:seconds < start print "T-"+start-time:seconds at(0, 10).
       else print "T+"+time:seconds-start at(0, 10).
