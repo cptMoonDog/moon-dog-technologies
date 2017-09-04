@@ -20,7 +20,7 @@
       declare parameter isp.             // Engine ISP
       declare parameter ff.              // Fuel Flow
       declare parameter impulsePoint.    // Acceptable values: ap, pe, AN, DN, raw time. 
-      declare parameter dv.              // Acceptable values: circularize, d_inclination, scalar
+      declare parameter dv is 0.              // Acceptable values: circularize, d_inclination, scalar
 
       local program is 0.
       if steeringProgram = "prograde" set program to {return ship:prograde.}.
@@ -29,10 +29,11 @@
       else if steeringProgram = "antinormal" set program to {return ship:antinormal.}.
       else if steeringProgram = "radial" set program to {return ship:radial.}.
       else if steeringProgram = "antiradial" set program to {return ship:antiradial.}.
-      else if steeringProgram = "node" set program to {return mnvNode:burnvector.}.
+      else if steeringProgram = "node" set program to {return impulsePoint:burnvector.}.
       else set program to steeringProgram.
 
       if impulsePoint:istype("ManeuverNode") {
+         print "maneuver node type".
          set mnvNode to impulsePoint.
          burn_queue:push(lexicon("ip", impulsePoint:eta+time:seconds, "dv", impulsePoint:deltaV, 
                                  "isp", isp, "ff", ff, "steeringProgram", program)).
@@ -42,8 +43,8 @@
    maneuver_ctl:add("add_burn", schedule_burn@).
 
    declare function execute {
-      if time:seconds < start print "T-"+start-time:seconds at(0, 10).
-      else print "T+"+time:seconds-start at(0, 10).
+      if time:seconds < start print "T-"+(start-time:seconds) at(0, 10).
+      else print "T+"+(time:seconds-start) at(0, 10).
       //Over 3 minutes out, warp
       if time:seconds < start-180 { //start > time:seconds+180 {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
@@ -68,7 +69,7 @@
             if burn_queue:empty {
                return OP_FINISHED.
             } else reset_for_next_burn().
-         } else 
+         }  
       }
       return OP_CONTINUE.
    }
