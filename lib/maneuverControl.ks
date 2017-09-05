@@ -34,7 +34,7 @@
 
       if impulsePoint = "node" {
          set nodeVec to nextnode:burnvector.
-         burn_queue:push(lexicon("ip", nextnode:eta+time:seconds, "dv", nextnode:deltaV, 
+         burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, 
                                  "isp", isp, "ff", ff, "steeringProgram", program)).
       } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
       reset_for_next_burn().
@@ -47,7 +47,7 @@
       //Over 3 minutes out, warp
       if time:seconds < start-180 { //start > time:seconds+180 {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
-            kuniverse:timewarp:warpto(start-181).
+            kuniverse:timewarp:warpto(start-179).
          }
       //Less than 3 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-180 AND time:seconds < start-30 { //start < time:seconds+180 AND start > time:seconds+30 { // between 3 minutes and 10 seconds out.
