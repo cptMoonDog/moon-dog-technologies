@@ -34,8 +34,7 @@
 
       if impulsePoint = "node" {
          set nodeVec to nextnode:burnvector.
-         burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, 
-                                 "isp", isp, "ff", ff, "steeringProgram", program)).
+         burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, "isp", isp, "ff", ff, "steeringProgram", program)).
       } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
       reset_for_next_burn().
    }
@@ -79,6 +78,7 @@
              
    declare function impulse_time {
       declare parameter ip.
+      if ip:istype("Scalar") return ip.
       if ip = "ap" return time:seconds + eta:apoapsis.
       if ip = "pe" return time:seconds + eta:periapsis.
    }
