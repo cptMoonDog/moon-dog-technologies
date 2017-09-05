@@ -10,7 +10,7 @@
    local burn_queue is queue().
    local start is 0.
    local end is 0.
-   local mnvNode is 0.
+   local nodeVec is 0.
 
 ///Public functions
 
@@ -29,13 +29,12 @@
       else if steeringProgram = "antinormal" set program to {return ship:antinormal.}.
       else if steeringProgram = "radial" set program to {return ship:radial.}.
       else if steeringProgram = "antiradial" set program to {return ship:antiradial.}.
-      else if steeringProgram = "node" set program to {return impulsePoint:burnvector.}.
+      else if steeringProgram = "node" set program to {return nodeVec.}.
       else set program to steeringProgram.
 
-      if impulsePoint:istype("ManeuverNode") {
-         print "maneuver node type".
-         set mnvNode to impulsePoint.
-         burn_queue:push(lexicon("ip", impulsePoint:eta+time:seconds, "dv", impulsePoint:deltaV, 
+      if impulsePoint = "node" {
+         set nodeVec to nextnode:burnvector.
+         burn_queue:push(lexicon("ip", nextnode:eta+time:seconds, "dv", nextnode:deltaV, 
                                  "isp", isp, "ff", ff, "steeringProgram", program)).
       } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
       reset_for_next_burn().

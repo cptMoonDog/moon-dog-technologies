@@ -52,12 +52,16 @@
    }).
    MISSION_PLAN:add({
       if ship:altitude > 70000 {
-         
          maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], 350, 72.83687236, "ap", "circularize").
-         add(node(time:seconds+eta:periapsis, 0, 0, 900)).
-         maneuver_ctl["add_burn"]("node", 350, 72.83687236, nextnode).
          return OP_FINISHED.
       } else return OP_CONTINUE.
+   }).
+   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   MISSION_PLAN:add({
+      wait 5.
+      add(node(time:seconds+eta:periapsis, 0, 0, 900)).
+      maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
+      return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    kernel_ctl["start"]().
