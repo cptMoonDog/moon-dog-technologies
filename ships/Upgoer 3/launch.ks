@@ -13,17 +13,24 @@
               //Fudge factor
               "timeOfFlight",         100, 
               //Gravity turn parameters
-              "pOverDeg",             7, 
+              "pOverDeg",             5, 
               "pOverV0",              30, 
-              "pOverVf",              100,
+              "pOverVf",              130,
               //Throttle program parameters
+              //Throttle program for Upgoer 3 on laptop
+//              "throttleProgramType", "tableAPO", 
+//              "throttleProfile", list(
+//                                      15000, 1,
+//                                      30000, 0.5,
+//                                      50000, 0.3,
+//                                      55000, 0.75,
+//                                      80000, 0.5
+
+              //Throttle program for Upgoer 3 on desktop
               "throttleProgramType", "tableAPO", 
               "throttleProfile", list(
                                       15000, 1,
-                                      30000, 0.5,
-                                      50000, 0.3,
-                                      55000, 0.75,
-                                      80000, 0.5
+                                      80000, 0.1
 
 //              "throttleProgramType", "tableMET", 
 //              "throttleProfile", list(
@@ -31,7 +38,7 @@
 //                                      120, 0.5,
 //                                      240, 0.25,
 //                                      320, 0.1
-
+//
 //              "throttleProgramType", "etaApo", 
 //              "throttleProfile", list( 
 //                                      20000, //Apo to Activate function, max prior
@@ -59,11 +66,11 @@
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    MISSION_PLAN:add({
       wait 5.
-      add(node(time:seconds+eta:periapsis, 0, 0, 900)).
-      maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
+      transfer_ctl["etaTarget"]().
+//      maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
       return OP_FINISHED.
    }).
-   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+//   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    kernel_ctl["start"]().
    set ship:control:pilotmainthrottle to 0.
 }

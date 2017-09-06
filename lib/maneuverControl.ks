@@ -64,6 +64,13 @@
          unlock steering.
          if time:seconds > end+5 { //end < time:seconds-5 {
             burn_queue:pop().
+            if currentNode <> 0 {
+               print "currentNode" at(0, 21).
+               if hasnode {
+                  print "hasnode" at(0, 20).
+                  remove nextnode.
+               }
+            }
             if burn_queue:empty {
                return OP_FINISHED.
             } else reset_for_next_burn().

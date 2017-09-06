@@ -1,84 +1,44 @@
-   declare function hillclimb_patch {
-      parameter mnode.
-      parameter target.
+{
+   global transfer_ctl is lexicon().
 
-      local step is 1.
-      local last is mnode:orbit:nextpatch:periapsis.
-      until false {
-         if not mnode:orbit:hasnextpatch {
-            clearscreen.
-            print mnode.
-            return OP_FINISHED.
-         }
-         local current is abs(target - mnode:orbit:nextpatch:periapsis).
-         local right is 0.
-         local left is 0.
-         set mnode:prograde to mnode:prograde + step.
-         if mnode:orbit:hasnextpatch set right to abs(target - mnode:orbit:nextpatch:periapsis).
-         set mnode:prograde to mnode:prograde - step.
-            
-         set mnode:prograde to mnode:prograde - step.
-         if mnode:orbit:hasnextpatch set left to abs(target - mnode:orbit:nextpatch:periapsis).
-         set mnode:prograde to mnode:prograde + step.
-
-         if (left = 0 AND right = 0) OR last <= current {
-            if step < 0.0001 return OP_FINISHED.
-            set step to step/2.
-         } else if  current > right OR current > left {
-            if right > left {
-               set mnode:prograde to mnode:prograde + step.
-            } else {
-               set mnode:prograde to mnode:prograde - step.
-            }
-         } else {
-            return OP_FINISHED.
-         }
-         set last to current.
-      }
+   declare function currentPhaseAngle {
+      // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
+      //Assumes orbits are both in the same plane.
+      local a1 is ship:orbit:lan+ship:orbit:argumentofperiapsis+ship:orbit:trueanomaly.
+      local a2 is target:orbit:lan+target:orbit:argumentofperiapsis+target:orbit:trueanomaly.
+      local diff is a2-a1.
+      set diff to diff-360*floor(diff/360).
+      print "current: "+diff.
+      return diff.
    }
+   declare function etaPhaseAngle {
+      local pa is phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
+      local current is currentPhaseAngle().
+      
+      local diff is  0.
+      if pa > current {
+         set diff to 360+current-pa.
+      } else set diff to current-pa.
+      //local diff is  currentPhaseAngle()-phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
+      if diff < 0 set diff to diff+360.
+      // Angle rate: 360/period
+      // p1+r1*t=p2+r2*t
+      // r1*t=p2-p1+r2*t
+      // r1*t-r2*t=p2-p1
+      // t(r1-r2)=p2-p1
+      // t=(p2-p1)/(r1-r2)
+      // p1=0, p2=10, r1=5, r2=1 then t=2.5
+      // p1=5, p2=10, r1=5, r2=1 then t=1.25 
+      local rateShip is 360/ship:orbit:period.
+      local rateTarget is 360/target:orbit:period.
 
-   declare function transferFinder {
-      parameter tgt is body("Mun").
+      print "angle to IP: "+diff.
+      local t is (diff)/(rateShip-rateTarget).
+      print "T-"+t.
+      add(node(t+time:seconds, 0, 0, 922)).
 
-      local t is time:seconds + 180.
-      local radial is 0.
-      local normal is 0.
-      local pro is 0.
-      local n is node(t, radial, normal, pro).
-
-      local munPe is 2429600.
-      local lastPe is 2429600.
-      add(n).
-      until false {
-         if n:orbit:hasnextpatch {
-            return hillclimb_patch(n, 10000).
-            print "true munPe: "+n:orbit:nextpatch:periapsis at(0, 15).
-            print "munPe: "+munPe at(0, 16).
-            if n:orbit:nextpatch:periapsis < 10000 or lastPe < n:orbit:nextpatch:periapsis {
-               return OP_FINISHED.
-            }
-            if n:orbit:nextpatch:periapsis < munPe {
-               set munPe to n:orbit:nextpatch:periapsis.
-            }else if n:orbit:nextpatch:periapsis > munPe {
-              set lastPe to n:orbit:nextpatch:periapsis.
-              set t to t + 1.
-            }
-         } else {
-            if (n:orbit:apoapsis+ship:body:radius) < tgt:orbit:semimajoraxis {
-               set pro to pro + 1.
-            } else if (n:orbit:apoapsis+ship:body:radius) > tgt:orbit:semimajoraxis+1 {
-               set pro to pro - 1.
-            }
-            if (n:orbit:apoapsis+ship:body:radius) >= tgt:orbit:semimajoraxis {
-              set t to t + 1.
-            }
-         }
-         set n:eta to t-time:seconds.
-         set n:prograde to pro.
-      }
-      return OP_FINISHED.
    }
-//   guidance_ctl:add("findtransfer", transferFinder@).
+   transfer_ctl:add("etaTarget", etaPhaseAngle@).
 
    declare function phaseAngle {
       parameter startAlt.
@@ -86,8 +46,8 @@
 
       local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
       local angle is p*360.
-      print angle at(0, 10).
-      return angle.
+      print "phase Angle: "+(180-angle).
+      return 180-angle.
    }
 
-
+}

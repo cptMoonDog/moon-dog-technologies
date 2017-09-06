@@ -8,6 +8,7 @@ if ship:status = "PRELAUNCH" {
       runpath("0:/lib/general.ks").
       runpath("0:/lib/launch/launchControl.ks").
       runpath("0:/lib/maneuverControl.ks").
+      runpath("0:/lib/transfer.ks").
    }
    if exists(ship:name+"/launch.ks") {
       runpath(ship:name+"/launch.ks").
