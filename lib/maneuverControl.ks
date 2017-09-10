@@ -97,7 +97,7 @@
          local impulseAlt is 0.
          if burn_queue:peek()["ip"] = "ap" set impulseAlt to ship:apoapsis.
          else set impulseAlt to ship:periapsis.
-         return abs(phys_lib["OVatAlt"](ship:orbit:body, impulseAlt) - phys_lib["VatAlt"](ship:orbit:body, impulseAlt)).
+         return abs(phys_lib["OVatAlt"](ship:orbit:body, impulseAlt) - phys_lib["VatAlt"](ship:orbit:body, impulseAlt, ship:orbit:semimajoraxis)).
       } else if burn_queue:peek()["dv"]:istype("Scalar") {
          return burn_queue:peek()["dv"].
       }
@@ -106,13 +106,13 @@
    ///////Functions for calculating a better non-impulsive maneuver.
    //mass after first half of burn
    declare function m2 {
-      return ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"])))).
+      return ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
    }
    declare function burn_length_first_half {
       return ((ship:mass*1000-m2())/(burn_queue:peek()["ff"])).
    }
    declare function burn_length_second_half {
-      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*phys_lib["g0"]))).
+      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*g0))).
       return ((m2()-m3)/(burn_queue:peek()["ff"])).
    }
 
