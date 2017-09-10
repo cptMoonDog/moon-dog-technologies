@@ -22,9 +22,9 @@
 
    //Init
    declare function init {
+      declare parameter a.
+      set azimuth to a.
       set h0 to ship:altitude.
-      //The following is to reduce the calls to launchAzimuth.
-      set azimuth to launch_ctl["launchAzimuth"]().
    }
    launch_ctl:add("init_steering", init@).
 

@@ -13,17 +13,28 @@
    // Local variables
    local engList is 0.
    local lastTime is time:seconds.
+   local fairing is false. //Flag for ship having a fairing.
+   local utilAG is false.  //Flag for ship having action group 1.
    local fairingJettisoned is false.
    local utilActive is false.
 
    //Init
-   list Engines in engList.
+   declare function init {
+      declare parameter f.
+      declare parameter u.
+
+      set fairing to f.
+      set utilAG to u.
+
+      list Engines in engList.
+   }
+   launch_ctl:add("init_staging", init@).
+
 
 ///Public functions
 
    //Launch sequence
    declare function launch {
-      print "launch initiated.".
       stage.
       wait 1.
       if ship:airspeed < 0.1 { //Some crafts (Kerbal X) throttles up before releasing clamps.
@@ -35,8 +46,6 @@
 
    //current staging trigger
    declare function genStaging {
-      parameter fairing is false.
-      parameter utilAG is false.
       if fairing and not fairingJettisoned and ship:altitude > 60000 {
          stage.
          set fairingJettisoned to true.
@@ -59,17 +68,4 @@
       } else return OP_FINISHED.
    }
    launch_ctl:add("staging", genStaging@).
-
-///Private functions
-
-   declare function install_seqStaging { // TODO: Bad...fuel check will always come back true.
-      print "installing Sequential Staging...".
-      when (stage:liquidfuel < 0.05 OR stage:solidfuel < 0.05) AND stage:ready then {   //Sequential Staging
-         list Engines in engList.
-         if engList:length > 0 {
-            stage.
-            preserve.
-         }
-      }
-   }
 }

@@ -5,7 +5,7 @@
               //Countdown type and length
               "launchTime",          "window", 
               "countDownLength",      30,
-              //Windows parameters
+              //Window parameters
               "lan",                  78, 
               "inclination",          6, 
               //Launch options
@@ -48,30 +48,41 @@
                                     )
              )
    ).
-   lock throttle to launch_ctl["throttleProgram"]().
-   lock steering to launch_ctl["steeringProgram"]().
 
+   //////////////////Begin mission planning
    MISSION_PLAN:add(launch_ctl["countdown"]).
    MISSION_PLAN:add(launch_ctl["launch"]).
    MISSION_PLAN:add({
+     //Calls staging check, and throttle defines end of this mode.
      launch_ctl["staging"]().
      return launch_ctl["throttle_monitor"]().
    }).
    MISSION_PLAN:add({
-      if ship:altitude > 70000 {
-         maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], 350, 72.83687236, "ap", "circularize").
-         return OP_FINISHED.
-      } else return OP_CONTINUE.
+      maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], 350, 72.83687236, "ap", "circularize").
+      return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    MISSION_PLAN:add({
       wait 5.
       set target to body("Minmus").
-      add(node(transfer_ctl["etaTarget"]()+time:seconds, 0,0,922)).
+      local dv is visViva_velocity(body("Kerbin"), 80000, smaOfTransferOrbit(body("Kerbin"), 80000, body("Minmus"):orbit:altitude))-ship:orbit:velocity.
+      add(node(transfer_ctl["etaTarget"]()+time:seconds, 0,0,dv)).
       maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
       return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   MISSION_PLAN:add({
+      if ship:orbit:hasnextpatch {
+         warpto(ship:orbit:nextpatcheta-180).
+      }
+      return OP_FINISHED.
+   }).
+   MISSION_PLAN:add(
+      maneuver_ctl["add_burn"]("retrograde", 350, 72.83687236, "pe", "circularize").
+      return OP_FINISHED.
+   }
+   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+
    kernel_ctl["start"]().
    set ship:control:pilotmainthrottle to 0.
 }

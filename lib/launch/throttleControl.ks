@@ -9,17 +9,14 @@
    local program is 0.
 
    /// Local variables
-   local tableType is "none".
    local pid is 0.
 
 ///Public functions
    declare function init {
       if launch_param["throttleProgramType"] = "tableMET" {
-         set tableType to "MET".
          set program to throttleSmoother@.
          launch_ctl:add("throttle_monitor", advanceStep@).
       } else if launch_param["throttleProgramType"] = "tableAPO" {
-         set tableType to "APO".
          set program to throttleSmoother@.
          launch_ctl:add("throttle_monitor", advanceStep@).
       } else if launch_param["throttleProgramType"] = "etaApo" {
@@ -83,9 +80,9 @@
    }
    //Utility function for table lookup system.
    declare function getTableInput {
-      if tableType = "MET"
+      if launch_param["throttleProgramType"] = "tableMET"
          return MISSIONTIME.
-      else if tableType = "APO"
+      else if launch_param["throttleProgramType"] = "tableAPO"
          return ship:apoapsis.
       else return 0.
    }

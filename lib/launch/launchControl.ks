@@ -9,7 +9,6 @@ runpath("0:/lib/launch/steeringControl.ks").
 runpath("0:/lib/launch/throttleControl.ks").
 
 {
-
    global launch_param is lexicon().
 
    declare function init_system {
@@ -17,19 +16,12 @@ runpath("0:/lib/launch/throttleControl.ks").
       set launch_param to p.
       
       launch_ctl["init_range"]().
-      //Staging system does not require initialization.
-      launch_ctl["init_steering"]().
+      launch_clt["init_staging"](false, false).
+      launch_ctl["init_steering"](launch_ctl["launchAzimuth"]).
       launch_ctl["init_throttle"]().
+      
+      lock throttle to launch_ctl["throttleProgram"]().
+      lock steering to launch_ctl["steeringProgram"]().
    }
    launch_ctl:add("init", init_system@).
-
-   local count is 0.
-   ///The ascent program itself.
-   declare function ascentProgram {
-      print "." at(count, 22).
-      set count to count+1.
-      launch_ctl["staging"](true, true).
-      return launch_ctl["throttle_monitor"]().
-   }
-   launch_ctl:add("ascent_monitor", ascentProgram@).
 }

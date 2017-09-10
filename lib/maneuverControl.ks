@@ -3,7 +3,6 @@
 
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
-//runoncepath("general.ks").
 {
    global maneuver_ctl is lexicon().
 
@@ -95,7 +94,10 @@
    }
    declare function get_dV {
       if burn_queue:peek()["dv"] = "circularize" 
-         return phys_lib["OVatAlt"](Kerbin, ship:apoapsis) - phys_lib["VatAlt"](Kerbin, ship:apoapsis).
+         local impulseAlt is 0.
+         if burn_queue:peek()["ip"] = "ap" set impulseAlt to ship:apoapsis.
+         else set impulseAlt to ship:periapsis.
+         return abs(phys_lib["OVatAlt"](ship:orbit:body, impulseAlt) - phys_lib["VatAlt"](ship:orbit:body, impulseAlt)).
       else if burn_queue:peek()["dv"]:istype("Scalar") {
          return burn_queue:peek()["dv"].
       }

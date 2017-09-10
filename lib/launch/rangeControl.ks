@@ -6,7 +6,7 @@
 
    local countdown is 180.
    local lastTime is time:seconds.
-   local ttw is 0. 
+   local timeOfWindow is 0. 
    local V0 is getvoice(0).
    
    declare function init {
@@ -14,53 +14,40 @@
       if launch_param["inclination"] < abs(ship:latitude) {
          set launch_param["inclination"] to abs(ship:latitude).
       }
-      if launch_param["launchTime"] = "window" {
-         set ttw to time_of_window(launch_param["lan"], launch_param["inclination"], launch_param["timeOfFlight"], launch_param["azimuthHemisphere"]).
-         launch_ctl:add("countdown", countdown_launchWindow@).
-      } else if launch_param["launchTime"] = "now" {
-         launch_ctl:add("countdown", countdown_scalar@).
-      } else if launch_param["launchTimes"]:istype("Scalar") {
-         print "launch time is Scalar, IMPLEMENT ME!".
-         //TODO 
-      }
+
       if launch_param:haskey("countdownLength") set countdown to launch_param["countdownLength"].
+
+      launch_ctl:add("countdown", countdown_launchWindow@).
+      if launch_param["launchTime"] = "window" {              //Will warp to (window time - countdown), then countdown and launch.
+         set timeOfWindow to getUT_window(launch_param["lan"], 
+                                          launch_param["inclination"], 
+                                          launch_param["timeOfFlight"], 
+                                          launch_param["azimuthHemisphere"]).
+      } else if launch_param["launchTime"] = "now" {          //Will countdown and launch.
+         set timeOfWindow to countdown.
+      } else if launch_param["launchTime"]:istype("Scalar") { //Will warp to (Utime - countdown), then countdown and launch.
+         set timeOfWindow to launch_param["launchTime"].
+      }
    }
    launch_ctl:add("init_range", init@).
 
-   //
-   declare function countdown_scalar {
-      if countdown = launch_param["countdown"] {
-         set lastTime to time:seconds-1.
-      }
-      if countdown > -1 and time:seconds-lastTime >= 1 {
-         hudtext("T-"+countdown+"...", 1, 2, 20, white, false).
-         set countdown to countdown - 1.
-         set lastTime to time:seconds.
-         V0:play(note("C5", 0.1)).
-         return OP_CONTINUE.
-      } else if countdown < 0 {
-         V0:play(note("C5", 1)).
-         return OP_FINISHED.
-      } else return OP_CONTINUE.
-   }
-
    declare function countdown_launchWindow {
-      if ttw-time:seconds > countdown+1 {
+      if timeOfWindow-time:seconds > countdown+1 {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
-            kuniverse:timewarp:warpto(ttw - countdown).
+            kuniverse:timewarp:warpto(timeOfWindow - countdown).
          }
          return OP_CONTINUE.
       }
       if time:seconds-lastTime > 1 {
-         hudtext("T-"+(time-time+ttw-time:seconds):clock+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
-         if ttw-time:seconds < 11 {
-            if ttw-time:seconds > 1 {
+         hudtext("T-"+(time-time+timeOfWindow-time:seconds):clock+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
+         if timeOfWindow-time:seconds < 11 {
+            if timeOfWindow-time:seconds > 1 {
                V0:play(note("C5", 0.1)).
             } 
          }
          set lastTime to time:seconds.
       } 
-      if ttw-time:seconds < 0.01 {
+      if timeOfWindow-time:seconds < 0.01 {
          V0:play(note("C5", 1)).
          return OP_FINISHED.
       } else return OP_CONTINUE.
@@ -72,10 +59,10 @@
       else return theta.
    }
 
-   declare function time_of_window {
+   declare function getUT_window {
       parameter RAAN. //LAN
       parameter i. //inclination
-      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination.
+      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination (fudge factor :(.
       parameter allowableTrajectories is "all". 
 
       //Longitude correction of launch window due to latitude.
