@@ -66,11 +66,12 @@
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    MISSION_PLAN:add({
       wait 5.
-      transfer_ctl["etaTarget"]().
-//      maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
+      set target to body("Minmus").
+      add(node(transfer_ctl["etaTarget"]()+time:seconds, 0,0,922)).
+      maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
       return OP_FINISHED.
    }).
-//   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    kernel_ctl["start"]().
    set ship:control:pilotmainthrottle to 0.
 }

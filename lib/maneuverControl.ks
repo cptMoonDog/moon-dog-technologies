@@ -41,6 +41,10 @@
    maneuver_ctl:add("add_burn", schedule_burn@).
 
    declare function execute {
+      if burn_queue:empty {
+         print "No burn loaded!!!".
+         return OP_FINISHED.
+      }
       if time:seconds < start print "T-"+(start-time:seconds) at(0, 10).
       else print "T+"+(time:seconds-start) at(0, 10).
       //Over 3 minutes out, warp
@@ -59,10 +63,10 @@
       } else if  time:seconds >= start AND time:seconds < end AND throttle = 0 { 
          lock throttle to 1.
       //Burn finished.  Engine shutdown.  Wait 5 seconds, then queue up next burn.
-      } else if time:seconds >= end { //end <= time:seconds {
+      } else if time:seconds >= end { 
          lock throttle to 0.
          unlock steering.
-         if time:seconds > end+5 { //end < time:seconds-5 {
+         if time:seconds > end+5 { 
             burn_queue:pop().
             if currentNode <> 0 {
                print "currentNode" at(0, 21).

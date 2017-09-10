@@ -8,7 +8,6 @@
       local a2 is target:orbit:lan+target:orbit:argumentofperiapsis+target:orbit:trueanomaly.
       local diff is a2-a1.
       set diff to diff-360*floor(diff/360).
-      print "current: "+diff.
       return diff.
    }
    declare function etaPhaseAngle {
@@ -32,10 +31,8 @@
       local rateShip is 360/ship:orbit:period.
       local rateTarget is 360/target:orbit:period.
 
-      print "angle to IP: "+diff.
       local t is (diff)/(rateShip-rateTarget).
-      print "T-"+t.
-      add(node(t+time:seconds, 0, 0, 922)).
+      return t.
 
    }
    transfer_ctl:add("etaTarget", etaPhaseAngle@).
@@ -46,7 +43,6 @@
 
       local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
       local angle is p*360.
-      print "phase Angle: "+(180-angle).
       return 180-angle.
    }
 
