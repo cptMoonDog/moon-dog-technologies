@@ -17,7 +17,7 @@ runpath("0:/lib/launch/throttleControl.ks").
       
       launch_ctl["init_range"]().
       launch_ctl["init_staging"](false, false).
-      launch_ctl["init_steering"](launch_ctl["launchAzimuth"]).
+      launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
       
       lock throttle to launch_ctl["throttleProgram"]().
