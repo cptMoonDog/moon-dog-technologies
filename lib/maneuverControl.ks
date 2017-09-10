@@ -93,12 +93,12 @@
       if ip = "pe" return time:seconds + eta:periapsis.
    }
    declare function get_dV {
-      if burn_queue:peek()["dv"] = "circularize" 
+      if burn_queue:peek()["dv"] = "circularize" {
          local impulseAlt is 0.
          if burn_queue:peek()["ip"] = "ap" set impulseAlt to ship:apoapsis.
          else set impulseAlt to ship:periapsis.
          return abs(phys_lib["OVatAlt"](ship:orbit:body, impulseAlt) - phys_lib["VatAlt"](ship:orbit:body, impulseAlt)).
-      else if burn_queue:peek()["dv"]:istype("Scalar") {
+      } else if burn_queue:peek()["dv"]:istype("Scalar") {
          return burn_queue:peek()["dv"].
       }
    }
