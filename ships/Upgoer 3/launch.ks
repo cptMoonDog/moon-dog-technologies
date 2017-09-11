@@ -65,7 +65,7 @@
    MISSION_PLAN:add({
       wait 5.
       set target to body("Minmus").
-      local dv is visViva_velocity(body("Kerbin"), 80000, smaOfTransferOrbit(body("Kerbin"), 80000, body("Minmus"):altitude))-ship:orbit:velocity.
+      local dv is visViva_velocity(body("Kerbin"), 80000, smaOfTransferOrbit(body("Kerbin"), 80000, body("Minmus"):altitude))-ship:orbit:velocity:mag.
       add(node(transfer_ctl["etaTarget"]()+time:seconds, 0,0,dv)).
       maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
       return OP_FINISHED.
