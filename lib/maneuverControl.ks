@@ -106,6 +106,7 @@
    ///////Functions for calculating a better non-impulsive maneuver.
    //mass after first half of burn
    declare function m2 {
+      print get_dV().
       return ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
    }
    declare function burn_length_first_half {

@@ -37,7 +37,7 @@
          //TODO Fix these references to altitude, not robust.  But they fix these cases getting tripped toward the end of ascent.
          //What I need, is some reference to detect the next stage.
       //Roll to Azimuth
-      }else if ship:airspeed < launch_param["pOverV0"] AND vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 AND ship:apoapsis < 35000 {
+      }else if ship:airspeed < launch_param["pOverV0"] OR (vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 AND ship:apoapsis < 35000) {
          return heading(azimuth, 90).
       //Pitchover
       }else if ship:apoapsis < 35000 AND ship:airspeed < launch_param["pOverVf"] {
