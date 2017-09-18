@@ -58,9 +58,11 @@
          if time:seconds > lastTime + 1 {
             for eng in engList {
                if eng:ignition and eng:flameout {
-                  stage.
-                  list Engines in engList.
-                  break.
+                  if engList:length > 1 {
+                     stage.
+                     list Engines in engList.
+                     break.
+                  }
                }
             }
          }

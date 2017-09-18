@@ -6,7 +6,6 @@
    if not (defined launch_ctl)
       global launch_ctl is lexicon().
    
-   local program is 0.
 
    /// Local variables
    local pid is 0.
@@ -14,27 +13,25 @@
 ///Public functions
    declare function init {
       if launch_param["throttleProgramType"] = "tableMET" {
-         set program to throttleSmoother@.
+         lock throttle to throttleSmoother().
          launch_ctl:add("throttle_monitor", advanceStep@).
       } else if launch_param["throttleProgramType"] = "tableAPO" {
-         set program to throttleSmoother@.
+         lock throttle to throttleSmoother().
          launch_ctl:add("throttle_monitor", advanceStep@).
       } else if launch_param["throttleProgramType"] = "etaApo" {
-         set program to vETAapo@.
+         lock throttle to vETAapo().
          set pid to PIDLOOP().
          set pid:setpoint to launch_param["throttleProfile"][2].
          set pid:minoutput to 0.
          set pid:maxoutput to 1.
          launch_ctl:add("throttle_monitor", genericMonitor@).
       } else if launch_param["throttleProgramType"] = "vOV" {
-         set program to vOV@.
+         lock throttle to vOV().
          set pid to PIDLOOP().
          set pid:minoutput to 0.
          set pid:maxoutput to 1.
          launch_ctl:add("throttle_monitor", genericMonitor@).
       }
-         
-      launch_ctl:add("throttleProgram", program).
    }
    launch_ctl:add("init_throttle", init@).
    
@@ -58,6 +55,7 @@
    declare function genericMonitor {
       //This prevents the program from shutting down if drag could still have an influence.
       if (not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height  {
+         lock throttle to 0.
          return OP_FINISHED.
       }
       return OP_CONTINUE.
@@ -72,12 +70,22 @@
          if getTableInput() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2] {
             return 0. 
          } else {
-            local Pct is (getTableInput()-launch_param["throttleProfile"][step-2])/
-                          (launch_param["throttleProfile"][step]-launch_param["throttleProfile"][step-2]).
-            return Pct*(launch_param["throttleProfile"][step+1] - launch_param["throttleProfile"][step-1])+launch_param["throttleProfile"][step-1].
+            return launch_param["throttleProfile"][step-1] + smoothInterval(launch_param["throttleProfile"][step], 
+                                                                            launch_param["throttleProfile"][step-2], 
+                                                                            getTableInput(), 
+                                                                            (launch_param["throttleProfile"][step+1] - launch_param["throttleProfile"][step-1])).
          }
       }
    }
+   declare function smoothInterval {
+      parameter top.
+      parameter bottom.
+      parameter current.
+      parameter outputRange.
+
+      return ((current-bottom)/(top-bottom))*outputRange.
+   }
+
    //Utility function for table lookup system.
    declare function getTableInput {
       if launch_param["throttleProgramType"] = "tableMET"
@@ -94,7 +102,9 @@
    declare function vETAapo {
       if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
-      else {
+      else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
+         return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
+      } else {
          return pid:update(time:seconds, eta:apoapsis).
          //local val is (eta:apoapsis/launch_param["throttleProfile"][2])*0.5.
          //if val > 0.9 return 0.
@@ -105,7 +115,9 @@
    declare function vOV {
       if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
-      else {
+      else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
+         return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
+      } else {
          return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
       }
    }

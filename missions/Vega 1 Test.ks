@@ -12,7 +12,7 @@ launch_ctl["init"](
               //Launch options
               "azimuthHemisphere",   "north"),
               //Launch Vehicle
-              "Vega 1", "small dog").
+              "Vega 1", "").
 
 kernel_ctl["start"]().
 set ship:control:pilotmainthrottle to 0.
