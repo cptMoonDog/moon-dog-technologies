@@ -103,6 +103,9 @@
       if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
       else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
+         //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
+         //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
+         //Adds the final kick to orbital altitude, if not there already. 
          return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
       } else {
          return pid:update(time:seconds, eta:apoapsis).
@@ -116,6 +119,9 @@
       if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
       else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
+         //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
+         //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
+         //Adds the final kick to orbital altitude, if not there already. 
          return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
       } else {
          return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).

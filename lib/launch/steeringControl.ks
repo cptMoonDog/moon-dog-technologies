@@ -40,13 +40,13 @@
             print "facing       " at(0, 5).
             return ship:facing.
          //Roll to Azimuth
-         }else if ship:airspeed < launch_param["pOverV0"]  {
+         }else if ship:verticalspeed < launch_param["pOverV0"]  {
             print "90       " at(0, 5).
             return heading(azimuth, 90).
          //Pitchover
-         }else if ship:airspeed < launch_param["pOverVf"] {
+         }else if ship:verticalspeed < launch_param["pOverVf"] {
             //First part says, "Wait for roll to complete.", second part says, "If you started the pover already, don't come back here."
-            if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and vang(up:forevector, progradeVector:forevector) < 0.5 {
+            if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and vang(up:forevector, ship:facing:forevector) < 0.5 {
                print "azimuth         " at(0, 5).
                return heading(azimuth, 90).
             } else {

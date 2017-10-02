@@ -18,21 +18,24 @@ runpath("0:/lib/core/kernel.ks").
 
    declare function init_system {
       parameter w.
-      parameter b.
-      parameter us.
+      parameter booster. //Booster
+      parameter upperStage. //Upper Stage
       set launch_param to w.
       
-      if exists("0:/launchVehicles/"+b+".ks") {
-         runpath("0:/launchVehicles/"+b+".ks").
+      if exists("0:/launchVehicles/"+booster+".ks") {
+         runpath("0:/launchVehicles/"+booster+".ks").
       }
-      if us and exists("0:/upperStages/"+us+".ks") {
-         runpath("0:/upperStages/"+us+".ks").
+      if upperStage and exists("0:/upperStages/"+upperStage+".ks") {
+         runpath("0:/upperStages/"+upperStage+".ks").
       }
       launch_ctl["init_range"]().
       launch_ctl["init_staging"](true, true).
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
-      
+   }
+   launch_ctl:add("init", init_system@).
+   
+   declare function setupLaunchToLKO {   
       MISSION_PLAN:add(launch_ctl["countdown"]).
       MISSION_PLAN:add(launch_ctl["launch"]).
       MISSION_PLAN:add({
@@ -46,5 +49,5 @@ runpath("0:/lib/core/kernel.ks").
       }).
       MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
    }
-   launch_ctl:add("init", init_system@).
+   launch_ctl:add("addLaunchToMissionPlan", setupLaunchToLKO@).
 }

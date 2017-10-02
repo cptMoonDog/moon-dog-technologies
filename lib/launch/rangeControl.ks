@@ -24,7 +24,7 @@
                                           launch_param["timeOfFlight"], 
                                           launch_param["azimuthHemisphere"]).
       } else if launch_param["launchTime"] = "now" {          //Will countdown and launch.
-         set timeOfWindow to countdown.
+         set timeOfWindow to time:seconds + countdown + 1.
       } else if launch_param["launchTime"]:istype("Scalar") { //Will warp to (Utime - countdown), then countdown and launch.
          set timeOfWindow to launch_param["launchTime"].
       }
