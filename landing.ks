@@ -18,7 +18,7 @@ declare function shipHeight {
    return height.
 }
 declare function getAltitude {
-   if ship:altitude > 6000 return ship:altitude.
+   if ship:altitude > 10000 return ship:altitude.
    return alt:radar.
 }
 declare function relativeApo {
@@ -60,26 +60,63 @@ until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5 {
    print vang(ship:facing:forevector, ship:retrograde:forevector) at(0, 4).
 }
 
+   ///////Functions for calculating a better non-impulsive maneuver.
+   //mass after first half of burn
+   declare function m2 {
+      parameter dv.
+      return ship:mass*1000*(constant:e^(-((dV/2)/(345*9.80665)))).
+   }
+   declare function burn_length_first_half {
+      parameter dv.
+      return ((ship:mass*1000-m2(dv))/(17.734195)).
+   }
+   declare function burn_length_second_half {
+      parameter dv.
+      local m3 is m2(dv)/(constant:e^((dV/2)/(345*9.80665))).
+      return ((m2(dv)-m3)/(17.734195)).
+   }
+set P to PIDLOOP().
+set P:maxOutput to 1.
+set P:minOutput to 0.
 set h to shipHeight().
+
 set corePosition to 0. //Distance from top of ship to center of KOS module.
 set SBLength to 120.
 local vspeed is ship:verticalspeed.
 until getAltitude() < h-corePosition {
-   if eta:periapsis < eta:apoapsis and vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
-      set thrott to 1.
-   } else if thrott = 1 and ship:periapsis > 0 {
-      set thrott to 1.
-   } else if visViva_Velocity(Mun, 0, (ship:apoapsis+Mun:radius+Mun:radius+ship:periapsis)/2) > 
-   if ship:velocity:orbit:mag > OVatAlt(Mun, ship:altitude) and ship:altitude < 20000 {
-      set thrott to 1.
-   } else if ship:periapsis > 5000 { //Deorbit
-      set thrott to 1.
-   } else if ship:verticalspeed > -5 {
-      set thrott to 0.
-   } else if getAltitude() < 20000 {
-      set thrott to min(1, abs((ship:groundspeed+getAltitude()/1000)/ship:verticalspeed)).
-      if ship:verticalspeed < vspeed set thrott to thrott*2.
-   } else set thrott to 0.
+   local timeToImpact is (-abs(ship:verticalspeed) + sqrt(ship:verticalspeed^2 + 2*(ship:orbit:body:mu/((getAltitude()+ship:orbit:body:radius)^2))*getAltitude()))/(ship:orbit:body:mu/((getAltitude()+ship:orbit:body:radius)^2)).
+   local distImpact is ship:groundspeed*timeToImpact.
+   local pctError is distImpact/(constant:pi*2*ship:orbit:body:radius).
+   local VertVatT is ship:verticalspeed - ((ship:orbit:body:mu/((getAltitude()+ship:orbit:body:radius)^2)))*timeToImpact.
+   local VatImpact is sqrt((VertVatT)^2 + ship:groundspeed^2).
+   
+   local adjustedTTI is timeToImpact*(1+pctError).
+   local adjustedDist is distImpact*(1+pctError).
+
+   print "Time To Impact (est): "+adjustedTTI at(0, 4).
+   print "Horizontal distance to impact: "+ adjustedDist at(0, 5).
+   print "%Error: "+ pctError at(0, 6).
+   print "Vert Speed at impact (est): "+ VertVatT at(0, 7).
+   print "Vel at impact: "+ VatImpact at(0, 8).
+   print "burn length: " + (burn_length_first_half(VatImpact) + burn_length_second_half(VatImpact)) at(0, 9).
+   set p:setpoint to (burn_length_first_half(VatImpact) + burn_length_second_half(VatImpact)).
+   lock throttle to p:update(time:seconds, adjustedTTI).
+
+//   if eta:periapsis < eta:apoapsis and vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
+//      set thrott to 1.
+//   } else if thrott = 1 and ship:periapsis > 0 {
+//      set thrott to 1.
+//   } else if visViva_Velocity(Mun, 0, (ship:apoapsis+Mun:radius+Mun:radius+ship:periapsis)/2) > 
+//   if ship:velocity:orbit:mag > OVatAlt(Mun, ship:altitude) and ship:altitude < 20000 {
+//      set thrott to 1.
+//   } else if ship:periapsis > 5000 { //Deorbit
+//      set thrott to 1.
+//   } else if ship:verticalspeed > -5 {
+//      set thrott to 0.
+//   } else if getAltitude() < 20000 {
+//      set thrott to min(1, abs((ship:groundspeed+getAltitude()/1000)/ship:verticalspeed)).
+//      if ship:verticalspeed < vspeed set thrott to thrott*2.
+//   } else set thrott to 0.
 
    //   if ship:periapsis > 100 or (getAltitude() < 500 and ship:velocity:surface:mag < 10)
 //      set thrott to 1-getAltitude()/relativeApo(). //or getAltitude() < 6000 
