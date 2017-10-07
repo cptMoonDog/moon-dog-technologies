@@ -1,3 +1,4 @@
+runpath("0:/lib/general.ks").
 clearscreen.
 declare function shipHeight {
    //Taken from: https://www.reddit.com/r/Kos/comments/33myzd/adventures_in_determining_the_height_of_crafts/
@@ -15,12 +16,6 @@ declare function shipHeight {
    }
    set height to highestPart - lowestPart.
    return height.
-}
-declare function getDirection {
-   if ship:altitude > 6000 return ship:retrograde.
-   else if getAltitude() < 1000 and ship:groundspeed > 20 {
-      return ship:srfretrograde:forevector+angleaxis(-(vang(up:forevector, ship:srfretrograde:forevector)*(min(1, ship:groundspeed/getAltitude()))), ship:srfretrograde:starvector).
-   } else return ship:srfretrograde.
 }
 declare function getAltitude {
    if ship:altitude > 6000 return ship:altitude.
@@ -52,6 +47,12 @@ function geo_normalvector {
  
         return normalVec.
 }
+declare function getDirection {
+   if ship:altitude > 50000 return ship:retrograde.
+   else if getAltitude() < 50000 and ship:verticalspeed < -1*(ship:apoapsis/ship:groundspeed) {
+      return ship:srfretrograde:forevector+angleaxis(-(vang(up:forevector, ship:srfretrograde:forevector)*(min(1, ship:groundspeed/getAltitude()))), ship:srfretrograde:starvector).
+   } else return ship:srfretrograde.
+}
 lock steering to getDirection().
 local thrott is 0.
 lock throttle to thrott.
@@ -61,13 +62,29 @@ until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5 {
 
 set h to shipHeight().
 set corePosition to 0. //Distance from top of ship to center of KOS module.
-set SBLength to 60.
+set SBLength to 120.
+local vspeed is ship:verticalspeed.
 until getAltitude() < h-corePosition {
-   print getAltitude() at(0, 4).
-   print (getAltitude()/abs(ship:verticalspeed)) at(0, 5).
-   if ship:periapsis > 100 or (getAltitude() < 500 and ship:velocity:surface:mag < 10) set thrott to 1-getAltitude()/relativeApo(). //or getAltitude() < 6000 
-   else if getAltitude() < 1000 and ship:verticalspeed < -5 set thrott to 1. //(getAltitude()/abs(ship:verticalspeed)) < SBLength 
-   else set thrott to 0.
+   if eta:periapsis < eta:apoapsis and vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
+      set thrott to 1.
+   } else if thrott = 1 and ship:periapsis > 0 {
+      set thrott to 1.
+   } else if visViva_Velocity(Mun, 0, (ship:apoapsis+Mun:radius+Mun:radius+ship:periapsis)/2) > 
+   if ship:velocity:orbit:mag > OVatAlt(Mun, ship:altitude) and ship:altitude < 20000 {
+      set thrott to 1.
+   } else if ship:periapsis > 5000 { //Deorbit
+      set thrott to 1.
+   } else if ship:verticalspeed > -5 {
+      set thrott to 0.
+   } else if getAltitude() < 20000 {
+      set thrott to min(1, abs((ship:groundspeed+getAltitude()/1000)/ship:verticalspeed)).
+      if ship:verticalspeed < vspeed set thrott to thrott*2.
+   } else set thrott to 0.
+
+   //   if ship:periapsis > 100 or (getAltitude() < 500 and ship:velocity:surface:mag < 10)
+//      set thrott to 1-getAltitude()/relativeApo(). //or getAltitude() < 6000 
+//   else if getAltitude() < 1000 and ship:verticalspeed < -5 set thrott to 1. //(getAltitude()/abs(ship:verticalspeed)) < SBLength 
+//   else set thrott to 0.
 }
 lock throttle to 0.
 lock steering to geo_normalvector(ship:geoposition, 1).
