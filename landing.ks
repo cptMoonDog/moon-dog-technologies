@@ -51,80 +51,135 @@ declare function getDirection {
    if ship:altitude > 50000 return ship:retrograde.
    else if getAltitude() < 50000 and ship:verticalspeed < -1*(ship:apoapsis/ship:groundspeed) {
       return ship:srfretrograde:forevector+angleaxis(-(vang(up:forevector, ship:srfretrograde:forevector)*(min(1, ship:groundspeed/getAltitude()))), ship:srfretrograde:starvector).
-   } else return ship:srfretrograde.
+   } else if ship:verticalspeed < 0 return ship:srfretrograde.
+   else return geo_normalvector(ship:geoposition, 1).
+}
+
+declare function burn_length {
+   parameter dv.
+   //return (ship:mass/60)*dv.
+   local m2 is ship:mass*1000*constant:e^(-dV/(345*9.80665)).
+   return ((ship:mass*1000-m2)/(17.734195)).
+}
+declare function quadraticFormula {
+   parameter a, b, c.
+   local result is list(-b, -b).
+   local underRadical is b^2 - 4*a*c.
+   if underRadical < 0 set underRadical to 0. //No, I'm not handling Complex numbers right now.  Thank you for asking.
+   set result[0] to result[0] + sqrt(underRadical).
+   set result[1] to result[1] - sqrt(underRadical).
+   set result[0] to result[0]/(2*a).
+   set result[1] to result[1]/(2*a).
+   return result.
+}
+declare function timeToImpact_parabolic {
+   // Quadratic formula used with the kinematic equations, solving for time
+   //                      a is (1/2)g                                            b is V0 vertical         c is -distance (neg, b/c set equation set equal to 0).
+   //                      |                                                      |                        |
+   //                      \/                                                     \/                       \/         
+   return quadraticFormula((ship:body:mu/((ship:altitude+ship:body:radius)^2))/2, abs(ship:verticalspeed), -(ship:altitude-ship:geoposition:terrainheight))[0].
+}
+declare function distanceToImpact_parabolic {
+   return ship:groundspeed*timeToImpact_parabolic().
+}
+declare function betterTimeToImpact {
+   local start is timeToImpact_parabolic().
+   local pos is positionat(ship, time:seconds+start).
+   local impactPointTerrainHeight is ship:body:geopositionof(pos):terrainheight.
+   local altitudeAtStart is ship:body:altitudeof(pos).
+   local step is 100.
+   until altitudeAtStart - impactPointTerrainHeight < 1 and altitudeAtStart - impactPointTerrainHeight > 0 {
+      set start to start + step.
+      set pos to positionat(ship, time:seconds+start).
+      set impactPointTerrainHeight to ship:body:geopositionof(pos):terrainheight.
+      set altitudeAtStart to ship:body:altitudeof(pos).
+      if altitudeAtStart - impactPointTerrainHeight < 0 {
+         if step < 1 return start - step.
+         set start to start - step.
+         set step to step/10.
+         set pos to positionat(ship, time:seconds+start).
+         set impactPointTerrainHeight to ship:body:geopositionof(pos):terrainheight.
+         set altitudeAtStart to ship:body:altitudeof(pos).
+      }
+   }
+}
+
+declare function TTI_adjustedTerrainAtImpact {
+   local currentAltAboveImpactPointTerrain is ship:altitude - ship:orbit:body:geopositionof(positionat(ship, time:seconds+timeToImpact_parabolic())):terrainheight.
+   return quadraticFormula(ship:body:mu/(2*(ship:altitude+ship:body:radius)), abs(ship:verticalspeed), -currentAltAboveImpactPointTerrain)[0].
+}
+declare function distanceToImpact_adjusted {
+   return ship:groundspeed*TTI_adjustedTerrainAtImpact().
 }
 lock steering to getDirection().
-local thrott is 0.
-lock throttle to thrott.
+lock throttle to 0.
 until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5 {
    print vang(ship:facing:forevector, ship:retrograde:forevector) at(0, 4).
 }
+until ship:periapsis < 0 lock throttle to 1.
+lock throttle to 0.
+gear on.
 
-   ///////Functions for calculating a better non-impulsive maneuver.
-   //mass after first half of burn
-   declare function m2 {
-      parameter dv.
-      return ship:mass*1000*(constant:e^(-((dV/2)/(345*9.80665)))).
-   }
-   declare function burn_length_first_half {
-      parameter dv.
-      return ((ship:mass*1000-m2(dv))/(17.734195)).
-   }
-   declare function burn_length_second_half {
-      parameter dv.
-      local m3 is m2(dv)/(constant:e^((dV/2)/(345*9.80665))).
-      return ((m2(dv)-m3)/(17.734195)).
-   }
 set P to PIDLOOP().
 set P:maxOutput to 1.
 set P:minOutput to 0.
 set h to shipHeight().
 
 set corePosition to 0. //Distance from top of ship to center of KOS module.
-set SBLength to 120.
-local vspeed is ship:verticalspeed.
-until getAltitude() < h-corePosition {
-   local timeToImpact is (-abs(ship:verticalspeed) + sqrt(ship:verticalspeed^2 + 2*(ship:orbit:body:mu/((getAltitude()+ship:orbit:body:radius)^2))*getAltitude()))/(ship:orbit:body:mu/((getAltitude()+ship:orbit:body:radius)^2)).
-   local distImpact is ship:groundspeed*timeToImpact.
-   local pctError is distImpact/(constant:pi*2*ship:orbit:body:radius).
-   local VertVatT is ship:verticalspeed - ((ship:orbit:body:mu/((getAltitude()+ship:orbit:body:radius)^2)))*timeToImpact.
-   local VatImpact is sqrt((VertVatT)^2 + ship:groundspeed^2).
-   
-   local adjustedTTI is timeToImpact*(1+pctError).
-   local adjustedDist is distImpact*(1+pctError).
-
-   print "Time To Impact (est): "+adjustedTTI at(0, 4).
-   print "Horizontal distance to impact: "+ adjustedDist at(0, 5).
-   print "%Error: "+ pctError at(0, 6).
-   print "Vert Speed at impact (est): "+ VertVatT at(0, 7).
-   print "Vel at impact: "+ VatImpact at(0, 8).
-   print "burn length: " + (burn_length_first_half(VatImpact) + burn_length_second_half(VatImpact)) at(0, 9).
-   set p:setpoint to (burn_length_first_half(VatImpact) + burn_length_second_half(VatImpact)).
-   lock throttle to p:update(time:seconds, adjustedTTI).
-
-//   if eta:periapsis < eta:apoapsis and vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
-//      set thrott to 1.
-//   } else if thrott = 1 and ship:periapsis > 0 {
-//      set thrott to 1.
-//   } else if visViva_Velocity(Mun, 0, (ship:apoapsis+Mun:radius+Mun:radius+ship:periapsis)/2) > 
-//   if ship:velocity:orbit:mag > OVatAlt(Mun, ship:altitude) and ship:altitude < 20000 {
-//      set thrott to 1.
-//   } else if ship:periapsis > 5000 { //Deorbit
-//      set thrott to 1.
-//   } else if ship:verticalspeed > -5 {
-//      set thrott to 0.
-//   } else if getAltitude() < 20000 {
-//      set thrott to min(1, abs((ship:groundspeed+getAltitude()/1000)/ship:verticalspeed)).
-//      if ship:verticalspeed < vspeed set thrott to thrott*2.
-//   } else set thrott to 0.
-
-   //   if ship:periapsis > 100 or (getAltitude() < 500 and ship:velocity:surface:mag < 10)
-//      set thrott to 1-getAltitude()/relativeApo(). //or getAltitude() < 6000 
-//   else if getAltitude() < 1000 and ship:verticalspeed < -5 set thrott to 1. //(getAltitude()/abs(ship:verticalspeed)) < SBLength 
-//   else set thrott to 0.
+local calcStart is time:seconds.
+local accurateTAI is time:seconds + betterTimeToImpact().
+local calcEnd is time:seconds.
+local tti is accurateTAI-time:seconds.
+local vAtImpact is velocityAt(ship, time:seconds+tti):surface:mag.
+local groundDistToImpact is ship:groundspeed*tti.
+until alt:radar < h-corePosition {
+   set tti to accurateTAI-time:seconds.
+   if ship:verticalspeed < 0 {
+      if ship:altitude < ship:body:geopositionof(positionat(ship, time:seconds+tti)):terrainheight or 
+         vang(geo_normalvector(ship:body:geopositionof(positionat(ship, time:seconds+tti)), 10000), geo_normalvector(ship:body:geopositionof(positionat(ship, time:seconds+tti)), 1)) > 15 {
+         print "adjusting for Terrain" at(0, 1).
+         lock throttle to 1.
+      } else if groundDistToImpact < (2*ship:body:radius*constant:pi)/64 {
+         print "current Mode: parabolic" at(0, 1).
+         set tti to timeToImpact_parabolic().
+         if ship:groundspeed > 10 set vAtImpact to velocityAt(ship, time:seconds+tti):surface:mag.
+         else set vAtImpact to abs(ship:verticalspeed)+((ship:body:mu)/((ship:altitude+ship:body:radius)^2))*tti.
+      } else if accurateTAI - burn_length(velocityAt(ship, accurateTAI):surface:mag) - 10 < time:seconds {
+         print "current Mode: elliptical" at(0, 1).
+         local last is time:seconds.
+         if accurateTAI > 0 set last to accurateTAI.
+         set calcStart to time:seconds.
+         set accurateTAI to time:seconds + betterTimeToImpact().
+         set calcEnd to time:seconds.
+         if accurateTAI < 0 {
+            set accurateTAI to last.
+         }
+         set tti to accurateTAI - time:seconds.
+         set vAtImpact to velocityAt(ship, time:seconds+tti):surface:mag.
+      } else if accurateTAI - burn_length(velocityAt(ship, accurateTAI):surface:mag) > time:seconds + 280 {
+         lock throttle to 0.
+         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
+            kuniverse:timewarp:warpto(accurateTAI - burn_length(velocityAt(ship, accurateTAI):surface:mag) - 279).
+         } else until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5 {
+            print vang(ship:facing:forevector, ship:retrograde:forevector) at(0, 17).
+         }
+      }
+      lock throttle to p:update(time:seconds, max(0, tti)).
+      set p:setpoint to burn_length(vAtImpact).
+      set groundDistToImpact to ship:groundspeed*tti.
+   } else lock throttle to 0.
+   print "Time To Impact (pvar): " + max(0, tti) at(0, 2).
+   print "burn length (sp): " + burn_length(velocityAt(ship, time:seconds+tti):surface:mag) at(0, 3).
+   print "Vel at impact: "+ velocityat(ship, tti):surface:mag at(0, 7).
+   print "Alt at Impact: " + ship:orbit:body:geopositionof(positionat(ship, tti)):terrainheight at(0, 9).
+   print "Calculation time: " + (calcEnd - calcStart) at(0, 11).
+   print "x dist to impact: " + groundDistToImpact at(0, 12).
+   print "Body Circum.: " + (2*ship:body:radius*constant:pi) at(0, 13).
+   print "mode change x dist: " + (2*ship:body:radius*constant:pi)/64 at(0, 14).
+   print "warp time: " + (accurateTAI - time:seconds - burn_length(velocityAt(ship, accurateTAI):surface:mag) - 180) at(0, 16).
 }
 lock throttle to 0.
 lock steering to geo_normalvector(ship:geoposition, 1).
 print "holding slope normal".
-wait 10.
+wait 60.
 print "done.".
