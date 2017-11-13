@@ -42,7 +42,7 @@
          hudtext("T-"+(time-time+timeOfWindow-time:seconds):clock+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
          if timeOfWindow-time:seconds < 11 {
             if timeOfWindow-time:seconds > 1 {
-               V0:play(note("C5", 0.1)).
+               //V0:play(note("C5", 0.1)).
             } 
          }
          set lastTime to time:seconds.
@@ -74,8 +74,10 @@
 
       if allowableTrajectories = "all" {  /////////////Arithmetic on time below functions as a defacto cast to object of type TIME.
          if degToDN < degToAN {
+            set launch_param["azimuthHemisphere"] to "south".
             return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
          } else {
+            set launch_param["azimuthHemisphere"] to "north".
             return time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
          }
       } else if allowableTrajectories = "north" {
@@ -88,7 +90,7 @@
    declare function launchAzimuth {
 
       local south is false.
-      if launch_param["AzimuthHemisphere"] = "south" set south to true.
+      if launch_param["azimuthHemisphere"] = "south" set south to true.
 
       local atmHeight is 0.
       if ship:body:atm:exists

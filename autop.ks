@@ -10,7 +10,7 @@
 //and 
 //L{number} sets pitch limit
 declare parameter h is 90.0.
-declare parameter speedSP is 300.0.
+declare parameter speedSP is 1000.0.
 declare parameter altSP is 20000.0.
 declare parameter vSpeedSP is 0.
 
@@ -37,18 +37,28 @@ when ship:control:pilotyaw then {
 lock throttle to tPID:update(time:seconds, ship:airspeed).
 clearscreen.
 print "Command: ".
-local SP is ship:altitude.
-lock p to pPID:update(time:seconds, SP). 
+local trim is 0.
+set vSpeedSP to 50.
+local pitchPV is (ship:verticalspeed).
+lock pitchLimit to 10.
+lock pitchPV to (ship:verticalspeed-vSpeedSP)/20.
+lock p to trim-(pitchPV/(sqrt(1+pitchPV^2)))*pitchLimit. //pPID:update(time:seconds, SP). 
 local command is "".
 local numStr is "".
 until false {
-  if vSpeedSP = 0 {
-     //Mode 1: Control Altitude and Speed
-     set SP to ship:altitude.
-  }else{
-     //Mode 2: Control rate of Descent/Ascent
-     set SP to ship:verticalSpeed.
+  if alt:radar > 1000 {
+     local wp is waypoint("Gramy's Courage").
+     if abs(wp:geoposition:bearing) > 0.5 and vang(ship:facing:forevector, heading(h, p):forevector) < 0.5 {
+        set h to h+max(-1, min(1, wp:geoposition:bearing)).
+     }
   }
+  //if vSpeedSP = 0 {
+  //   //Mode 1: Control Altitude and Speed
+  //   set SP to ship:altitude.
+  //}else{
+  //   //Mode 2: Control rate of Descent/Ascent
+  //   set SP to ship:verticalSpeed.
+  //}
   if terminal:input:haschar() {
      local ch is terminal:input:getchar().
      if ch = terminal:input:rightcursorone {
@@ -65,7 +75,7 @@ until false {
               print "Command: ".
            } else {
               set numStr to numStr+ch.
-              print ch at(0, 9+numStr:length).
+              print ch at(0+numStr:length, 9).
            }
         } else {
            set command to ch.

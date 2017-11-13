@@ -16,8 +16,9 @@
    declare function schedule_burn {
       declare parameter steeringProgram. // A string indicating direction ("prograde", "retrograde", "normal", "antinormal", etc) 
                                          // or a delegate which returns an object that steering can be locked to.
-      declare parameter isp.             // Engine ISP
-      declare parameter ff.              // Fuel Flow
+      //declare parameter isp.             // Engine ISP
+      //declare parameter ff.              // Fuel Flow
+      declare parameter engineName.
       declare parameter impulsePoint.    // Acceptable values: ap, pe, AN, DN, raw time. 
       declare parameter dv is 0.              // Acceptable values: circularize, d_inclination, scalar
 
@@ -33,8 +34,8 @@
 
       if impulsePoint = "node" {
          set currentNode to nextnode.
-         burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, "isp", isp, "ff", ff, "steeringProgram", program)).
-      } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", isp, "ff", ff, "steeringProgram", program)).
+         burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
+      } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
       reset_for_next_burn().
    }
    maneuver_ctl:add("add_burn", schedule_burn@).
@@ -120,6 +121,33 @@
       set start to impulse_time(burn_queue:peek()["ip"]) - burn_length_first_half().
       set end to impulse_time(burn_queue:peek()["ip"]) + burn_length_second_half().
       print "burn length: "+(end-start) at(0, 10).
+   }
+
+   declare function engineStat {
+      declare parameter name.
+      declare parameter stat.
+      local isp is 0.
+      local thrust is 0.
+      if name="bollard" {
+         set isp to 325.
+         set thrust to 925.
+      }
+      if name="terrier" {
+         set isp to 345.
+         set thrust to 60.
+      }
+      if name="doubleThud" {
+         set isp to 305.
+         set thrust to 240.
+      }
+      if stat="isp" return isp.
+      if stat="ff" return thrust*1000/(isp*9.80665).
+
+      //Fail 
+      print "ENGINE: "+name+" DOES NOT EXIST IN THE DB.".
+      print "COUGH...COUGH...GURGLE...GURGLE.".
+      print "You watch helplessly as *NPC Name here* dies in your arms.".
+      set OP_FAIL to true.
    }
 
 }

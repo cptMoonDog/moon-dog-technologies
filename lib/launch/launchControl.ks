@@ -19,17 +19,15 @@ runpath("0:/lib/core/kernel.ks").
    declare function init_system {
       parameter w.
       parameter booster. //Booster
-      parameter upperStage. //Upper Stage
+      parameter hasFairing.
+      parameter ag1.
       set launch_param to w.
       
-      if exists("0:/launchVehicles/"+booster+".ks") {
-         runpath("0:/launchVehicles/"+booster+".ks").
-      }
-      if upperStage and exists("0:/upperStages/"+upperStage+".ks") {
-         runpath("0:/upperStages/"+upperStage+".ks").
+      if exists("0:/lv/"+booster+".ks") {
+         runpath("0:/lv/"+booster+".ks").
       }
       launch_ctl["init_range"]().
-      launch_ctl["init_staging"](true, true).
+      launch_ctl["init_staging"](hasFairing, ag1).
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
    }
@@ -41,10 +39,14 @@ runpath("0:/lib/core/kernel.ks").
       MISSION_PLAN:add({
         //Calls staging check, and throttle defines end of this mode.
         launch_ctl["staging"]().
+        if ship:verticalspeed < -100 {
+           print "WARNING! Failed to achieve orbit!".
+           return OP_FAIL.
+        }
         return launch_ctl["throttle_monitor"]().
       }).
       MISSION_PLAN:add({
-         maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["US_isp"], launch_param["US_FF"], "ap", "circularize").
+         maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["upperstage"], "ap", "circularize").
          return OP_FINISHED.
       }).
       MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
