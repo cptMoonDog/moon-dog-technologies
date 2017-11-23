@@ -47,7 +47,7 @@
    //current staging trigger
    declare function genStaging {
       if fairing and not fairingJettisoned and ship:altitude > 60000 {
-         stage.
+         AG2 on.
          set fairingJettisoned to true.
       }
       if utilAG and not utilActive and ship:altitude > 65000 {

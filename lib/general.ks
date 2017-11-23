@@ -18,7 +18,7 @@
 }
    global g0 is 9.80665.
    
-   declare function smaOfTransferOrbit {
+   declare function semimajoraxis {
       parameter bod.
       parameter alt1.
       parameter alt2.

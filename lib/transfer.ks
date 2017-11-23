@@ -10,6 +10,18 @@
       set diff to diff-360*floor(diff/360).
       return diff.
    }
+
+   declare function transfer_dV {
+      declare parameter origin.
+      declare parameter target.
+      local startAlt is body(origin):altitudeof(positionat(ship, etaPhaseAngle())).
+
+      local transferSMA is semimajoraxis(body(origin), startAlt, body(target):altitude).
+
+      return visViva_velocity(body(origin), startAlt, transferSMA)-visViva_velocity(body(origin), startAlt, startAlt+body(origin):radius).
+   }
+   transfer_ctl:add("dv", transfer_dv@).
+
    declare function etaPhaseAngle {
       local pa is phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
       local current is currentPhaseAngle().
@@ -35,7 +47,7 @@
       return t.
 
    }
-   transfer_ctl:add("etaTarget", etaPhaseAngle@).
+   transfer_ctl:add("etaPhaseAngle", etaPhaseAngle@).
 
    declare function phaseAngle {
       parameter startAlt.

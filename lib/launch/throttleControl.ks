@@ -54,7 +54,7 @@
    
    declare function genericMonitor {
       //This prevents the program from shutting down if drag could still have an influence.
-      if (not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height  {
+      if ship:apoapsis >= launch_param["throttleProfile"][1] and ((not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height)  {
          lock throttle to 0.
          return OP_FINISHED.
       }
@@ -100,19 +100,16 @@
    //Apoapsis value beyond which the function will apply.  Full throttle prior.
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
    declare function vETAapo {
-      if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
+      if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
       else if vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
          //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
-         return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
-      } else if eta:periapsis < eta:apoapsis return 1.
-      else {
+         //Max function ensures this will not cause throttling down, if already throttled up.
+         return max(pid:update(time:seconds, eta:apoapsis), -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
+      } else {
          return pid:update(time:seconds, eta:apoapsis).
-         //local val is (eta:apoapsis/launch_param["throttleProfile"][2])*0.5.
-         //if val > 0.9 return 0.
-         //else return 1-val.
       }
    }
 

@@ -18,7 +18,7 @@
    // Pitchover magnitude in degrees
    // Vertical speed at which to start pitchover
    // Vertical speed at which to handoff steering to prograde follower.
-   launch_param:add("pOverDeg",             4). 
+   launch_param:add("pOverDeg",             7). 
    launch_param:add("pOverV0",              30). 
    launch_param:add("pOverVf",              200).
 
@@ -35,6 +35,6 @@
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "doublethud").
+   launch_param:add("upperstage", "skipper").
 }
 

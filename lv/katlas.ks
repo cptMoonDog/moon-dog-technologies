@@ -1,7 +1,7 @@
 @lazyglobal off.
 {
               //Fudge factor
-              launch_param:add("timeOfFlight",         100).
+              launch_param:add("timeOfFlight",         160).
 
               //Gravity turn parameters
               launch_param:add("pOverDeg",             4.5). 
@@ -39,6 +39,7 @@
                                       20000, //Apo to Activate function, max prior
                                       80000, //Apo to Deactivate function 
                                       45)).     //Setpoint
+              launch_param:add("upperStage", "terrier").
 
                                     
 

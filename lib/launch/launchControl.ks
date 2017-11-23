@@ -46,7 +46,12 @@ runpath("0:/lib/core/kernel.ks").
         return launch_ctl["throttle_monitor"]().
       }).
       MISSION_PLAN:add({
+         if ship:maxthrust > 1.01*maneuver_ctl["upperStage_stat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, has variance
+            print "maxthrust: "+ship:maxthrust at(0, 21).
+            stage. 
+         }
          maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["upperstage"], "ap", "circularize").
+         print "circularize".
          return OP_FINISHED.
       }).
       MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).

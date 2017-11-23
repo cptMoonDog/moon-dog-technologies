@@ -15,9 +15,6 @@
 
    declare function schedule_burn {
       declare parameter steeringProgram. // A string indicating direction ("prograde", "retrograde", "normal", "antinormal", etc) 
-                                         // or a delegate which returns an object that steering can be locked to.
-      //declare parameter isp.             // Engine ISP
-      //declare parameter ff.              // Fuel Flow
       declare parameter engineName.
       declare parameter impulsePoint.    // Acceptable values: ap, pe, AN, DN, raw time. 
       declare parameter dv is 0.              // Acceptable values: circularize, d_inclination, scalar
@@ -68,12 +65,8 @@
          unlock steering.
          if time:seconds > end+5 { 
             burn_queue:pop().
-            if currentNode <> 0 {
-               print "currentNode" at(0, 21).
-               if hasnode {
-                  print "hasnode" at(0, 20).
+            if currentNode <> 0 and hasnode {
                   remove nextnode.
-               }
             }
             if burn_queue:empty {
                return OP_FINISHED.
@@ -104,23 +97,15 @@
       }
    }
    
-   ///////Functions for calculating a better non-impulsive maneuver.
-   //mass after first half of burn
-   declare function m2 {
-      return ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
-   }
-   declare function burn_length_first_half {
-      return ((ship:mass*1000-m2())/(burn_queue:peek()["ff"])).
-   }
-   declare function burn_length_second_half {
-      local m3 is m2()/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*g0))).
-      return ((m2()-m3)/(burn_queue:peek()["ff"])).
-   }
-
    declare function reset_for_next_burn {
-      set start to impulse_time(burn_queue:peek()["ip"]) - burn_length_first_half().
-      set end to impulse_time(burn_queue:peek()["ip"]) + burn_length_second_half().
-      print "burn length: "+(end-start) at(0, 10).
+      //Better non-impulsive burn timing: apply half the dV before and half the dV after the impulse point.
+      local m2 is ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
+      local burnLengthFirstHalf is ((ship:mass*1000-m2)/(burn_queue:peek()["ff"])).
+      local m3 is m2/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*g0))).
+      local burnLengthSecondHalf is ((m2-m3)/(burn_queue:peek()["ff"])).
+
+      set start to impulse_time(burn_queue:peek()["ip"]) - burnLengthFirstHalf.
+      set end to impulse_time(burn_queue:peek()["ip"]) + burnLengthSecondHalf.
    }
 
    declare function engineStat {
@@ -136,11 +121,16 @@
          set isp to 345.
          set thrust to 60.
       }
+      if name="skipper" {
+         set isp to 320.
+         set thrust to 650.
+      }
       if name="doubleThud" {
          set isp to 305.
          set thrust to 240.
       }
       if stat="isp" return isp.
+      if stat="thrust" return thrust.
       if stat="ff" return thrust*1000/(isp*9.80665).
 
       //Fail 
@@ -149,7 +139,7 @@
       print "You watch helplessly as *NPC Name here* dies in your arms.".
       set OP_FAIL to true.
    }
-
+   maneuver_ctl:add("upperStage_stat", engineStat@).
 }
 
 

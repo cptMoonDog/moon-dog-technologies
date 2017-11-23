@@ -5,15 +5,15 @@ runpath("0:/lib/transfer.ks").
 launch_ctl["init"](
       lexicon(
               //Countdown type and length
-              "launchTime",          "window", 
+              "launchTime",          "now", 
               "countDownLength",      30,
               //Window parameters
-              "lan",                  190.97659, //Kerbin Station
-              "inclination",          89.67241, 
+              //"lan",                  190.97659, //Kerbin Station
+              "inclination",          90, 
               //Launch options
               "azimuthHemisphere",   "north"),
               //Launch Vehicle
-              "Laika", "terrier").
+              "Katlas", TRUE, TRUE).
 
 launch_ctl["addLaunchToMissionPlan"]().
 
