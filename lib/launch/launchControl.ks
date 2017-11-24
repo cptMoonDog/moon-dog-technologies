@@ -11,6 +11,7 @@ runpath("0:/lib/launch/steeringControl.ks").
 runpath("0:/lib/launch/throttleControl.ks").
 
 runpath("0:/lib/maneuverControl.ks").
+runpath("0:/engine-conf.ks").
 runpath("0:/lib/core/kernel.ks").
 
 {
@@ -40,7 +41,7 @@ runpath("0:/lib/core/kernel.ks").
         return launch_ctl["throttle_monitor"]().
       }).
       MISSION_PLAN:add({
-         if ship:maxthrust > 1.01*maneuver_ctl["upperStage_stat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, has variance
+         if ship:maxthrust > 1.01*engineStat(launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
             print "maxthrust: "+ship:maxthrust at(0, 21).
             stage. 
          }

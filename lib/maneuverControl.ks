@@ -3,6 +3,7 @@
 
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
+runpath("0:/engine-conf.ks").
 {
    global maneuver_ctl is lexicon().
 
