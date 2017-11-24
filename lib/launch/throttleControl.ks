@@ -9,6 +9,7 @@
 
    /// Local variables
    local pid is 0.
+   local throttFunction is 0.
 
 ///Public functions
    declare function init {
@@ -19,17 +20,16 @@
          lock throttle to throttleSmoother().
          launch_ctl:add("throttle_monitor", advanceStep@).
       } else if launch_param["throttleProgramType"] = "etaApo" {
-         lock throttle to vETAapo().
+         set throttFunction to thrott_function_etaAPO@.
+         lock throttle to functionThrottler().
          set pid to PIDLOOP().
          set pid:setpoint to launch_param["throttleProfile"][2].
          set pid:minoutput to 0.
          set pid:maxoutput to 1.
          launch_ctl:add("throttle_monitor", genericMonitor@).
       } else if launch_param["throttleProgramType"] = "vOV" {
-         lock throttle to vOV().
-         set pid to PIDLOOP().
-         set pid:minoutput to 0.
-         set pid:maxoutput to 1.
+         set throttFunction to thrott_function_vOV@.
+         lock throttle to functionThrottler().
          launch_ctl:add("throttle_monitor", genericMonitor@).
       }
    }
@@ -96,10 +96,16 @@
    }
 
  ///Non-table based throttling methods.
+   declare function thrott_function_etaAPO {
+      return pid:update(time:seconds, eta:apoapsis).
+   }
+   declare function thrott_function_vOV {
+      return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
+   }
    //Expects the following profile:
    //Apoapsis value beyond which the function will apply.  Full throttle prior.
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
-   declare function vETAapo {
+   declare function functionThrottler {
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
       else if vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
@@ -107,22 +113,22 @@
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
          //Max function ensures this will not cause throttling down, if already throttled up.
-         return max(pid:update(time:seconds, eta:apoapsis), -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
+         return max(throttFunction(), -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
       } else {
-         return pid:update(time:seconds, eta:apoapsis).
+         return throttFunction().
       }
    }
 
-   declare function vOV {
-      if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
-      else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
-      else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
-         //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
-         //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
-         //Adds the final kick to orbital altitude, if not there already. 
-         return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
-      } else {
-         return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
-      }
-   }
+   //declare function vOV {
+   //   if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
+   //   else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
+   //   else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
+   //      //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
+   //      //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
+   //      //Adds the final kick to orbital altitude, if not there already. 
+   //      return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
+   //   } else {
+   //      return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
+   //   }
+   //}
 }

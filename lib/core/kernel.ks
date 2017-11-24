@@ -36,6 +36,7 @@ global INTERRUPTS is list().
             subroutine().
          }
       }
+      set ship:control:pilotmainthrottle to 0.
    }
    kernel_ctl:add("start", run@).
 

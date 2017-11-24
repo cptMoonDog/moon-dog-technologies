@@ -72,7 +72,7 @@
       local degToDN is normalizeAngle((180-degFromAN)-lonOffset).
       local degToAN is normalizeAngle((360-degFromAN)+lonOffset).
 
-      if allowableTrajectories = "all" {  /////////////Arithmetic on time below functions as a defacto cast to object of type TIME.
+      if allowableTrajectories = "all" {  /////////////Arithmetic on TIME below functions as a defacto cast to object of type TIME.
          if degToDN < degToAN {
             set launch_param["azimuthHemisphere"] to "south".
             return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.

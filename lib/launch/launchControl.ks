@@ -17,15 +17,9 @@ runpath("0:/lib/core/kernel.ks").
    global launch_param is lexicon().
 
    declare function init_system {
-      parameter w.
-      parameter booster. //Booster
       parameter hasFairing.
       parameter ag1.
-      set launch_param to w.
       
-      if exists("0:/lv/"+booster+".ks") {
-         runpath("0:/lv/"+booster+".ks").
-      }
       launch_ctl["init_range"]().
       launch_ctl["init_staging"](hasFairing, ag1).
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
@@ -51,7 +45,6 @@ runpath("0:/lib/core/kernel.ks").
             stage. 
          }
          maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["upperstage"], "ap", "circularize").
-         print "circularize".
          return OP_FINISHED.
       }).
       MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).

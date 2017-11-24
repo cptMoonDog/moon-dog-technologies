@@ -13,8 +13,8 @@
    // Local variables
    local engList is 0.
    local lastTime is time:seconds.
-   local fairing is false. //Flag for ship having a fairing.
-   local utilAG is false.  //Flag for ship having action group 1.
+   local fairing is false. //Flag for activating AG1.
+   local utilAG is false.  //Flag for activating AG2.
    local fairingJettisoned is false.
    local utilActive is false.
 
@@ -47,11 +47,11 @@
    //current staging trigger
    declare function genStaging {
       if fairing and not fairingJettisoned and ship:altitude > 60000 {
-         AG2 on.
+         AG1 on.
          set fairingJettisoned to true.
       }
       if utilAG and not utilActive and ship:altitude > 65000 {
-         AG1 on.
+         AG2 on.
          set utilActive to true.
       }
       if engList:length > 0 {
