@@ -3,14 +3,14 @@
 if not (defined launch_ctl)
    global launch_ctl is lexicon().
 
-runpath("0:/lib/general.ks").
+runpath("0:/lib/phyics.ks").
 
-runpath("0:/lib/launch/rangeControl.ks").
-runpath("0:/lib/launch/stagingControl.ks").
-runpath("0:/lib/launch/steeringControl.ks").
-runpath("0:/lib/launch/throttleControl.ks").
+runpath("0:/lib/launch/range_ctl.ks").
+runpath("0:/lib/launch/staging_ctl.ks").
+runpath("0:/lib/launch/steering_ctl.ks").
+runpath("0:/lib/launch/throttle_ctl.ks").
 
-runpath("0:/lib/maneuverControl.ks").
+runpath("0:/lib/maneuver_ctl.ks").
 runpath("0:/engine-conf.ks").
 runpath("0:/lib/core/kernel.ks").
 

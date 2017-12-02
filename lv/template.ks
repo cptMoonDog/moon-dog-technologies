@@ -7,7 +7,7 @@ declare parameter lan "none".
 
 {
    //Load the launch system into memory
-   runpath("0:/lib/launch/launchControl.ks").
+   runpath("0:/lib/launch/launch_ctl.ks").
 
    /////////////////////////// Keplerian Orbital Parameters ////////////////////////
    //The default 0 is equatorial

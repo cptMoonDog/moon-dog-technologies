@@ -1,13 +1,12 @@
-//  kOS scheduler:
+// "Kernel" for KOS:
+//  A system for managing runmodes
 //  Run mode (e.g. Current state of ship)
 //     Major mission events, reaction to.
 //     Runmodes defined as scoped sections exposing a subroutine that does the work.
-//     Subroutine returns boolean indicating whether or not it is finished, outer loop will then move to next mode.
+//     Subroutine returns integer indicating whether to advance, retreat, or loop. 
 //  Interrupts
-//     Staging
-//     User input
-//  Ex:
-//Mon Jun 19 21:37:58 PDT 2017
+//     Allows for semi-concurrent execution.  Each subroutine is executed continously.
+//     Good for reacting to user input.
 @LAZYGLOBAL OFF.
 global kernel_ctl is lexicon().
 
