@@ -3,7 +3,6 @@
 
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
-runpath("0:/engine-conf.ks").
 {
    global maneuver_ctl is lexicon().
 
@@ -12,6 +11,8 @@ runpath("0:/engine-conf.ks").
    local end is 0.
    local currentNode is 0.
 
+   local eisp is lexicon().
+   local ethrust is lexicon().
 ///Public functions
 
    declare function schedule_burn {
@@ -33,12 +34,15 @@ runpath("0:/engine-conf.ks").
       if impulsePoint = "node" {
          set currentNode to nextnode.
          burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
-      } else burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
+      } else {
+         burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
+      }
       reset_for_next_burn().
    }
    maneuver_ctl:add("add_burn", schedule_burn@).
 
    declare function execute {
+      print "executing" at(0, 15).
       if burn_queue:empty {
          print "No burn loaded!!!".
          return OP_FINISHED.
@@ -50,6 +54,7 @@ runpath("0:/engine-conf.ks").
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
             kuniverse:timewarp:warpto(start-179).
          }
+         if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 3 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-180 AND time:seconds < start-30 { 
          lock steering to burn_queue:peek()["steeringProgram"]().
@@ -67,7 +72,7 @@ runpath("0:/engine-conf.ks").
          if time:seconds > end+5 { 
             burn_queue:pop().
             if currentNode <> 0 and hasnode {
-                  remove nextnode.
+               remove nextnode.
             }
             if burn_queue:empty {
                return OP_FINISHED.
@@ -86,6 +91,8 @@ runpath("0:/engine-conf.ks").
       if ip:istype("Scalar") return ip.
       if ip = "ap" return time:seconds + eta:apoapsis.
       if ip = "pe" return time:seconds + eta:periapsis.
+      print "Error, with Impulse Point: "+ip.
+      return ip.
    }
    declare function get_dV {
       if burn_queue:peek()["dv"] = "circularize" {
@@ -109,38 +116,38 @@ runpath("0:/engine-conf.ks").
       set end to impulse_time(burn_queue:peek()["ip"]) + burnLengthSecondHalf.
    }
 
+
+   declare function defineEngine {
+      declare parameter name.
+      declare parameter i.
+      declare parameter t.
+
+      if not eisp:haskey(name) {
+         eisp:add(name, i).
+         ethrust:add(name, t).
+      }
+   }
+   maneuver_ctl:add("defEngine", defineEngine@).
+
    declare function engineStat {
       declare parameter name.
       declare parameter stat.
-      local isp is 0.
-      local thrust is 0.
-      if name="bollard" {
-         set isp to 325.
-         set thrust to 925.
-      }
-      if name="terrier" {
-         set isp to 345.
-         set thrust to 60.
-      }
-      if name="skipper" {
-         set isp to 320.
-         set thrust to 650.
-      }
-      if name="doubleThud" {
-         set isp to 305.
-         set thrust to 240.
-      }
-      if stat="isp" return isp.
-      if stat="thrust" return thrust.
-      if stat="ff" return thrust*1000/(isp*9.80665).
 
-      //Fail 
-      print "ENGINE: "+name+" DOES NOT EXIST IN THE DB.".
-      print "COUGH...COUGH...GURGLE...GURGLE.".
-      print "You watch helplessly as *NPC Name here* dies in your arms.".
-      set OP_FAIL to true.
-   }
-   maneuver_ctl:add("upperStage_stat", engineStat@).
+      if eisp:haskey(name) {
+         if stat="isp" return eisp[name].
+         if stat="thrust" return ethrust[name].
+         if stat="ff" return ethrust[name]*1000/(eisp[name]*9.80665).
+         return 1.
+      } else {
+         //Fail 
+         print "ENGINE: "+name+" DOES NOT EXIST IN THE DB.".
+         print "COUGH...COUGH...GURGLE...GURGLE.".
+         print "You watch helplessly as *NPC Name here* dies in your arms.".
+         set OP_FAIL to true.
+      }
+   }  
+   maneuver_ctl:add("engineStat", engineStat@).
+   runpath("0:/engine-conf.ks").
 }
 
 

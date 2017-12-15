@@ -1,4 +1,6 @@
-
+@lazyglobal off.
+declare function pc3 {
+if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
    declare parameter targetBody.
    declare parameter engineName.
       MISSION_PLAN:add({
@@ -8,3 +10,5 @@
       return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+}
+program_ctl:add("powered-capture", pc3@).

@@ -1,51 +1,34 @@
 @lazyglobal off.
+//A mission template
 
-runpath("0:/lib/launch/launchControl.ks").
-runpath("0:/lib/transfer.ks").
-launch_ctl["init"](
-      lexicon(
-              //Countdown type and length
-              "launchTime",          "now", 
-              "countDownLength",      30,
-              //Window parameters
-              //"lan",                  0, 
-              "inclination",          0, 
-              //Launch options
-              "azimuthHemisphere",   "north"),
-              //Launch Vehicle
-              "Vega 1", "small dog").
+//The Launch Vehicle handles launch to LKO
+runpath("0:/lv/delta5.ks", 0, "none").
 
-launch_ctl["addLaunchToMissionPlan"]().
-
+local objectives is list("lko-to-mun", "warp-to-soi", "powered-capture", "landing").
+runpath("0:/lib/program_ctl.ks", objectives).
+program_ctl["LKO-to-Mun"]("poodle").
 MISSION_PLAN:add({
    wait 5.
-   set target to body("Mun").
-   local dv is 4+visViva_velocity(body("Kerbin"), 80000, smaOfTransferOrbit(body("Kerbin"), 80000, body("Mun"):altitude))-visViva_velocity(body("Kerbin"), 80000, 80000+Kerbin:radius).
-   add(node(transfer_ctl["etaTarget"]()+time:seconds, 0,0,dv)).
-   maneuver_ctl["add_burn"]("node", 350, 72.83687236, "node").
-   return OP_FINISHED.
-}).
-MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-MISSION_PLAN:add({
-   stage.
-   return OP_FINISHED.
-}).
-MISSION_PLAN:add({
-   if ship:orbit:hasnextpatch and ship:orbit:nextpatch:body = Mun {
-      if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() and ship:orbit:nextpatcheta > 180 {
-         warpto(ship:orbit:nextpatcheta+time:seconds-180).
-      }
+   if ship:maxthrust > 1.01*maneuver_ctl["engineStat"]("terrier", "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
+      stage.
       return OP_CONTINUE.
    }
    return OP_FINISHED.
 }).
+program_ctl["warp-to-soi"]("Mun").
 MISSION_PLAN:add({
-   if ship:orbit:body = body("Mun") {
-      maneuver_ctl["add_burn"]("retrograde", 345, 17.73419501, "pe", "circularize").
-   }
+   wait 30.
    return OP_FINISHED.
 }).
-MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+program_ctl["powered-capture"]("Mun", "terrier").
+program_ctl["landing"]().
 
+//runpath("0:/lv/munar-ascent.ks").
+//runpath("0:/programs/return-from-moon.ks").
+//runpath("0:/programs/warp-to-soi.ks", "Kerbin").
+//runpath("0:/programs/adjust-pe.ks", 34).
+//runpath("0:/programs/edl.ks").
+
+
+//This starts the runmode system
 kernel_ctl["start"]().
-set ship:control:pilotmainthrottle to 0.

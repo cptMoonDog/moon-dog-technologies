@@ -1,9 +1,7 @@
-if not defined engineStat {
-   runpath("0:/lib/engineStat.ks").
-}
-
+@lazyglobal off.
 //           name, isp, thrust(kN)
-defineEngine("bollard", 325, 925).
-defineEngine("terrier", 345, 60).
-defineEngine("skipper", 320, 650).
-defineEngine("doubleThud", 305, 240).
+maneuver_ctl["defEngine"]("poodle", 350, 250).
+maneuver_ctl["defEngine"]("bollard", 325, 925).
+maneuver_ctl["defEngine"]("terrier", 345, 60).
+maneuver_ctl["defEngine"]("skipper", 320, 650).
+maneuver_ctl["defEngine"]("doubleThud", 305, 240).

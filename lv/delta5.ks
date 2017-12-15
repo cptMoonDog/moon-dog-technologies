@@ -2,8 +2,8 @@
 //This is a standard Launch Vehicle parameter file.
 //This holds the information necessary to customize the flight profile for your lifter.
 
-declare parameter inclination 0.
-declare parameter lan "none".
+declare parameter inclination is 0.
+declare parameter lan is "none".
 
 {
    //Load the launch system into memory
@@ -46,7 +46,7 @@ declare parameter lan "none".
    // Pitchover magnitude in degrees
    // Vertical speed at which to start pitchover
    // Vertical speed at which to handoff steering to prograde follower.
-   launch_param:add("pOverDeg",             7). 
+   launch_param:add("pOverDeg",             5.5). 
    launch_param:add("pOverV0",              30). 
    launch_param:add("pOverVf",              150).
 
@@ -60,7 +60,7 @@ declare parameter lan "none".
    launch_param:add("throttleProfile", list( 
                                             20000, //Apo to Activate function, max prior
                                             80000, //Apo to Deactivate function 
-                                            45)).  //Setpoint
+                                            50)).  //Setpoint
 
    //Upper stage
    // This tells the system which upper stage is installed.

@@ -3,7 +3,7 @@
 if not (defined launch_ctl)
    global launch_ctl is lexicon().
 
-runpath("0:/lib/phyics.ks").
+runpath("0:/lib/physics.ks").
 
 runpath("0:/lib/launch/range_ctl.ks").
 runpath("0:/lib/launch/staging_ctl.ks").
@@ -11,7 +11,6 @@ runpath("0:/lib/launch/steering_ctl.ks").
 runpath("0:/lib/launch/throttle_ctl.ks").
 
 runpath("0:/lib/maneuver_ctl.ks").
-runpath("0:/engine-conf.ks").
 runpath("0:/lib/core/kernel.ks").
 
 {
@@ -41,7 +40,7 @@ runpath("0:/lib/core/kernel.ks").
         return launch_ctl["throttle_monitor"]().
       }).
       MISSION_PLAN:add({
-         if ship:maxthrust > 1.01*engineStat(launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
+         if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
             print "maxthrust: "+ship:maxthrust at(0, 21).
             stage. 
          }
