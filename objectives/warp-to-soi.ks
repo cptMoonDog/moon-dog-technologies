@@ -13,4 +13,4 @@ declare function pc2 {
       return OP_FINISHED.
    }).
 }
-program_ctl:add("warp-to-soi", pc2@).
+available_obj:add("warp-to-soi", pc2@).

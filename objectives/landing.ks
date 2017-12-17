@@ -54,5 +54,5 @@
          return OP_FINISHED.
       }).
    }
-   program_ctl:add("landing", pc4@).
+   available_obj:add("landing", pc4@).
 }

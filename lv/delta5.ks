@@ -39,7 +39,7 @@ declare parameter lan is "none".
    // calculated launch time. It is called Time of Flight, because the launch window lead time 
    // should be the same as the amount of time it takes to achieve the proper inclination, which 
    // will also be about the same as the amount of time needed to achieve orbital velocity.  
-   // For the record, this will vary with the inclination.
+   // For the record, this will varies with the inclination.
    launch_param:add("timeOfFlight",         100).
 
    //Gravity turn parameters
@@ -52,7 +52,7 @@ declare parameter lan is "none".
 
    //Throttle program parameters
    // There are several throttle program types available.
-   // This one maintains a set time to Apoapsis.
+   // The default (etaApo) maintains a set time to Apoapsis.
    //TODO Document available programs.
    // Other "throttleProgramType"s available: "tableMET", "tableAPO", "vOV", and the default ("etaApo")
    
@@ -70,12 +70,12 @@ declare parameter lan is "none".
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      30).
 
-   
-   //Initialize the launch system.
-   // Parameter 1: Activate AG1 at 60km
-   // Parameter 2: Activate AG2 at 65km
+   //Call the launch control initializer.
+   // Parameter 1: Activate AG1 at 60km (Useful for fairings)
+   // Parameter 2: Activate AG2 at 65km (Useful for antennas, solar panels, etc.)
    launch_ctl["init"](TRUE, TRUE).
-   //Add a basic launch to LKO routine to the MISSIONPLAN
+
+   //Add launch routine to the MISSIONPLAN
    launch_ctl["addLaunchToMissionPlan"]().
 }
 

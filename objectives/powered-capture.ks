@@ -11,4 +11,4 @@ if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
 }
-program_ctl:add("powered-capture", pc3@).
+available_obj:add("powered-capture", pc3@).
