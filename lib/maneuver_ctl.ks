@@ -4,6 +4,7 @@
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
 {
+   runpath("0:/lib/physics.ks").
    global maneuver_ctl is lexicon().
 
    local burn_queue is queue().
