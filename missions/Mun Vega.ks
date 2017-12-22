@@ -22,7 +22,7 @@ MISSION_PLAN:add({
 add_obj_to_MISSION_PLAN["powered-capture"]("Mun", "terrier").
 add_obj_to_MISSION_PLAN["landing"]().
 
-//runpath("0:/lv/munar-ascent.ks").
+runpath("0:/lv/munar-ascent.ks").
 //runpath("0:/programs/return-from-moon.ks").
 //runpath("0:/programs/warp-to-soi.ks", "Kerbin").
 //runpath("0:/programs/adjust-pe.ks", 34).

@@ -1,4 +1,3 @@
-
 @lazyglobal off.
 //Reusable sequence template.
 //Question: Why not simply have a script file with the contents of the delegate?  Why the extra layers?
