@@ -4,7 +4,7 @@
 //The Launch Vehicle initializes the system for launch to LKO
 runpath("0:/lv/delta5.ks", 0, "none").
 
-runpath("0:/lib/load_objectives.ks", list("lko-to-mun", "warp-to-soi", "powered-capture", "landing")).
+runpath("0:/lib/load_objectives.ks", list("lko-to-mun", "warp-to-soi", "powered-capture", "landing", "munar-ascent")).
 add_obj_to_MISSION_PLAN["LKO-to-Mun"]("poodle").
 MISSION_PLAN:add({//Ensure that upper stage is ditched, and transfer stage is active.
    wait 5.
@@ -14,15 +14,15 @@ MISSION_PLAN:add({//Ensure that upper stage is ditched, and transfer stage is ac
    }
    return OP_FINISHED.
 }).
-add_obj_to_MISSION_PLAN[["warp-to-soi"]("Mun").
+add_obj_to_MISSION_PLAN["warp-to-soi"]("Mun").
 MISSION_PLAN:add({
    wait 30.
    return OP_FINISHED.
 }).
 add_obj_to_MISSION_PLAN["powered-capture"]("Mun", "terrier").
 add_obj_to_MISSION_PLAN["landing"]().
+add_obj_to_MISSION_PLAN["munar-ascent"]().
 
-runpath("0:/lv/munar-ascent.ks").
 //runpath("0:/programs/return-from-moon.ks").
 //runpath("0:/programs/warp-to-soi.ks", "Kerbin").
 //runpath("0:/programs/adjust-pe.ks", 34).

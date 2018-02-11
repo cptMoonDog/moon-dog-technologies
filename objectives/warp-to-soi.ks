@@ -1,6 +1,6 @@
 @lazyglobal off.
 
-declare function pc2 {
+add_obj_to_MISSION_PLAN:add("warp-to-soi", {
    declare parameter targetBody.
    MISSION_PLAN:add({
       if ship:orbit:hasnextpatch and ship:orbit:nextpatch:body = body(targetBody) {
@@ -12,5 +12,4 @@ declare function pc2 {
       }
       return OP_FINISHED.
    }).
-}
-available_obj:add("warp-to-soi", pc2@).
+}).

@@ -27,7 +27,7 @@
       local current is currentPhaseAngle().
       
       local diff is  0.
-      if pa > current {
+      if pa > current-20 {
          set diff to 360+current-pa.
       } else set diff to current-pa.
       //local diff is  currentPhaseAngle()-phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
