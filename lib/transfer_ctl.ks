@@ -25,19 +25,24 @@
    declare function etaPhaseAngle {
       local pa is phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
       local current is currentPhaseAngle().
+
+      // I want some time to burn my engines, so I need to lead a bit to have time
+      // I'm sure there is a better way to do this, but for now...
+      local minDiff is 20.
       
       local diff is  0.
-      if pa > current-20 {
+      if pa > current-minDiff {
          set diff to 360+current-pa.
       } else set diff to current-pa.
-      //local diff is  currentPhaseAngle()-phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
+
       if diff < 0 set diff to diff+360.
+      // Scratch pad:
       // Angle rate: 360/period
       // p1+r1*t=p2+r2*t
       // r1*t=p2-p1+r2*t
       // r1*t-r2*t=p2-p1
       // t(r1-r2)=p2-p1
-      // t=(p2-p1)/(r1-r2)
+      // --> t=(p2-p1)/(r1-r2)
       // p1=0, p2=10, r1=5, r2=1 then t=2.5
       // p1=5, p2=10, r1=5, r2=1 then t=1.25 
       local rateShip is 360/ship:orbit:period.
