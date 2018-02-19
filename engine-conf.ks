@@ -1,4 +1,5 @@
 @lazyglobal off.
+//  Engine configurations defined here, will be available to the maneuver_ctl system.
 //           name, isp, thrust(kN)
 maneuver_ctl["defEngine"]("poodle", 350, 250).
 maneuver_ctl["defEngine"]("bollard", 325, 925).

@@ -75,6 +75,7 @@ declare parameter lan "none".
    // Parameter 1: Activate AG1 at 60km
    // Parameter 2: Activate AG2 at 65km
    launch_ctl["init"](TRUE, TRUE).
+
    //Add a launch to LKO routine to the MISSIONPLAN
    launch_ctl["addLaunchToMissionPlan"]().
 }

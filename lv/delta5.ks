@@ -35,11 +35,11 @@ declare parameter lan is "none".
    // Why this is needed: This script is capable of launching into inclined orbits, 
    // however the inclination is not achieved instantly upon launch, which means 
    // the Longitude of the Ascending node will be off slightly (in the direction of rotation).
-   // To compensate this factor will activate the launch sequence this number of seconds prior to the 
+   // To compensate, this factor will activate the launch sequence this number of seconds prior to the 
    // calculated launch time. It is called Time of Flight, because the launch window lead time 
    // should be the same as the amount of time it takes to achieve the proper inclination, which 
    // will also be about the same as the amount of time needed to achieve orbital velocity.  
-   // For the record, this will varies with the inclination.
+   // For the record, this will vary with the inclination.
    launch_param:add("timeOfFlight",         100).
 
    //Gravity turn parameters
