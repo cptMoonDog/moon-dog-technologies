@@ -27,7 +27,7 @@ How it works, short version:
 Other Things
 ------------
 
-This library also contains system to make a few things easier (...or at least reduce non-reusable code).
+This library also contains systems to make a few things easier (...or at least reduce non-reusable code).
    - `lv` Contains custom launch profiles for boosters, that way you don't have to create a new profile for a different mission that is using the same booster.
    - `missions` Is where the boot script looks for the mission definition to load.  The script should have the same name as your mission.
    - `objectives` Are custom functions for accomplishing various tasks.  They can be loaded using the `lib/load_objectives.ks` system if so desired.
