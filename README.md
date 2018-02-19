@@ -6,13 +6,14 @@ How it works, short version:
     - This is neat, because it will run functions added to the `MISSION_PLAN` repeatedly until the system is told to advance to the next.
     - Functions are expected to return one of the following:
        - `OP_CONTINUE` if they wish to be run again.
-       - `OP_FINISHED` if they believe it is safe to advance to the next objective in the MISSION_PLAN.
+       - `OP_FINISHED` if they believe it is safe to advance to the next objective in the `MISSION_PLAN`.
        - `OP_PREVIOUS` to go back to the previous objective.
        - `OP_FAIL` if a catastrophic error has occured and the MISSION_PLAN cannot continue, i.e. abort and hope the pilot can save himself.
     
     - There is also an `INTERRUPT` list for functions you wish to be executed in parallel.
     - This enables things like the following:
 
+```kerboscript
     runpath("lib/core/kernel_ctl.ks").
     MISSION_PLAN:add(launch_to_orbit@).
     MISSION_PLAN:add(goto_Mun@).
@@ -20,6 +21,7 @@ How it works, short version:
     MISSION_PLAN:add(re-entry@).
 
     kernel_ctl["start"]().
+```
 
 
 Other Things
