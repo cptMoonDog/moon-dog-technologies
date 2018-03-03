@@ -2,13 +2,13 @@
 //Reusable sequence template.
 //Question: Why not simply have a script file with the contents of the delegate?  Why the extra layers?
 //Answer: It seems that the memory area for parameters passed to scripts is always the same.  So, when 
-//        a script defines a function to be called later, any additional script called with paramters will
+//        a script defines a function to be called later, any additional script called with parameters will
 //        clobber the parameter intended for the first one.  To get around this, we create a new scope, to 
 //        spawn a new memory space. 
  
 
 {//Create a new namespace.
-   add_obj_to_MISSION_PLAN:add("LKO-to-Mun", //Tell the system to add a new delegate to the lexicon of available programs.
+   add_obj_to_MISSION_PLAN:add("lko-to-mun", //Tell the system to add a new delegate to the lexicon of available programs.
       {
          //One time initialization code.
          declare parameter engineName.
@@ -18,8 +18,6 @@
          //Implement the instructions which will be added to the end of the missions sequence.   
          MISSION_PLAN:add({
             if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
-               print engineName.
-               if not (engineName =  "poodle") kuniverse:reverttolaunch. 
                stage. 
             }
             wait 5.
