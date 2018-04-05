@@ -72,7 +72,7 @@
       local degToDN is normalizeAngle((180-degFromAN)-lonOffset).
       local degToAN is normalizeAngle((360-degFromAN)+lonOffset).
 
-      if allowableTrajectories = "all" {  /////////////Arithmetic on TIME below functions as a defacto cast to object of type TIME.
+      if allowableTrajectories = "all" or allowableTrajectories = "any" {  /////////////Arithmetic on TIME below functions as a defacto cast to object of type TIME.
          if degToDN < degToAN {
             set launch_param["azimuthHemisphere"] to "south".
             return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
@@ -107,11 +107,13 @@
       local inertialAzimuth is arcsin(min(1, cos(launch_param["inclination"])/cos(ship:latitude))). //min function prevents NAN
 
       //Adjust the IA to a valid compass heading.
+       
       if south { 
          if inertialAzimuth < 0 { 
             set inertialAzimuth to -180-inertialAzimuth.
          } else set inertialAzimuth to 180-inertialAzimuth. 
-      } 
+      }
+
       if inertialAzimuth < 0 set inertialAzimuth to 360+inertialAzimuth.
       //Here we give up precision for the sake of correctness.
       if inertialAzimuth < 0.0001 and inertialAzimuth > -0.0001 set inertialAzimuth to 0.

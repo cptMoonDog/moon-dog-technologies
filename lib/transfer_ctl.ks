@@ -16,7 +16,7 @@
       declare parameter target.
       local startAlt is body(origin):altitudeof(positionat(ship, etaPhaseAngle())).
 
-      local transferSMA is semimajoraxis(body(origin), startAlt, body(target):altitude).
+      local transferSMA is semimajoraxis(body(origin), startAlt, body(target):altitude-body(target):soiradius/2).
 
       return visViva_velocity(body(origin), startAlt, transferSMA)-visViva_velocity(body(origin), startAlt, startAlt+body(origin):radius).
    }

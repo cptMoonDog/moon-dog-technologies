@@ -14,7 +14,6 @@
          declare parameter engineName.
          if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
          if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
-         print "WARNING minmus maneuver assumes ship is in a coplanar orbit.".
 
          //Implement the instructions which will be added to the end of the missions sequence.   
          MISSION_PLAN:add({
