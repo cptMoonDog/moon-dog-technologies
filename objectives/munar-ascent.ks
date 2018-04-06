@@ -8,7 +8,7 @@
  
 
 {//Create a new namespace.
-   add_obj_to_MISSION_PLAN:add("munar-ascent", //Tell the system to add a new delegate to the lexicon of available programs.
+   available_objectives:add("munar-ascent", //Tell the system to add a new delegate to the lexicon of available programs.
       {
          //Initialization code
          runpath("0:/lib/maneuver_ctl.ks").

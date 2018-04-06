@@ -1,6 +1,6 @@
 @lazyglobal off.
 
-add_obj_to_MISSION_PLAN:add("warp-to-soi", {
+available_objectives:add("warp-to-soi", {
    declare parameter targetBody.
    MISSION_PLAN:add({
       if ship:orbit:hasnextpatch and ship:orbit:nextpatch:body = body(targetBody) {

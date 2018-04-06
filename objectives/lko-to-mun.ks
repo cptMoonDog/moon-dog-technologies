@@ -8,13 +8,12 @@
  
 
 {//Create a new namespace.
-   add_obj_to_MISSION_PLAN:add("lko-to-minmus", //Tell the system to add a new delegate to the lexicon of available programs.
+   available_objectives:add("lko-to-mun", //Tell the system to add a new delegate to the lexicon of available programs.
       {
          //One time initialization code.
          declare parameter engineName.
          if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
          if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
-         print "WARNING minmus maneuver assumes ship is in a coplanar orbit.".
 
          //Implement the instructions which will be added to the end of the missions sequence.   
          MISSION_PLAN:add({
@@ -22,9 +21,22 @@
                stage. 
             }
             wait 5.
-            set target to body("Minmus").
-            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", "Minmus")+20).
+            set target to body("Mun").
+            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", "Mun")).
             add(mnvr).
+            until false {
+               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis > body("Mun"):radius+10000 {
+                  break.
+               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis < body("Mun"):radius+10000 {
+                  print "adjusting pe" at(0, 1).
+                  set mnvr:prograde to mnvr:prograde + 0.01.
+               }else if mnvr:orbit:apoapsis > body("Mun"):altitude {
+                  print "adjusting ap" at(0, 1).
+                  set mnvr:prograde to mnvr:prograde - 0.01.
+               }else {
+                  break. 
+               }
+            }
             maneuver_ctl["add_burn"]("node", engineName, "node", mnvr:deltav:mag).
             return OP_FINISHED.
          }).

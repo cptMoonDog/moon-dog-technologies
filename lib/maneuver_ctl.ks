@@ -64,7 +64,7 @@
          reset_for_next_burn(). // recalculates to improve precision
          lock throttle to 0.
       //Start of burn. Continue attempting to lock throttle until end of scheduled burn unless already locked.
-      } else if  time:seconds >= start AND time:seconds < end AND throttle = 0 { 
+      } else if time:seconds >= start AND time:seconds < end AND throttle = 0 or (throttle > 0 and hasnode and nextnode:deltav:mag >= 1) { 
          lock throttle to 1.
       //Burn finished.  Engine shutdown.  Wait 5 seconds, then queue up next burn.
       } else if time:seconds >= end { 

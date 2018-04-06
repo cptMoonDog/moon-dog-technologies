@@ -8,7 +8,7 @@
  
 
 {//Create a new namespace.
-   add_obj_to_MISSION_PLAN:add("return-from-moon", //Tell the system to add a new delegate to the lexicon of available programs.
+   available_objectives:add("return-from-moon", //Tell the system to add a new delegate to the lexicon of available programs.
       {
          MISSION_PLAN:add({
             clearscreen.

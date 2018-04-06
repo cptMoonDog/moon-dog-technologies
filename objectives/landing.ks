@@ -1,6 +1,6 @@
 @lazyglobal off.
 {
-   add_obj_to_MISSION_PLAN:add("landing", {
+   available_objectives:add("landing", {
       local pitchangle is 90-vang(up:forevector, ship:srfprograde:forevector).
       local thrott is 0.
       MISSION_PLAN:add({

@@ -22,11 +22,7 @@
       parameter bod.
       parameter alt1.
       parameter alt2.
-      if alt2 > alt1 {
-         return ((alt2+bod:radius)-(alt1+bod:radius))/2.
-      } else {
-         return ((alt1+bod:radius)-(alt2+bod:radius))/2.
-      }
+      return ((alt2+bod:radius)+(alt1+bod:radius))/2.
    }
 
    //Returns the velocity of an object at alt in an orbit with a Semi major axis of sma.
