@@ -10,6 +10,7 @@
    /// Local variables
    local pid is 0.
    local throttFunction is 0.
+   local lastThrottVal is 1.
 
 ///Public functions
    declare function init {
@@ -32,6 +33,15 @@
          lock throttle to functionThrottler().
          launch_ctl:add("throttle_monitor", genericMonitor@).
       }
+     // else if launch_param["throttleProgramType"] = "constVTWR" {
+     //    set throttFunction to thrott_function_constantVerticalTWR@.
+     //    lock throttle to functionThrottler().
+     //    set pid to PIDLOOP().
+     //    set pid:setpoint to launch_param["throttleProfile"][2].
+     //    set pid:minoutput to 0.
+     //    set pid:maxoutput to 1.
+     //    launch_ctl:add("throttle_monitor", genericMonitor@).
+     // }
    }
    launch_ctl:add("init_throttle", init@).
    
@@ -99,9 +109,17 @@
    declare function thrott_function_etaAPO {
       return pid:update(time:seconds, eta:apoapsis).
    }
+   //Throttle setting is the inverse ratio of the horizontal component of orbital velocity and orbital velocity at the current altitude.
    declare function thrott_function_vOV {
-      return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
+      return 1-sin(vang(up:forevector, facing:forevector))*(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
    }
+   //DO NOT USE, doesn't work.
+   declare function thrott_function_constantVerticalTWR {
+      local rval is pid:update(time:seconds, lastThrottVal*((ship:availablethrust/(ship:mass*9.807))*cos(vang(up:forevector, facing:forevector)))).
+      set lastThrottVal to rval.
+      return rval.
+   }
+   
    //Expects the following profile:
    //Apoapsis value beyond which the function will apply.  Full throttle prior.
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
@@ -118,17 +136,4 @@
          return throttFunction().
       }
    }
-
-   //declare function vOV {
-   //   if ship:apoapsis < launch_param["throttleProfile"][0] return 1.
-   //   else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
-   //   else if vang(up:forevector, ship:prograde:forevector) > 89 and vang(up:forevector, ship:prograde:forevector) < 91 {
-   //      //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
-   //      //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
-   //      //Adds the final kick to orbital altitude, if not there already. 
-   //      return max(0, -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+1).
-   //   } else {
-   //      return 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
-   //   }
-   //}
 }

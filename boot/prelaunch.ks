@@ -8,6 +8,7 @@ if ship:status = "PRELAUNCH" {
    print core:tag.
    print ship:name.
    if core:tag and exists("0:/missions/"+core:tag+".ks") {
+      set ship:name to core:tag.
       runpath("0:/missions/"+core:tag+".ks").
    } else if exists("0:/missions/"+ship:name+".ks") {
       runpath("0:/missions/"+ship:name+".ks").
