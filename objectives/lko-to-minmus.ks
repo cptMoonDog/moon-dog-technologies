@@ -12,6 +12,7 @@
       {
          //One time initialization code.
          declare parameter engineName.
+         if not (defined kernel_ctl) runpath("0:/lib/core/kernel_ctl.ks"). 
          if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
          if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
          print "WARNING minmus maneuver assumes ship is in a coplanar orbit.".

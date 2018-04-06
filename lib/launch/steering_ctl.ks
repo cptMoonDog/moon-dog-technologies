@@ -45,7 +45,7 @@
             return ship:facing.
          }else if ship:verticalspeed < launch_param["pOverVf"] {
             //First part says, "Wait for roll to complete.", second part says, "If you started the pover already, don't come back here."
-            if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and vang(up:forevector, ship:facing:forevector) < 0.5 {
+            if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and vang(up:forevector, ship:facing:forevector) < 0.5 or ship:verticalspeed < launch_param["pOverV0"] {
                //Roll to Azimuth
                return heading(azimuth, 90).
             } else if ship:verticalspeed > launch_param["pOverV0"] {

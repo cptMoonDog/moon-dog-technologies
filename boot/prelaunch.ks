@@ -1,8 +1,15 @@
 @lazyglobal off.
 
+//If this ship is on the launch pad... 
 if ship:status = "PRELAUNCH" {
-   if exists("0:/missions/"+ship:name+".ks") and not(exists("1:/"+ship:name+".ks")) {
-      copypath("0:/missions/"+ship:name+".ks", "1:/").
+   //Script will look for a mission given by the value of the core's name tag, or the name the vehicle is saved under.
+   //If you want a different name for the mission than for the vehicle, tag the core with that name.
+   //After launch, the ship will be renamed for with the value of the core's name tag.
+   print core:tag.
+   print ship:name.
+   if core:tag and exists("0:/missions/"+core:tag+".ks") {
+      runpath("0:/missions/"+core:tag+".ks").
+   } else if exists("0:/missions/"+ship:name+".ks") {
+      runpath("0:/missions/"+ship:name+".ks").
    }
-   runpath("1:/"+ship:name+".ks").
 }

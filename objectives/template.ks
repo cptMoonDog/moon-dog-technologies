@@ -5,7 +5,6 @@
 //        a script defines a function to be called later, any additional script called with parameters will
 //        clobber the parameter intended for the first one.  To get around this, we create a new scope, to 
 //        spawn a new memory space. 
- 
 
 {//Create a new namespace.
    available_objectives:add("lko-to-mun", //Tell the system to add a new delegate to the lexicon of available programs.
