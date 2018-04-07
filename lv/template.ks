@@ -40,13 +40,13 @@ declare parameter lan "none".
    // should be the same as the amount of time it takes to achieve the proper inclination, which 
    // will also be about the same as the amount of time needed to achieve orbital velocity.  
    // For the record, this will vary with the inclination.
-   launch_param:add("timeOfFlight",         100).
+   launch_param:add("timeOfFlight",         180).
 
    //Gravity turn parameters
    // Pitchover magnitude in degrees
    // Vertical speed at which to start pitchover
    // Vertical speed at which to handoff steering to prograde follower.
-   launch_param:add("pOverDeg",             7). 
+   launch_param:add("pOverDeg",             5). 
    launch_param:add("pOverV0",              30). 
    launch_param:add("pOverVf",              150).
 
@@ -68,7 +68,7 @@ declare parameter lan "none".
    launch_param:add("upperstage", "poodle").
 
    //The system will display a countdown of this length before any launch.
-   launch_param:add("countDownLength",      30).
+   launch_param:add("countDownLength",      20).
 
    
    //Initialize the launch system.
