@@ -7,16 +7,12 @@ local programName is "lko-to-minmus". //<------- put the name of the script here
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_objectives lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
+    // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
 declare parameter p1 is "". 
 //declare parameter p2 is "". 
+
 if not (defined available_objectives) declare global available_objectives is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
-
-// If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_objectives[programName](p1).
-   kernel_ctl["start"]().
-} 
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_objectives:add...but that occasionally produces an error when run as a standalone script.
@@ -72,3 +68,9 @@ set available_objectives[programName] to {
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
+
+// If run standalone, initialize the MISSION_PLAN and run it.
+if p1 {
+   available_objectives[programName](p1).
+   kernel_ctl["start"]().
+} 

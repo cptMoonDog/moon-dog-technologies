@@ -36,8 +36,11 @@ global INTERRUPTS is list().
          }
       }
       set ship:control:pilotmainthrottle to 0.
+      print "Program Complete! System will now shutdown...".
+      wait 5.
+      reboot.
    }
-   kernel_ctl:add("start", run@).
+   set kernel_ctl["start"] to run@.
 
 ///Private functions
    declare function set_runmode {

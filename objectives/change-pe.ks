@@ -1,14 +1,14 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "lko-to-mun". //<------- put the name of the script here
+local programName is "change-pe". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_objectives lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
 declare parameter p1 is "". 
-//declare parameter p2 is "". 
+declare parameter p2 is "". 
 if not (defined available_objectives) declare global available_objectives is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -23,14 +23,17 @@ set available_objectives[programName] to {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
    if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+   if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter engineName.
+   declare parameter newPe.
 
 //======== Local Variables =====
+      local steerDir is "retrograde".
+      if ship:orbit:periapsis < newPe set steerDir to "prograde". 
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
@@ -38,37 +41,48 @@ set available_objectives[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-         MISSION_PLAN:add({
-            if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
-               stage. 
-            }
-            wait 5.
-            set target to body("Mun").
-            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", "Mun")).
-            add(mnvr).
-            until false {
-               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis > body("Mun"):radius+10000 {
-                  break.
-               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis < body("Mun"):radius+10000 {
-                  print "adjusting pe" at(0, 1).
-                  set mnvr:prograde to mnvr:prograde + 0.01.
-               }else if mnvr:orbit:apoapsis > body("Mun"):altitude {
-                  print "adjusting ap" at(0, 1).
-                  set mnvr:prograde to mnvr:prograde - 0.01.
-               }else {
-                  break. 
-               }
-            }
-            maneuver_ctl["add_burn"]("node", engineName, "node", mnvr:deltav:mag).
-            return OP_FINISHED.
-         }).
-         MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   MISSION_PLAN:add({
+      if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
+         stage. 
+      }
+      local newSMA is (ship:orbit:apoapsis+ship:orbit:body:radius*2+newPe)/2.
+      local newVatApo is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:apoapsis, newSMA).
+      local dv is abs(newVatApo - velocityat(ship, eta:apoapsis):orbit:mag).
+      maneuver_ctl["add_burn"](steerDir, engineName, "ap", dv).
+      return OP_FINISHED.
+   }).
+   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   MISSION_PLAN:add({
+      if (steerDir = "prograde" and ship:periapsis < newPe*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newPe*1.01) {
+         if steerDir = "prograde" {
+            if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
+               lock throttle to 0.
+            wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
+         } else {
+            if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
+               lock throttle to 0.
+            wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
+         }
+         lock throttle to 0.1.
+         return OP_CONTINUE.
+      } else if (steerDir = "prograde" and ship:periapsis > newPe*1.01) or (steerDir = "retrograde" and ship:periapsis < newPe*0.99) {
+         if steerDir = "prograde" {
+            set steerDir to "retrograde".
+         } else {
+            set steerDir to "prograde".
+         }
+         return OP_CONTINUE.
+      }
+      return OP_FINISHED.
+   }).
+   
+         
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
 
 // If run standalone, initialize the MISSION_PLAN and run it.
 if p1 {
-   available_objectives[programName](p1).
+   available_objectives[programName](p1, p2).
    kernel_ctl["start"]().
 } 

@@ -12,12 +12,6 @@ declare parameter p1 is "".
 if not (defined available_objectives) declare global available_objectives is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
-// If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_objectives[programName](p1).
-   kernel_ctl["start"]().
-} 
-
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_objectives:add...but that occasionally produces an error when run as a standalone script.
 set available_objectives[programName] to {
@@ -117,3 +111,9 @@ set available_objectives[programName] to {
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
+
+// If run standalone, initialize the MISSION_PLAN and run it.
+if p1 {
+   available_objectives[programName](p1).
+   kernel_ctl["start"]().
+} 
