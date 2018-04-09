@@ -9,7 +9,7 @@
 runpath("0:/lib/load_objectives.ks", list("lko-to-mun", "warp-to-soi", "powered-capture", "landing")).
 
 //The Launch Vehicle adds launch to LKO to the MISSION_PLAN
-runpath("0:/lv/template.ks").
+if exists("1:/boot/single_core.ks") runpath("0:/lv/template.ks").
 
 //Add Pluggable objectives like this:
 available_objectives["lko-to-mun"]("terrier").

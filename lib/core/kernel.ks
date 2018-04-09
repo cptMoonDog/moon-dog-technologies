@@ -36,9 +36,6 @@ global INTERRUPTS is list().
          }
       }
       set ship:control:pilotmainthrottle to 0.
-      print "Program Complete! System will now shutdown...".
-      wait 5.
-      reboot.
    }
    set kernel_ctl["start"] to run@.
 

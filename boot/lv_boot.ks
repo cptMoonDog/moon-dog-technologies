@@ -12,14 +12,23 @@ if ship:status = "PRELAUNCH" {
       if data:length > 1 {
          exists("0:/lv/"+data[0]+".ks").
          local raan is "none".
+         local alt is 80000.
          if data:length > 2 set raan to data[2]:tonumber(0).
-         runpath("0:/lv/"+data[0]+".ks", data[1]:tonumber(0), raan).
+         if data:length > 3 set alt to data[3]:tonumber(0).
+         runpath("0:/lv/"+data[0]+".ks", data[1]:tonumber(0), raan, alt).
       } else {
          runpath("0:/lv/"+data[0]+".ks").
       }
       kernel_ctl["start"]().
-   } 
-} else {
+      wait 5.
+      reboot.
+   } else if exists("0:/lv/"+ship:name+".ks") {
+      runpath("0:/lv/"+ship:name+".ks").
+      kernel_ctl["start"]().
+      wait 5.
+      reboot.
+   }
+} else if ship:modulesnamed(ship:name):length > 0 {
    local payloadCore is processor(ship:name).
    payloadCore:connection:sendmessage("handoff").
 }

@@ -39,6 +39,9 @@ set available_objectives[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
+      until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
+         stage. 
+      }
       if ship:orbit:body = body(targetBody) {
          maneuver_ctl["add_burn"]("retrograde", engineName, "pe", "circularize").
       }

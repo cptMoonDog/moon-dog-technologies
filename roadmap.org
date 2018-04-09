@@ -1,3 +1,17 @@
 *** TODO Features
    - [X] Objective scripts should be independently runnable
-   - [ ] 
+     - [X] Is it possible to make extract the code that makes them independent to a system, so each file doesn't need a copy of it?  Looks like no.
+   - [ ] Boot systems, lv core runs launch and circularize, hands-off to payload core.  Payload core then runs mission script.
+     - [ ] Using name tags, the craft can have one name, the lifter another, and the ship another, still.
+   - [ ] Orbital parameters problem : Shouldn't have to edit the lv file, just to launch to higher altitude
+   - [ ] Using the name tag to pass parameters seems a little sketchy
+   - [ ] With the new boot systems, missions feel more like just glorified objectives.
+
+
+**** Using the system
+   - Lifters/Booster (Rockets) 
+     - Lifters need control, access to the KSC mainframe, and a computer core.
+     - The name tag of the core, will be the name of the lv/ the lv_boot looks for.
+     - The lifter core expects to handoff execution to a core on the payload, after circularization.
+     - The name tag of the lifter core is used to pass parameters to the lv script
+     - The name tag of the payload core should contain the name of the ship in orbit.

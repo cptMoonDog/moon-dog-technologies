@@ -2,8 +2,9 @@
 //This is a standard Launch Vehicle parameter file.
 //This holds the information necessary to customize the flight profile for your lifter.
 
-declare parameter inclination 0.
-declare parameter lan "none".
+declare parameter inclination is 0
+declare parameter lan is "none".
+declare parameter launchToAlt is 80000.
 
 {
    //Load the launch system into memory
@@ -27,9 +28,9 @@ declare parameter lan "none".
    // Launch azimuth will be on a northerly heading.
    // If "south" is specified, rocket will be launched at the Descending Node.
    // Launch azimuth will be on a southerly heading.
-   // If "any" is specified, rocket will be launched at the nearest Node.
+   // If "all" or "any" is specified, rocket will be launched at the nearest Node.
    // Launch azimuth will be which ever is necessary.
-   launch_param:add("azimuthHemisphere",   "north").
+   launch_param:add("azimuthHemisphere",   "all").
 
    //Fudge factor  
    // Why this is needed: This script is capable of launching into inclined orbits, 
@@ -46,8 +47,8 @@ declare parameter lan "none".
    // Pitchover magnitude in degrees
    // Vertical speed at which to start pitchover
    // Vertical speed at which to handoff steering to prograde follower.
-   launch_param:add("pOverDeg",             5). 
-   launch_param:add("pOverV0",              30). 
+   launch_param:add("pOverDeg",             4). 
+   launch_param:add("pOverV0",              50). 
    launch_param:add("pOverVf",              150).
 
    //Throttle program parameters
@@ -59,13 +60,13 @@ declare parameter lan "none".
    launch_param:add("throttleProgramType", "etaApo").
    launch_param:add("throttleProfile", list( 
                                             20000, //Apo to Activate function, max prior
-                                            80000, //Apo to Deactivate function 
-                                            45)).  //Setpoint
+                                            launchToAlt, //Apo to Deactivate function 
+                                            50)).  //Setpoint
 
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "poodle").
+   launch_param:add("upperstage", "wolfhound").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      20).
