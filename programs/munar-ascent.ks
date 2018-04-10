@@ -42,6 +42,9 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
          MISSION_PLAN:add({
+        print "WARNING WARNING WARNING".
+        print "Work in progress.  Do not expect your pilot to survive if you use this".
+        print "WARNING WARNING WARNING".
             if start=0 set start to time:seconds.
             if time:seconds < start + 10 return OP_CONTINUE.
             if ship:apoapsis < 20000 {
