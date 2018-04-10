@@ -6,13 +6,17 @@
 // if it returns OP_FINISHED, the system will advance to the next routine in the MISSION_PLAN.
 
 //Load up pluggable objectives.
-runpath("0:/lib/load_objectives.ks", list("lko-to-mun", "warp-to-soi", "powered-capture", "landing")).
+runpath("0:/programs/lko-to-mun.ks").
+runpath("0:/programs/warp-to-soi.ks").
+runpath("0:/programs/powered-capture.ks").
+runpath("0:/programs/landing.ks").
 
 //The Launch Vehicle adds launch to LKO to the MISSION_PLAN
+//If the current core is the only core, assume that it needs to take responsibility for launch as well.
 if exists("1:/boot/single_core.ks") runpath("0:/lv/template.ks").
 
 //Add Pluggable objectives like this:
-available_objectives["lko-to-mun"]("terrier").
+available_programs["lko-to-mun"]("terrier").
 
 //You can also add custom routines to the MISSION_PLAN like this:
 MISSION_PLAN:add({
@@ -38,9 +42,9 @@ declare function raise_pe {
 }
 MISSION_PLAN:add(raise_pe@).
 
-available_objectives["warp-to-soi"]("Mun").
-available_objectives["powered-capture"]("terrier").
-available_objectives["landing"]("terrier").
+available_programs["warp-to-soi"]("Mun").
+available_programs["powered-capture"]("terrier").
+available_programs["landing"]("terrier").
 
 //This starts the runmode system
 kernel_ctl["start"]().

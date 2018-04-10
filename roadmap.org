@@ -15,3 +15,17 @@
      - The lifter core expects to handoff execution to a core on the payload, after circularization.
      - The name tag of the lifter core is used to pass parameters to the lv script
      - The name tag of the payload core should contain the name of the ship in orbit.
+
+       
+** Sample development cycle
+   Build a Launch vehicle (Lifter/Booster, etc).
+   Give the lv a KOS core, have it boot with lv_boot, set the name tag to the name of the lv profile you want it to run, append with launch parameters.
+   
+   Build a payload (spacecraft, probe, etc).
+   Give the payload a KOS core, have it boot with payload_boot, set the name tag to the name you want for the spacecraft, and/or the name of the missions script to run after launch to lko.
+   
+   Objectives
+   Objectives can be run standalone, or as imports to a mission.  When writing your own, make sure to follow the template, so that you don't break the standalone system.
+   
+   Missions
+   Missions can be from the ground up, all the way through to the return.  Use the textuuu
