@@ -8,7 +8,7 @@ A primary focus of this project, is reducing non-reusable code, while maintainin
 
 How It Works
 ------------
-There are extensive comments in the scripts, please see them for specific documentation (What's that, you don't read source files?  ...  Why are you here, then?) however here is a brief introduction:
+There are extensive comments in the scripts, please see them for specific documentation (What's that, you don't read source files? No time like the present to start!) however here is a brief introduction:
  - `programs` are scripts that achieve a well defined objective; e.g. change-pe, warp-to-soi, etc.  However, they must be formed correctly in order to work with the rest of the system.
  - `missions` are scripts that define a series of programs to be run in order, for a specific mission.  
  - `lv'       contains definition files for Launch Vehicles.  That launcher family you want to make, but can never remember the optimal launch profile?  Never again, one and done!
