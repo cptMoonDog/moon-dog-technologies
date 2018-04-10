@@ -124,14 +124,14 @@
    //Apoapsis value beyond which the function will apply.  Full throttle prior.
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
    declare function functionThrottler {
+      local kickWithin is 1.5.
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1] return 0.
-      else if vang(up:forevector, ship:facing:forevector) > 89 and vang(up:forevector, ship:facing:forevector) < 91 {
+      else if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
          //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
          //Max function ensures this will not cause throttling down, if already throttled up.
-         local kickWithin is 2.
          return max(throttFunction(), -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+kickWithin).
       } else {
          return throttFunction().

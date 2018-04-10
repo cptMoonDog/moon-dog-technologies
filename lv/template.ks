@@ -44,12 +44,9 @@ declare parameter launchToAlt is 80000.
    launch_param:add("timeOfFlight",         180).
 
    //Gravity turn parameters
-   // Pitchover magnitude in degrees
-   // Vertical speed at which to start pitchover
-   // Vertical speed at which to handoff steering to prograde follower.
-   launch_param:add("pOverDeg",             4). 
-   launch_param:add("pOverV0",              50). 
-   launch_param:add("pOverVf",              150).
+   launch_param:add("pOverDeg",             4).  // Pitchover magnitude in degrees
+   launch_param:add("pOverV0",              50). // Vertical speed at which to start pitchover                        
+   launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
    //Throttle program parameters
    // There are several throttle program types available.
