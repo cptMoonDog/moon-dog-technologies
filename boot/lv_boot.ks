@@ -28,9 +28,8 @@ if ship:status = "PRELAUNCH" {
       wait 5.
       reboot.
    }
-} else if ship:modulesnamed(ship:name):length > 0 {
+} else {
    local payloadCore is processor(ship:name).
+   print "Handing off...".
    payloadCore:connection:sendmessage("handoff").
-} else if ship:status = "ORBITING" or ship:status = "SUBORBITAL" {
-   print "Handoff pending or failed!".
 }

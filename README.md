@@ -1,42 +1,47 @@
-KOS Mission Planning System
+KOS Mission Running System
 ===========================
 
-How it works, short version:
- - `lib/core/kernel_ctl.ks` defines a runmode system.
-    - This is neat, because it will run functions added to the `MISSION_PLAN` repeatedly until the system is told to advance to the next.
-    - Functions are expected to return one of the following:
-       - `OP_CONTINUE` if they wish to be run again.
-       - `OP_FINISHED` if they believe it is safe to advance to the next objective in the `MISSION_PLAN`.
-       - `OP_PREVIOUS` to go back to the previous objective.
-       - `OP_FAIL` if a catastrophic error has occured and the MISSION_PLAN cannot continue, i.e. abort and hope the pilot can save himself.
-    
-    - There is also an `INTERRUPT` list for functions you wish to be executed in parallel.
-    - This enables things like the following:
+So, what is this?
+-----------------
+This is a comprehensive system for rapid development and deployment of automated space missions in Kerbal Space Program, using Kerbal Operating System (KOS).
+A primary focus of this project, is reducing non-reusable code, while maintaining significant flexibility.
 
-```kerboscript
-    runpath("lib/core/kernel_ctl.ks").
-    MISSION_PLAN:add(launch_to_orbit@).
-    MISSION_PLAN:add(goto_Mun@).
-    MISSION_PLAN:add(return@).
-    MISSION_PLAN:add(re-entry@).
-
-    kernel_ctl["start"]().
-```
-
-
-Other Things
+How It Works
 ------------
+There are extensive comments in the scripts, please see them for specific documentation (What's that, you don't read source files?  ...  Why are you here, then?) however here is a brief introduction:
+ - `programs` are scripts that achieve a well defined objective; e.g. change-pe, warp-to-soi, etc.  However, they must be formed correctly in order to work with the rest of the system.
+ - `missions` are scripts that define a series of programs to be run in order, for a specific mission.  
+ - `lv'       contains definition files for Launch Vehicles.  That launcher family you want to make, but can never remember the optimal launch profile?  Never again, one and done!
+ - `lib`      contains scripts that are slightly more general than in `programs`
+ - `boot`     contains several scripts that make building generalized Launch Vehicles very easy:
+    - When you build your payload (with KOS module), change the nameTag of the KOS part to the name of the `mission` you want it to run, and use the boot file `payload_boot.ks` to automatically run that mission after the `lv` achieves a circular orbit. This will also change the name of the ship to the name of the mission.
+    - When you build the Launch Vehicle (with KOS module), change it's nameTag to the name of the `lv` definition you want it to use, and us the boot file `lv_boot.ks`.  The nameTag field also accepts up to 3 parameters: Inclination, RAAN and Orbit Altitude, so you don't have to modified the lifter definition for minor launch differences.
+    - One benefit of this, is that the lifter can be developed under one name, the craft file on launch can have another and the mission itself a third!
+    - Caution: Don't forget to change the nameTag on the KOS Module!
+    
+Note: There is no restriction on the normal use of KOS.  You can have this system in your scripts folder with no loss or change in functionality.
 
-This library also contains systems to make a few things easier (...or at least reduce non-reusable code).
-   - `lv` Contains custom launch profiles for boosters, that way you don't have to create a new profile for a different mission that is using the same booster.
-   - `missions` Is where the boot script looks for the mission definition to load.  The script should have the same name as your mission.
-   - `objectives` Are custom functions for accomplishing various tasks.  They can be loaded using the `lib/load_objectives.ks` system if so desired.
-   - `engine-conf.ks` Contains performance information for engine configurations, that you want to make available to the `lib/maneuver_ctl.ks` system.
-   - `lib` Contains routines that are likely to be reused frequently.
-      - `lib/launch` works with booster definitions in `lv`.  It is self-contained, so you shouldn't notice it much.
-      - `lib/maneuver_ctl.ks` runs maneuvers.
-      - `lib/transfer_ctl.ks` makes the calculations for Hohmann transfers.
+Slightly More Detailed
+----------------------
+ - `lib/core/kernel_ctl.ks` defines a Turing Complete runmode system.
+    - What this means: Subroutines are added to the `MISSION_PLAN` list by the user, or other functions in this library, each subroutine is run repeatedly until it tells the system to advance to the next.
+    - `MISSION_PLAN` subroutines work best, when programmed without loops or wait statements, because the whole system is running in a loop.
+ - `programs` are scripts that add functions (delegates) to the `available_programs` lexicon.  Each of these is an initializer, which when run, adds the function(s) implementing the program to the MISSION_PLAN list.
 
+Example
+=======
+One of my configurations:
+ - VAB Craftfile Name: Spud Nut 2
+ - Launch Vehicle: Spud Atlas
+   - Definition file: `lv/Spud Atlas.ks`
+   - KOS Module nameTag: `Spud Atlas, 6, 78, 80000`
+   - Bootfile: `boot/lv_boot.ks`
+ - Payload: Minmus Xplorer
+   - Mission: `missions/Minmus Xplorer.ks`
+   - KOS Module nameTag: `Minmus Xplorer.ks`
+   - Bootfile: `boot/payload_boot.ks`
+
+When launched from the VAB, Spud Nut 2 spawns on the launch pad, is renamed Minmus Xplorer then, the the rocket is launched directly into the correct orbit and inclination for Minmus. After circularizing at 80000m, the LV core sends a message to the payload core, which detaches from the LV and executes the Minmus Xplorer mission.
 
 While I have used these routines successfully in my own missions, some may still be in an alpha state.  Use at your own risk.
    
