@@ -148,7 +148,7 @@
       }
    }  
    maneuver_ctl:add("engineStat", engineStat@).
-   runpath("0:/engine-conf.ks").
+   runpath("0:/config/engine-stats.ks").
 }
 
 

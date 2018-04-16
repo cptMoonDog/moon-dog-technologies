@@ -49,16 +49,42 @@ declare parameter launchToAlt is 80000.
    launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
    //Throttle program parameters
-   // There are several throttle program types available.
-   // This one maintains a set time to Apoapsis.
-   //TODO Document available programs.
-   // Other "throttleProgramType"s available: "tableMET", "tableAPO", "vOV", and the default ("etaApo")
+   // There are three possible values for launch_param["throttleProgramType"]:
+
+   //    1) "setpoint" maintains a set value for the launch_param["throttleReferenceVar"] using a PID.
+   //          In this case, launch_param["throttleProfile"] is a list of three items: [apo at which this function should take control], [apo of final orbit], and [setpoint for PID]
+
+   //    2) "function" returns the value of a custom function defined in:  //TODO 
+   //          In this case, launch_param["throttleProfile"] is a list of two items: [apo at which this function should take control], and [apo of final orbit]
+
+   //    3) "table" sets the throttle from a table of values versus "throttleReferenceVar", and using a function to smooth the output.
+   //          In this case, launch_param["throttleProfile"] is a list (yes, list), of [ReferenceVar], [throttle] pairs.
+   //          Note: The throttle setting in a row of the table is the value for the throttle up to, NOT following the reference value.  
    
-   launch_param:add("throttleProgramType", "etaApo").
+   //Examples:
+   launch_param:add("throttleProgramType", "setpoint").
+   launch_param:add("throttleReferenceVar", "Apo").
    launch_param:add("throttleProfile", list( 
                                             20000, //Apo to Activate function, max prior
                                             launchToAlt, //Apo to Deactivate function 
                                             50)).  //Setpoint
+
+   //launch_param:add("throttleProgramType", "function").
+   //launch_param:add("throttleFunction", "etaApo").
+   // launch_param:add("throttleProfile", list( 
+   //                                          20000, //Apo to Activate function, max prior
+   //                                          launchToAlt, //Apo to Deactivate function 
+   //                                          )).
+
+   //launch_param:add("throttleProgramType", "table").
+   //launch_param:add("throttleReferenceVar", "Apo").
+   // launch_param:add("throttleProfile", list( 
+   //                                          20000, 1,
+   //                                          30000, 0.5,
+   //                                          50000, 0.5,
+   //                                          70000, 0.25,
+   //                                          80000, 0.1
+   //                                          )).
 
    //Upper stage
    // This tells the system which upper stage is installed.

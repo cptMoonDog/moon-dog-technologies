@@ -5,7 +5,6 @@
    /// This library's list of  exported functions.
    if not (defined launch_ctl)
       global launch_ctl is lexicon().
-   
 
    /// Local variables
    local pid is 0.
@@ -14,34 +13,25 @@
 
 ///Public functions
    declare function init {
-      if launch_param["throttleProgramType"] = "tableMET" {
+      if launch_param["throttleProgramType"] = "table" {
          lock throttle to throttleSmoother().
          launch_ctl:add("throttle_monitor", advanceStep@).
-      } else if launch_param["throttleProgramType"] = "tableAPO" {
-         lock throttle to throttleSmoother().
-         launch_ctl:add("throttle_monitor", advanceStep@).
-      } else if launch_param["throttleProgramType"] = "etaApo" {
-         set throttFunction to thrott_function_etaAPO@.
+      } else {
+         if launch_param["throttleProgramType"] = "setpoint" {
+            set throttFunction to thrott_function_setpoint@.
+            set pid to PIDLOOP().
+            set pid:setpoint to launch_param["throttleProfile"][2].
+            set pid:minoutput to 0.
+            set pid:maxoutput to 1.
+            launch_ctl:add("throttle_monitor", genericMonitor@).
+         } else if launch_param["throttleProgramType"] = "function" {
+            if not (defined throttle_functions)
+               runpath("0:/config/throttle-functions.ks").
+           
+            set throttFunction to throttle_functions[launch_param["throttleFunction"]].
+         }
          lock throttle to functionThrottler().
-         set pid to PIDLOOP().
-         set pid:setpoint to launch_param["throttleProfile"][2].
-         set pid:minoutput to 0.
-         set pid:maxoutput to 1.
-         launch_ctl:add("throttle_monitor", genericMonitor@).
-      } else if launch_param["throttleProgramType"] = "vOV" {
-         set throttFunction to thrott_function_vOV@.
-         lock throttle to functionThrottler().
-         launch_ctl:add("throttle_monitor", genericMonitor@).
       }
-     // else if launch_param["throttleProgramType"] = "constVTWR" {
-     //    set throttFunction to thrott_function_constantVerticalTWR@.
-     //    lock throttle to functionThrottler().
-     //    set pid to PIDLOOP().
-     //    set pid:setpoint to launch_param["throttleProfile"][2].
-     //    set pid:minoutput to 0.
-     //    set pid:maxoutput to 1.
-     //    launch_ctl:add("throttle_monitor", genericMonitor@).
-     // }
    }
    launch_ctl:add("init_throttle", init@).
    
@@ -62,15 +52,6 @@
       return OP_CONTINUE.
    }
    
-   declare function genericMonitor {
-      //This prevents the program from shutting down if drag could still have an influence.
-      if ship:apoapsis >= launch_param["throttleProfile"][1] and ((not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height)  {
-         lock throttle to 0.
-         return OP_FINISHED.
-      }
-      return OP_CONTINUE.
-   }
-   
 ///Private functions
    // Lookup table throttle control 
    declare function throttleSmoother {
@@ -87,6 +68,7 @@
          }
       }
    }
+
    declare function smoothInterval {
       parameter top.
       parameter bottom.
@@ -98,26 +80,22 @@
 
    //Utility function for table lookup system.
    declare function getTableInput {
-      if launch_param["throttleProgramType"] = "tableMET"
+      if launch_param["throttleReferenceVar"] = "MET"
          return MISSIONTIME.
-      else if launch_param["throttleProgramType"] = "tableAPO"
+      else if launch_param["throttleReferenceVar"] = "APO"
          return ship:apoapsis.
       else return 0.
    }
 
+   declare function getSetpointReferenceVar {
+     if launch_param["throttleReferenceVar"] ="APO"
+       return eta:apoapsis.
+     else return 0.
+   }
+     
  ///Non-table based throttling methods.
-   declare function thrott_function_etaAPO {
-      return pid:update(time:seconds, eta:apoapsis).
-   }
-   //Throttle setting is the inverse ratio of the horizontal component of orbital velocity and orbital velocity at the current altitude.
-   declare function thrott_function_vOV {
-      return 1-sin(vang(up:forevector, facing:forevector))*(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)).
-   }
-   //DO NOT USE, doesn't work.
-   declare function thrott_function_constantVerticalTWR {
-      local rval is pid:update(time:seconds, lastThrottVal*((ship:availablethrust/(ship:mass*9.807))*cos(vang(up:forevector, facing:forevector)))).
-      set lastThrottVal to rval.
-      return rval.
+   declare function thrott_function_setpoint {
+      return pid:update(time:seconds, getSetpointReferenceVar()).
    }
    
    //Expects the following profile:
@@ -136,5 +114,14 @@
       } else {
          return throttFunction().
       }
+   }
+
+   declare function genericMonitor {
+      //This prevents the program from shutting down if drag could still have an influence.
+      if ship:apoapsis >= launch_param["throttleProfile"][1] and ((not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height)  {
+         lock throttle to 0.
+         return OP_FINISHED.
+      }
+      return OP_CONTINUE.
    }
 }
