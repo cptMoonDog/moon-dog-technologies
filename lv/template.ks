@@ -2,7 +2,7 @@
 //This is a standard Launch Vehicle parameter file.
 //This holds the information necessary to customize the flight profile for your lifter.
 
-declare parameter inclination is 0
+declare parameter inclination is 0.
 declare parameter lan is "none".
 declare parameter launchToAlt is 80000.
 
@@ -52,44 +52,67 @@ declare parameter launchToAlt is 80000.
    // There are three possible values for launch_param["throttleProgramType"]:
 
    //    1) "setpoint" maintains a set value for the launch_param["throttleReferenceVar"] using a PID.
-   //          In this case, launch_param["throttleProfile"] is a list of three items: [apo at which this function should take control], [apo of final orbit], and [setpoint for PID]
+   //          In this case, launch_param["throttleProfile"] is a list of three items:
+   //             [apo at which this function should take control], [apo of final orbit], and [setpoint for PID]
 
-   //    2) "function" returns the value of a custom function defined in:  //TODO 
-   //          In this case, launch_param["throttleProfile"] is a list of two items: [apo at which this function should take control], and [apo of final orbit]
+   //    2) "function" returns the value of a custom function defined in: config/throttle_functions.ks
+   //          In this case, launch_param["throttleProfile"] is a list of two or three items:
+   //             [apo at which this function should take control], [apo of final orbit], and [function parameter (optional)]
 
    //    3) "table" sets the throttle from a table of values versus "throttleReferenceVar", and using a function to smooth the output.
    //          In this case, launch_param["throttleProfile"] is a list (yes, list), of [ReferenceVar], [throttle] pairs.
    //          Note: The throttle setting in a row of the table is the value for the throttle up to, NOT following the reference value.  
+   //          Note 2: This is the best method if you want the "perfect" ascent.
+   //                  It can be fully customized for your lift vehicle, no other method can account for the peculiarities of one specific rocket.
+
+   //   Note: For comparison, MechJeb defines a curve versus altitude and forces the rocket to follow it.
+   //         The Gravity Turn mod uses a "Zero-Lift" maneuver (Always pointing prograde), and adjusts the throttle to maintain a constant eta:apoapsis.
+   //         Any ascent using this system will be a "Zero-Lift" maneuver (AKA Gravity Turn). The various methods are different ways to manage the throttle during the ascent.
    
    //Examples:
-   launch_param:add("throttleProgramType", "setpoint").
-   launch_param:add("throttleReferenceVar", "Apo").
-   launch_param:add("throttleProfile", list( 
-                                            20000, //Apo to Activate function, max prior
-                                            launchToAlt, //Apo to Deactivate function 
-                                            50)).  //Setpoint
 
+   // This is a decent general ascent
+   launch_param:add("throttleProgramType", "setpoint"). 
+   launch_param:add("throttleReferenceVar", "etaAPO"). 
+   launch_param:add("throttleProfile", list( 
+                                            2000, //Apo to Activate function, max prior
+                                            launchToAlt, //Apo to Deactivate function 
+                                            45)).  //Setpoint
+
+      // For some reason, constant TWR ascent are popular recently.  It's not a great idea, but here ya go!
+      // You can make your own functions too!
    //launch_param:add("throttleProgramType", "function").
-   //launch_param:add("throttleFunction", "etaApo").
-   // launch_param:add("throttleProfile", list( 
-   //                                          20000, //Apo to Activate function, max prior
-   //                                          launchToAlt, //Apo to Deactivate function 
+   //launch_param:add("throttleFunction", "constantTWR").
+   //launch_param:add("throttleProfile", list( 
+   //                                          2000, //Apo to Activate function, max prior
+   //                                          launchToAlt //Apo to Deactivate function 
+   //                                          , 1.5 //Functions can take an optional parameter, in this case the TWR to maintain is 1.5
    //                                          )).
 
-   //launch_param:add("throttleProgramType", "table").
-   //launch_param:add("throttleReferenceVar", "Apo").
-   // launch_param:add("throttleProfile", list( 
+     // Table based methods are the way to go, if you want exactly the right ascent for your specific rocket.
+     // It can't be wrong if NASA uses it, right?
+   //launch_param:add("throttleReferenceVar", "APO"). 
+   //launch_param:add("throttleProfile", list( 
    //                                          20000, 1,
    //                                          30000, 0.5,
    //                                          50000, 0.5,
    //                                          70000, 0.25,
    //                                          80000, 0.1
    //                                          )).
+   //launch_param:add("throttleProgramType", "table").
+   //launch_param:add("throttleReferenceVar", "MET"). 
+   //launch_param:add("throttleProfile", list( 
+   //                                          30, 1,
+   //                                          60, 0.5,
+   //                                          120, 0.5,
+   //                                          200, 0.25,
+   //                                          250, 0.1
+   //                                          )).
 
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "wolfhound").
+   launch_param:add("upperstage", "terrier").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      20).
