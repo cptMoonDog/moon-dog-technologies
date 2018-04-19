@@ -44,7 +44,7 @@ declare parameter launchToAlt is 80000.
    launch_param:add("timeOfFlight",         180).
 
    //Gravity turn parameters
-   launch_param:add("pOverDeg",             4).  // Pitchover magnitude in degrees
+   launch_param:add("pOverDeg",             5).  // Pitchover magnitude in degrees
    launch_param:add("pOverV0",              50). // Vertical speed at which to start pitchover                        
    launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
@@ -71,7 +71,7 @@ declare parameter launchToAlt is 80000.
    
    //Examples:
 
-   // This is a decent general ascent
+     // This is a decent general ascent
    launch_param:add("throttleProgramType", "setpoint"). 
    launch_param:add("throttleReferenceVar", "etaAPO"). 
    launch_param:add("throttleProfile", list( 
@@ -79,7 +79,15 @@ declare parameter launchToAlt is 80000.
                                             launchToAlt, //Apo to Deactivate function 
                                             45)).  //Setpoint
 
-      // For some reason, constant TWR ascent are popular recently.  It's not a great idea, but here ya go!
+   //launch_param:add("throttleProgramType", "function").
+   //launch_param:add("throttleFunction", "vOV").
+   //launch_param:add("throttleProfile", list( 
+   //                                          2000, //Apo to Activate function, max prior
+   //                                          launchToAlt //Apo to Deactivate function 
+   //                                          , 0.1 //Functions can take an optional parameter, in this case the minimum allowable throttle is 0.1
+   //                                          )).
+
+      // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
       // You can make your own functions too!
    //launch_param:add("throttleProgramType", "function").
    //launch_param:add("throttleFunction", "constantTWR").

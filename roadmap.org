@@ -1,7 +1,20 @@
 *** TODO Features
+    - [ ] Add programs
+      - [ ] change-ap
+      - [ ] Transfer Mun to Minmus
+      - [ ] Transfer Minmus to Mun
+    - [ ] Fix programs
+      - [ ] landing
+      - [ ] return-from-moon
 
+*** TODO Samples and Examples
+    - [ ] Add to git control:
+      - [ ] Spud Atlas lv file (update to conform with template)
+      - [ ] Minmus Xplorer mission
+      - [ ] Spud Nut 2 craftfile
 
-**** Using the system
-
-       
-** Sample development cycle
+*** TODO Documentation
+    - [ ] Explain user serviceable features
+      - [ ] engine stats
+      - [ ] throttle functions
+    - [ ] Add wiki(?)

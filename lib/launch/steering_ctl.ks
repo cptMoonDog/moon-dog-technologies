@@ -33,19 +33,21 @@
 ///Public functions
    declare function steeringProgram {
       //TODO Fix this reference to altitude, not robust.  But they fix these cases getting tripped toward the end of ascent.
-      //What I need, is some reference to detect the next stage.
-      if vang(ship:prograde:forevector, ship:srfprograde:forevector) < 5 and ship:altitude > 35000 {
+      // 
+      if vang(ship:prograde:forevector, ship:srfprograde:forevector) < 5 and ship:altitude > ship:body:atm:height/2 {
          set progradeDirection to ship:prograde.
       } else {
          set progradeDirection to ship:srfprograde.
       }
-      if ship:altitude < 35000 and vang(up:forevector, ship:facing:forevector) < 45 {
+      if ship:altitude < ship:body:atm:height/2 and vang(up:forevector, ship:facing:forevector) < 45 {
          if ship:altitude < h0 + 10 {
             //Prior to clearing the tower
             return ship:facing.
          }else if ship:verticalspeed < launch_param["pOverVf"] {
             //First part says, "Wait for roll to complete.", second part says, "If you started the pover already, don't come back here."
-            if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and vang(up:forevector, ship:facing:forevector) < 0.5 or ship:verticalspeed < launch_param["pOverV0"] {
+            if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and
+               vang(up:forevector, ship:facing:forevector) < 0.5 or
+               ship:verticalspeed < launch_param["pOverV0"] {
                //Roll to Azimuth
                return heading(azimuth, 90).
             } else if ship:verticalspeed > launch_param["pOverV0"] {
@@ -61,12 +63,11 @@
    
    declare function steeringVector {
          local progradeVector is progradeDirection:forevector.
-         if ship:verticalspeed < 0 {
-            local pitchLimit is vang(up:forevector, progradeVector)*ship:altitude/70000.
-            local pitchPV is ship:verticalspeed/30.
-            local pitchangle is pitchLimit*((pitchPV/sqrt(1+pitchPV^2))).
-            print pitchangle at(0, 6).
-            print pitchlimit at(0, 7).
+         if ship:verticalspeed < 2 {
+            local pitchLimit is vang(up:forevector, progradeVector)*min(1, ship:altitude/ship:body:atm:height).
+            local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).
+            // Pitch up sufficient to have a vertical TWR = 1.
+            local pitchangle is -1*min(pitchLimit, arcsin(1/max(1,twr))).
             set progradeVector to progradeDirection:forevector*angleaxis(pitchAngle, progradeDirection:starvector).
          }
          if inclinationReached {
