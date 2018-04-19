@@ -6,6 +6,8 @@
     - [ ] Fix programs
       - [ ] landing
       - [ ] return-from-moon
+    - [ ] Telemetry display
+    - [ ] Concurrent command processor
 
 *** TODO Samples and Examples
     - [ ] Add to git control:
