@@ -13,7 +13,7 @@
 
 //The Launch Vehicle adds launch to LKO to the MISSION_PLAN
 //If the current core is the only core, assume that it needs to take responsibility for launch as well.
-if exists("1:/boot/single_core.ks") runpath("0:/lv/template.ks").
+//if exists("1:/boot/single_core.ks") runpath("0:/lv/template.ks").
 
 //Add Pluggable objectives like this:
 //available_programs["lko-to-mun"]("terrier").

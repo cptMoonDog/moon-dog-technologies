@@ -8,6 +8,7 @@
       - [ ] return-from-moon
     - [ ] Telemetry display
     - [ ] Concurrent command processor
+    - [ ] programs MUST take a parameter
 
 *** TODO Samples and Examples
     - [ ] Add to git control:

@@ -34,11 +34,12 @@ Slightly More Detailed
 
 Example
 =======
-One of my configurations:
+This is included in the repo (craft may require Ven's):
  - VAB Craftfile Name: `Spud Nut 2`
  - Launch Vehicle: `Spud Atlas`
    - Definition file: `lv/Spud Atlas.ks`
-   - KOS Module nameTag: `Spud Atlas, 6, 78, 80000`
+   - KOS Module nameTag: `Spud Atlas, 6, 78, 80000` (New Feature!: Can also just give the name of a targetable, great for orbital rescues.)
+     - Alternately: `Spud Atlas, Minmus`
    - Bootfile: `boot/lv_boot.ks`
  - Payload: `Minmus Xplorer`
    - Mission: `missions/Minmus Xplorer.ks`

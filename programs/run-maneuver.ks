@@ -1,14 +1,16 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "warp-to-soi". //<------- put the name of the script here
+local programName is "lko-to-minmus". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
+    // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
 declare parameter p1 is "". 
-declare parameter p2 is "". 
+//declare parameter p2 is "". 
+
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -23,28 +25,29 @@ set available_programs[programName] to {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
+   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
+   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter targetBody.
+   declare parameter engineName.
 
 //======== Local Variables =====
 
 //=============== Begin program sequence Definition ===============================
-   // The actual instructions implementing the program are in delegates, which the initializer adds to the MISSION_PLAN.
+   // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
+   // In this case, the first part of the program sequence
+   // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
-      if ship:orbit:hasnextpatch and ship:orbit:nextpatch:body = body(targetBody) {
-         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() and ship:orbit:nextpatcheta > 180 {
-            warpto(ship:orbit:nextpatcheta+time:seconds-180).
-         }
-         if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
-         return OP_CONTINUE.
+      if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
+         stage. 
       }
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
-
+   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

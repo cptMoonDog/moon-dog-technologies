@@ -40,11 +40,13 @@ runpath("0:/lib/core/kernel.ks").
         return launch_ctl["throttle_monitor"]().
       }).
       MISSION_PLAN:add({
+         //If the upperstage is not the active engine...
          if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
-            print "maxthrust: "+ship:maxthrust at(0, 21).
             stage. 
          }
          maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["upperstage"], "ap", "circularize").
+         if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height lock throttle to 1.
+         else lock throttle to 0.
          return OP_FINISHED.
       }).
       MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).

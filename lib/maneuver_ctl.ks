@@ -16,6 +16,11 @@
    local ethrust is lexicon().
 ///Public functions
 
+   declare function getStartTime {
+      return start.
+   }
+   maneuver_ctl:add("getStartTime", getStartTime@).
+
    declare function schedule_burn {
       declare parameter steeringProgram. // A string indicating direction ("prograde", "retrograde", "normal", "antinormal", etc) 
       declare parameter engineName.

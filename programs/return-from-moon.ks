@@ -117,4 +117,5 @@ set available_programs[programName] to {
 if p1 {
    available_programs[programName]().
    kernel_ctl["start"]().
+   shutdown.
 } 
