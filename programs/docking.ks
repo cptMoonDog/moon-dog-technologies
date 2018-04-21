@@ -39,9 +39,28 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
+      local port is ship:partsdubbed("DockingPort")[0].
+      lock steering to target:portfacing:vector:normalized*-1.
+      wait until vang(port:portfacing:forevector, target:portfacing:vector:normalized*-1) < 0.5.
       until false {
-         print "steering locked" at(0, 5).
-         lock steering to target:portfacing:vector:normalized*-1.
+         local vel is (target:velocity:orbit - ship:velocity:orbit).
+         local speedVert is abs(vel*port:portfacing:topvector).
+         local speedLateral is abs(vel*port:portfacing:starvector).
+         local speedFore is abs(vel*port:portfacing:forevector).
+         if speedFore > 0.5 {
+           set ship:control:fore to -0.2.
+         } else if speedFore < -0.5 {
+           set ship:control:fore to 0.2.
+         } else if speedVert > 0.5 {
+           set ship:control:top to -0.2.
+         } else if speedVert < -0.5 {
+           set ship:control:top to 0.2.
+         } else if speedLateral > 0.5 {
+           set ship:control:starboard to -0.2.
+         } else if speedFore < -0.5 {
+           set ship:control:starboard to 0.2.
+         }
+         
          wait 0.25.
       }
       
