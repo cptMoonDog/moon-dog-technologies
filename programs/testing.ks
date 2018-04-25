@@ -1,15 +1,13 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "rendezvous". //<------- put the name of the script here
+local programName is "testing". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
     // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-declare parameter p1 is "notused". 
-//declare parameter p2 is "". 
 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
@@ -30,7 +28,7 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter engineName.
+   //declare parameter engineName.
 
 //======== Local Variables =====
 
@@ -41,49 +39,19 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
-   if not hastarget set target to "Kerbin Station".
-   if not hasnode {
-      local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", target)).
-      add(mnvr).
-      local t is transfer_ctl["etaPhaseAngle"]()+mnvr:orbit:period/2.
-      local dist is (positionat(target, t)-positionat(ship, t)).
-      until dist:mag < 5000 {
-         set mnvr:prograde to mnvr:prograde + 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:prograde to mnvr:prograde -1.
-         
-         set mnvr:prograde to mnvr:prograde - 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:prograde to mnvr:prograde +1.
+      declare function angleToBodyPrograde {
+         local relVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
+         local relVel2 is ((ship:velocity:orbit+relVelocity):mag-relVelocity:mag).
 
-         set mnvr:radialout to mnvr:radialout + 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:radialout to mnvr:radialout -1.
-
-         set mnvr:radialout to mnvr:radialout - 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:radialout to mnvr:radialout +1.
-
-         set mnvr:normal to mnvr:normal + 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:normal to mnvr:normal -1.
-
-         set mnvr:normal to mnvr:normal - 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:normal to mnvr:normal +1.
-         local t is transfer_ctl["etaPhaseAngle"]()+mnvr:orbit:period/2.
+         local angleToPrograde is (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
+         if (relVel2/abs(relVel2)) < 0 set angleToPrograde to 360 + (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
+         return angleToPrograde.
       }
-   }
-   print "ETA Phase Angle: "+transfer_ctl["etaPhaseAngle"]() at(0, 5).
-   return OP_CONTINUE.
+      print "ATP: "+angleToPrograde() at(0, 5).
+      
+      return OP_CONTINUE.
    }).
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
 
-// If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_programs[programName](p1).
-   kernel_ctl["start"]().
-   shutdown.
-} 

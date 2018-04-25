@@ -9,6 +9,8 @@
     - [ ] Telemetry display
     - [ ] Concurrent command processor
     - [ ] programs MUST take a parameter
+    - [ ] new rule: first lines in a program should take control of steering locks.  They break scoping rules.
+    - [ ] Programs that do not take parameters have a hard time with standalone operation <--- fix this.
 
 *** TODO Samples and Examples
     - [ ] Add to git control:

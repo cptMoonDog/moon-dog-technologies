@@ -7,8 +7,6 @@ local programName is "return-from-moon". //<------- put the name of the script h
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-declare parameter p1 is "". 
-declare parameter p2 is "". 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -47,9 +45,15 @@ set available_programs[programName] to {
             local h is r0*(vejection).
             local hecc is sqrt(1+(2*epsilon*h^2)/(ship:body:mu^2)).
             local ejectionAngle is 180-arcsin(1/hecc).
-            local angleToBodyPrograde is (vang(ship:body:velocity:orbit-ship:body:body:velocity:orbit, vxcl(north:forevector, up:forevector))).
-            if (ship:position-ship:body:body:position):mag < ship:body:altitude+ship:body:body:radius set angleToBodyPrograde to 360-angleToBodyPrograde.
-            local angleToBodyRetro is angleToBodyPrograde+180.
+            declare function angleToBodyPrograde {
+               local relVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
+               local relVel2 is ((ship:velocity:orbit+relVelocity):mag-relVelocity:mag).
+
+               local angleToPrograde is (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
+               if (relVel2/abs(relVel2)) < 0 set angleToPrograde to 360 + (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
+               return angleToPrograde.
+            }
+            local angleToBodyRetro is angleToBodyPrograde()+180.
             if angleToBodyRetro > 360 set angleToBodyRetro to angleToBodyRetro-360.
 
             set ejectionangle to ejectionangle*adjForSoi.
@@ -63,6 +67,7 @@ set available_programs[programName] to {
             local rateBody is 360/ship:body:orbit:period.
 
             local etaBurn is (diff)/(rateShip-rateBody).
+            print etaBurn at(0, 15).
 
             add(node(time:seconds+etaBurn, 0, 0, vejection-ship:velocity:orbit:mag)).
             print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta-10):orbit:mag at(0, 3).
@@ -112,10 +117,3 @@ set available_programs[programName] to {
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
-
-// If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_programs[programName]().
-   kernel_ctl["start"]().
-   shutdown.
-} 

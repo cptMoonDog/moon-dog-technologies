@@ -8,8 +8,8 @@ local programName is "rendezvous". //<------- put the name of the script here
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
     // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-declare parameter p1 is "notused". 
-//declare parameter p2 is "". 
+declare parameter p1 is "". 
+declare parameter p2 is "". 
 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
@@ -31,6 +31,7 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter engineName.
+   declare parameter targetName.
 
 //======== Local Variables =====
 
@@ -40,43 +41,58 @@ set available_programs[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
-   if not hastarget set target to "Kerbin Station".
-   if not hasnode {
-      local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", target)).
-      add(mnvr).
-      local t is transfer_ctl["etaPhaseAngle"]()+mnvr:orbit:period/2.
-      local dist is (positionat(target, t)-positionat(ship, t)).
-      until dist:mag < 5000 {
-         set mnvr:prograde to mnvr:prograde + 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:prograde to mnvr:prograde -1.
+
+      local t is time:seconds.
+   
+      MISSION_PLAN:add({
+         if not hastarget set target to targetName.
+         if not hasnode {
+            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", target)).
+            add(mnvr).
+            set t to mnvr:eta+mnvr:orbit:period/2+time:seconds.
+
+            maneuver_ctl["add_burn"]("node", "wolfhound", "node", mnvr:deltav:mag).
+         }
+         return OP_FINISHED.
+      }).
+      MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+      MISSION_PLAN:add({
+
+         local dist is {return (positionat(target, time:seconds)-positionat(ship, time:seconds)).}.
+         local relVelocity is {return (ship:velocity:orbit - target:velocity:orbit).}.
+         local velToward is {return relVelocity():mag*cos(vang(relVelocity(), dist())).}.  //speed toward target
+         print "toward: "+velToward() at(0, 5).
+         print "RelVelocity: "+relVelocity():mag at(0, 6).
+         lock steering to -1*relVelocity().
+         if dist():mag < 150 {
+            if relVelocity():mag < 1 {
+               lock throttle to 0.
+               lock steeering to ship:prograde.
+               return OP_FINISHED.
+            } else if relVelocity():mag > 1 {
+               lock steering to -1*relVelocity().
+               wait until vang(-1*(ship:velocity:orbit - target:velocity:orbit), ship:facing:forevector) < 1.
+               lock throttle to abs(relVelocity():mag)/100.
+            }
+         } else {
+            if velToward() < -0.5 {
+               wait until vang(-1*relVelocity(), ship:facing:forevector) < 1.
+               lock throttle to abs(relVelocity():mag)/100.
+               wait until abs(relVelocity():mag) < 1.
+               lock throttle to 0.
+            } else if abs(velToward()) < 5 and relVelocity():mag < 6 {
+               lock steering to dist().
+               wait until vang(dist(), ship:facing:forevector) < 1.
+               lock throttle to 0.1.
+               wait until abs((ship:velocity:orbit - target:velocity:orbit):mag) > dist():mag/180. //
+               lock throttle to 0.
+            }
+         }
+         return OP_CONTINUE.
+      }).
          
-         set mnvr:prograde to mnvr:prograde - 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:prograde to mnvr:prograde +1.
-
-         set mnvr:radialout to mnvr:radialout + 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:radialout to mnvr:radialout -1.
-
-         set mnvr:radialout to mnvr:radialout - 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:radialout to mnvr:radialout +1.
-
-         set mnvr:normal to mnvr:normal + 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:normal to mnvr:normal -1.
-
-         set mnvr:normal to mnvr:normal - 1.
-         if (positionat(target, t)-positionat(ship, t)):mag < dist:mag set dist to (positionat(target, t)-positionat(ship, t)).
-         else set mnvr:normal to mnvr:normal +1.
-         local t is transfer_ctl["etaPhaseAngle"]()+mnvr:orbit:period/2.
-      }
-   }
-   print "ETA Phase Angle: "+transfer_ctl["etaPhaseAngle"]() at(0, 5).
-   return OP_CONTINUE.
-   }).
+         
+         
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

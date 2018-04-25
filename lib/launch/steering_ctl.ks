@@ -63,7 +63,7 @@
    
    declare function steeringVector {
          local progradeVector is progradeDirection:forevector.
-         if ship:verticalspeed < 2 {
+         if ship:verticalspeed < 0 {
             local pitchLimit is vang(up:forevector, progradeVector)*min(1, ship:altitude/ship:body:atm:height).
             local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).
             // Pitch up sufficient to have a vertical TWR = 1.

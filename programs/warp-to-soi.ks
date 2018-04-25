@@ -7,8 +7,6 @@ local programName is "warp-to-soi". //<------- put the name of the script here
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-declare parameter p1 is "". 
-declare parameter p2 is "". 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -48,10 +46,3 @@ set available_programs[programName] to {
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
-
-// If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_programs[programName](p1).
-   kernel_ctl["start"]().
-   shutdown.
-} 

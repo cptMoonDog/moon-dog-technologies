@@ -46,7 +46,10 @@ runpath("0:/lib/core/kernel.ks").
          }
          maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["upperstage"], "ap", "circularize").
          if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height lock throttle to 1.
-         else lock throttle to 0.
+         else {
+            lock steering to ship:prograde.
+            lock throttle to 0.
+         }
          return OP_FINISHED.
       }).
       MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).

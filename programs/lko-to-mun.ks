@@ -1,14 +1,12 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "lko-to-mun". //<------- put the name of the script here
+local programName is "lko-to-moon". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-declare parameter p1 is "". 
-//declare parameter p2 is "". 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -28,6 +26,7 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
+   declare parameter targetBody.
    declare parameter engineName.
 
 //======== Local Variables =====
@@ -43,13 +42,13 @@ set available_programs[programName] to {
                stage. 
             }
             wait 5.
-            set target to body("Mun").
-            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", "Mun")).
+            set target to body(targetBody).
+            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", targetBody)).
             add(mnvr).
             until false {
-               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis > body("Mun"):radius+10000 {
+               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis > body(targetBody):radius+10000 {
                   break.
-               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis < body("Mun"):radius+10000 {
+               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis < body(targetBody):radius+10000 {
                   print "adjusting pe" at(0, 1).
                   set mnvr:prograde to mnvr:prograde + 0.01.
                }else if mnvr:orbit:apoapsis > body("Mun"):altitude {
@@ -67,9 +66,3 @@ set available_programs[programName] to {
    
 }. //End of initializer delegate
 
-// If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_programs[programName](p1).
-   kernel_ctl["start"]().
-   shutdown.
-} 

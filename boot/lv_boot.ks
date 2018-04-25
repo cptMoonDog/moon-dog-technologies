@@ -13,8 +13,7 @@ if ship:status = "PRELAUNCH" {
          if data:length = 2 and data[1]:tonumber(-1) = -1 {
             set target to data[1]:trim.
             runpath("0:/lv/"+data[0]+".ks", target:orbit:inclination, target:orbit:lan).
-         } else {
-            exists("0:/lv/"+data[0]+".ks").
+         } else if exists("0:/lv/"+data[0]+".ks") {
             local raan is "none".
             local alt is 80000.
             if data:length > 2 set raan to data[2]:tonumber(0).

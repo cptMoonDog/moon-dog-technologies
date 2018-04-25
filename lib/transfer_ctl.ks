@@ -1,5 +1,6 @@
 {
    global transfer_ctl is lexicon().
+   if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
 
    declare function currentPhaseAngle {
       // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
@@ -15,15 +16,11 @@
       declare parameter origin.
       declare parameter target.
       local startAlt is body(origin):altitudeof(positionat(ship, etaPhaseAngle())).
-      print "Start: "+ startAlt.
 
-      local transferSMA is semimajoraxis(body(origin), startAlt, body(target):altitude).
-      print "SMA: "+transferSMA.
+      local transferSMA is semimajoraxis(body(origin), startAlt, target:altitude).
 
       local txfrVel is visViva_velocity(body(origin), startAlt, transferSMA).
       local startVel is velocityat(ship, etaPhaseAngle()):orbit:mag.
-      print "Transfer Vel: "+txfrVel.
-      print "start Vel: "+startVel.
       return txfrVel-startVel.
    }
    transfer_ctl:add("dv", transfer_dv@).

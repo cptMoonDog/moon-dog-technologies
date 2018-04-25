@@ -8,7 +8,7 @@ local programName is "docking". //<------- put the name of the script here
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
     // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-declare parameter p1 is "none". 
+declare parameter p1 is "". 
 //declare parameter p2 is "". 
 
 if not (defined available_programs) declare global available_programs is lexicon().
@@ -39,6 +39,14 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
+      // Some inspiration from: https://www.reddit.com/r/Kos/comments/2n78zf/i_finally_did_it_automated_rendezvous_and_docking/
+      if hastarget and not(target:istype("DockingPort")) {
+         print "Select docking port." at(0, 3).
+         lock steering to ship:prograde.
+
+         return OP_CONTINUE.
+      }
+      
       if not (hastarget) {
          set ship:control:fore to 0.
          set ship:control:neutralize to true.

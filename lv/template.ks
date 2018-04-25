@@ -18,7 +18,7 @@ declare parameter launchToAlt is 80000.
    launch_param:add("inclination",          inclination).
    
    //If orbital parameters are not specified, the LAN does not need to be passed. 
-   if lan="none" {             
+   if lan="none" or (abs(ship:latitude) < 1 and inclination < 1) {             
       launch_param:add("launchTime",        "now"). 
    } else if lan:istype("Scalar") {
       launch_param:add("launchTime",        "window"). 

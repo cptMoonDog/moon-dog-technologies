@@ -46,5 +46,3 @@
 //available_programs["powered-capture"]("terrier").
 //available_programs["landing"]("terrier").
 
-//This starts the runmode system
-kernel_ctl["start"]().
