@@ -40,14 +40,17 @@ set available_programs[programName] to {
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
       declare function angleToBodyPrograde {
-         local relVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
-         local relVel2 is ((ship:velocity:orbit+relVelocity):mag-relVelocity:mag).
+         local bodyVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
+         local velPrograde is ship:velocity:orbit:mag*cos(vang(bodyVelocity, ship:velocity:orbit)).
+         //local velPrograde is ((ship:velocity:orbit+bodyVelocity):mag-bodyVelocity:mag).
 
-         local angleToPrograde is (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
-         if (relVel2/abs(relVel2)) < 0 set angleToPrograde to 360 + (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
+         local angleToPrograde is (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
+         if (velPrograde/abs(velPrograde)) < 0 set angleToPrograde to 360 + (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
          return angleToPrograde.
       }
-      print "ATP: "+angleToPrograde() at(0, 5).
+      local angleToBodyRetro is angleToBodyPrograde()+180.
+      if angleToBodyRetro > 360 set angleToBodyRetro to angleToBodyRetro-360.
+      print "prograde: "+angleToBodyPrograde() at(0, 5).
       
       return OP_CONTINUE.
    }).

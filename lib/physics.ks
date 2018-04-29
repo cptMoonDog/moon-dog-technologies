@@ -24,6 +24,7 @@
       parameter alt2.
       return ((alt2+bod:radius)+(alt1+bod:radius))/2.
    }
+   phys_lib:add("sma", semimajoraxis@).
 
    //Returns the velocity of an object at alt in an orbit with a Semi major axis of sma.
    //For instance: for a ship in a circular 80k orbit wishing to transfer to Minmus 46400k altitude,

@@ -9,6 +9,7 @@ local programName is "return-from-moon". //<------- put the name of the script h
 //   to build the MISSION_PLAN.
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
@@ -33,84 +34,86 @@ set available_programs[programName] to {
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
          MISSION_PLAN:add({
             clearscreen.
-            local vinf is 384. //Defines the velocity going into the other SOI, which determines some features of the new patch.
-            local adjForSoi is (1-(ship:body:soiradius)/((ship:body:altitude+ship:body:body:radius)-(ship:body:soiradius))).
-            //set vinf to vinf*0.885.
+            local vinf is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag - phys_lib["VatAlt"](ship:body:body, ship:body:altitude, physlib["sma"](ship:body:body, ship:body:orbit:apoapsis, targetPeriapsis)). //365. //Should be 373.789, Defines the velocity going into the other SOI, which determines some features of the new patch.
+            print "vinf: "+vinf at(0, 1).
 
             local r0 is ship:altitude+ship:body:radius.
             local vejection is sqrt((r0*(ship:body:soiradius*vinf^2-2*ship:body:mu)+2*ship:body:soiradius*ship:body:mu)/(r0*ship:body:soiradius)). 
-            local hsma is -ship:body:mu/max(0.0001, vejection^2).
-            local focaldist is r0+abs(hsma).
-            local epsilon is ((vejection)^2)/2 - ship:body:mu/r0.
-            local h is r0*(vejection).
-            local hecc is sqrt(1+(2*epsilon*h^2)/(ship:body:mu^2)).
-            local ejectionAngle is 180-arcsin(1/hecc).
+            local epsilon is (vejection^2)/2 - ship:body:mu/r0.
+            local h is r0*(vejection)*sin(90). //vectorcross ship position and ship velocity
+            local hecc is sqrt(1+(2*epsilon*(h^2))/(ship:body:mu^2)).
+            local theta is arccos(1/hecc)*1.05.
+            
+            local ejectionAngle is 180-theta. 
+            //local ejectionAngle is 90+arcsin(1/hecc). //<-- This seems to be correct
             declare function angleToBodyPrograde {
-               local relVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
-               local relVel2 is ((ship:velocity:orbit+relVelocity):mag-relVelocity:mag).
+               local bodyVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
+               local velPrograde is ship:velocity:orbit:mag*cos(vang(bodyVelocity, ship:velocity:orbit)).
 
-               local angleToPrograde is (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
-               if (relVel2/abs(relVel2)) < 0 set angleToPrograde to 360 + (relVel2/abs(relVel2))*vang(relVelocity, up:forevector).
+               local angleToPrograde is (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
+               if (velPrograde/abs(velPrograde)) < 0 set angleToPrograde to 360 + (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
                return angleToPrograde.
             }
-            local angleToBodyRetro is angleToBodyPrograde()+180.
-            if angleToBodyRetro > 360 set angleToBodyRetro to angleToBodyRetro-360.
+            declare function angleToBodyRetro {
+               local ang is angleToBodyPrograde()+180.
+               if ang > 360 set ang to ang-360.
+               return ang.
+            }
 
-            set ejectionangle to ejectionangle*adjForSoi.
-            print "adj: "+adjforSoi at(0, 5).
-
-            local diff is 1*(angleToBodyRetro-ejectionAngle).
-            print "diffstart: "+diff at(0, 7).
+            local diff is (angleToBodyRetro()-ejectionAngle).
             if diff < 0 set diff to diff + 360.
-            print "diffadj: "+diff at(0, 8).
             local rateShip is 360/ship:orbit:period.
             local rateBody is 360/ship:body:orbit:period.
 
             local etaBurn is (diff)/(rateShip-rateBody).
+            if ship:orbit:inclination > 90 set etaBurn to diff/(rateShip+rateBody).
             print etaBurn at(0, 15).
 
             add(node(time:seconds+etaBurn, 0, 0, vejection-ship:velocity:orbit:mag)).
-            print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta-10):orbit:mag at(0, 3).
-            print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta+10):orbit:mag at(0, 4).
-            local lastpe is nextnode:orbit:nextpatch:periapsis+1.
-            local lasteta is etaBurn.
-            local starteta is etaBurn.
-            local stepSize is 5.
-            until nextnode:orbit:nextpatch:periapsis < 40000 and nextnode:orbit:nextpatch:periapsis > 34000 {
-               if lastpe > nextnode:orbit:nextpatch:periapsis { //continue this way
-                  set lastpe to nextnode:orbit:nextpatch:periapsis.
-                  if lasteta > nextnode:eta {
-                     set lasteta to nextnode:eta.
-                     set nextnode:eta to nextnode:eta-stepSize.
-                  } else {
-                     set lasteta to nextnode:eta.
-                     set nextnode:eta to nextnode:eta+stepSize.
-                  }
-                  print "top" at(0, 2).
-               } else if lastpe < nextnode:orbit:nextpatch:periapsis { //switch direction
-                  local lastlastpe is lastpe.
-                  set lastpe to nextnode:orbit:nextpatch:periapsis.
-                  if lasteta < nextnode:eta {
-                     set nextnode:eta to nextnode:eta-stepSize.
-                     set lasteta to nextnode:eta.
-                  } else {
-                     set nextnode:eta to nextnode:eta+stepSize.
-                     set lasteta to nextnode:eta.
-                  }
-                  if lastlastpe < nextnode:orbit:nextpatch:periapsis and nextnode:orbit:nextpatch:periapsis > 34000 set nextnode:prograde to nextnode:prograde+1. //break.
-                  else if nextnode:orbit:nextpatch:periapsis < 34000 set nextnode:prograde to nextnode:prograde-1.
-                  print "not" at(0, 2).
-               }
-            }
+            //local lastpe is nextnode:orbit:nextpatch:periapsis+1.
+            //local lasteta is etaBurn.
+            //local starteta is etaBurn.
+            //local stepSize is 5.
+            //until nextnode:orbit:nextpatch:periapsis < 40000 and nextnode:orbit:nextpatch:periapsis > 34000 {
+            //   if lastpe > nextnode:orbit:nextpatch:periapsis { //continue this way
+            //      set lastpe to nextnode:orbit:nextpatch:periapsis.
+            //      if lasteta > nextnode:eta {
+            //         set lasteta to nextnode:eta.
+            //         set nextnode:eta to nextnode:eta-stepSize.
+            //      } else {
+            //         set lasteta to nextnode:eta.
+            //         set nextnode:eta to nextnode:eta+stepSize.
+            //      }
+            //      print "top" at(0, 2).
+            //   } else if lastpe < nextnode:orbit:nextpatch:periapsis { //switch direction
+            //      local lastlastpe is lastpe.
+            //      set lastpe to nextnode:orbit:nextpatch:periapsis.
+            //      if lasteta < nextnode:eta {
+            //         set nextnode:eta to nextnode:eta-stepSize.
+            //         set lasteta to nextnode:eta.
+            //      } else {
+            //         set nextnode:eta to nextnode:eta+stepSize.
+            //         set lasteta to nextnode:eta.
+            //      }
+            //      if lastlastpe < nextnode:orbit:nextpatch:periapsis and nextnode:orbit:nextpatch:periapsis > 34000 set nextnode:prograde to nextnode:prograde+1. //break.
+            //      else if nextnode:orbit:nextpatch:periapsis < 34000 set nextnode:prograde to nextnode:prograde-1.
+            //      print "not" at(0, 2).
+            //   }
+            //}
+            //print "etaError: "+(nextnode:eta-starteta) at(0, 11).
+            //print "error%: "+(100*(nextnode:eta-starteta)/ship:orbit:period) at(0, 12).
+            //print "errorDeg: "+((nextnode:eta-starteta)/ship:orbit:period)*360 at(0, 13).
 
-            print "ejectionangle: "+ejectionAngle at(0, 6).
-            print "angle to retro: "+ angletobodyretro at(0, 9).
-            print ship:body:soiradius at(0, 10).
-            print "etaError: "+(nextnode:eta-starteta) at(0, 11).
-            print "error%: "+(100*(nextnode:eta-starteta)/ship:orbit:period) at(0, 12).
-            print nextnode:orbit:nextpatch:apoapsis at(0, 13).
-            print "mun alt: "+ship:body:altitude at(0, 14).
-            wait 0.0001.
+            until false {
+               print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta-10):orbit:mag at(0, 3).
+               print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta+10):orbit:mag at(0, 4).
+               print "ejectionangle: "+ejectionAngle at(0, 6).
+               print "angle to retro: "+ angleToBodyRetro() at(0, 9).
+               print ship:body:soiradius at(0, 10).
+               print nextnode:orbit:nextpatch:apoapsis at(0, 14).
+               print "mun alt: "+ship:body:altitude at(0, 15).
+               wait 0.0001.
+            }
             return OP_FINISHED.
          }).
 
