@@ -46,9 +46,9 @@ set available_programs[programName] to {
             local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", target)).
             add(mnvr).
             until false {
-               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis > body(targetBody):radius+10000 {
+               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis > body(targetBody):radius+10000 {
                   break.
-               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = "Mun" and mnvr:orbit:nextpatch:periapsis < body(targetBody):radius+10000 {
+               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis < body(targetBody):radius+10000 {
                   print "adjusting pe" at(0, 1).
                   set mnvr:prograde to mnvr:prograde + 0.01.
                }else if mnvr:orbit:apoapsis > body("Mun"):altitude {

@@ -34,7 +34,8 @@ set available_programs[programName] to {
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
          MISSION_PLAN:add({
             clearscreen.
-            local vinf is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag - phys_lib["VatAlt"](ship:body:body, ship:body:altitude, physlib["sma"](ship:body:body, ship:body:orbit:apoapsis, targetPeriapsis)). //365. //Should be 373.789, Defines the velocity going into the other SOI, which determines some features of the new patch.
+            local targetPeriapsis is 34000.
+            local vinf is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag - phys_lib["VatAlt"](ship:body:body, ship:body:altitude, phys_lib["sma"](ship:body:body, ship:body:orbit:apoapsis, targetPeriapsis)). //365. //Should be 373.789, Defines the velocity going into the other SOI, which determines some features of the new patch.
             print "vinf: "+vinf at(0, 1).
 
             local r0 is ship:altitude+ship:body:radius.
@@ -42,7 +43,7 @@ set available_programs[programName] to {
             local epsilon is (vejection^2)/2 - ship:body:mu/r0.
             local h is r0*(vejection)*sin(90). //vectorcross ship position and ship velocity
             local hecc is sqrt(1+(2*epsilon*(h^2))/(ship:body:mu^2)).
-            local theta is arccos(1/hecc)*1.05.
+            local theta is arccos(1/hecc).
             
             local ejectionAngle is 180-theta. 
             //local ejectionAngle is 90+arcsin(1/hecc). //<-- This seems to be correct
@@ -67,42 +68,43 @@ set available_programs[programName] to {
 
             local etaBurn is (diff)/(rateShip-rateBody).
             if ship:orbit:inclination > 90 set etaBurn to diff/(rateShip+rateBody).
-            print etaBurn at(0, 15).
+            print "eta: "+etaBurn at(0, 15).
 
             add(node(time:seconds+etaBurn, 0, 0, vejection-ship:velocity:orbit:mag)).
-            //local lastpe is nextnode:orbit:nextpatch:periapsis+1.
-            //local lasteta is etaBurn.
-            //local starteta is etaBurn.
-            //local stepSize is 5.
-            //until nextnode:orbit:nextpatch:periapsis < 40000 and nextnode:orbit:nextpatch:periapsis > 34000 {
-            //   if lastpe > nextnode:orbit:nextpatch:periapsis { //continue this way
-            //      set lastpe to nextnode:orbit:nextpatch:periapsis.
-            //      if lasteta > nextnode:eta {
-            //         set lasteta to nextnode:eta.
-            //         set nextnode:eta to nextnode:eta-stepSize.
-            //      } else {
-            //         set lasteta to nextnode:eta.
-            //         set nextnode:eta to nextnode:eta+stepSize.
-            //      }
-            //      print "top" at(0, 2).
-            //   } else if lastpe < nextnode:orbit:nextpatch:periapsis { //switch direction
-            //      local lastlastpe is lastpe.
-            //      set lastpe to nextnode:orbit:nextpatch:periapsis.
-            //      if lasteta < nextnode:eta {
-            //         set nextnode:eta to nextnode:eta-stepSize.
-            //         set lasteta to nextnode:eta.
-            //      } else {
-            //         set nextnode:eta to nextnode:eta+stepSize.
-            //         set lasteta to nextnode:eta.
-            //      }
-            //      if lastlastpe < nextnode:orbit:nextpatch:periapsis and nextnode:orbit:nextpatch:periapsis > 34000 set nextnode:prograde to nextnode:prograde+1. //break.
-            //      else if nextnode:orbit:nextpatch:periapsis < 34000 set nextnode:prograde to nextnode:prograde-1.
-            //      print "not" at(0, 2).
-            //   }
-            //}
-            //print "etaError: "+(nextnode:eta-starteta) at(0, 11).
-            //print "error%: "+(100*(nextnode:eta-starteta)/ship:orbit:period) at(0, 12).
-            //print "errorDeg: "+((nextnode:eta-starteta)/ship:orbit:period)*360 at(0, 13).
+            local lastpe is nextnode:orbit:nextpatch:periapsis+1.
+            local lasteta is etaBurn.
+            local starteta is etaBurn.
+            local stepSize is 10.
+            until nextnode:orbit:nextpatch:periapsis < targetPeriapsis+100 and nextnode:orbit:nextpatch:periapsis > targetPeriapsis-100 {
+               if lastpe > nextnode:orbit:nextpatch:periapsis { //continue this way
+                  set lastpe to nextnode:orbit:nextpatch:periapsis.
+                  if lasteta > nextnode:eta {
+                     set lasteta to nextnode:eta.
+                     set nextnode:eta to nextnode:eta-stepSize.
+                  } else {
+                     set lasteta to nextnode:eta.
+                     set nextnode:eta to nextnode:eta+stepSize.
+                  }
+                  print "top"+stepSize at(0, 2).
+               } else if lastpe < nextnode:orbit:nextpatch:periapsis { //switch direction
+                  if abs(lastpe - nextnode:orbit:nextpatch:periapsis) > 10 set stepSize to max(0.01, stepSize/10).
+                  local lastlastpe is lastpe.
+                  set lastpe to nextnode:orbit:nextpatch:periapsis.
+                  if lasteta < nextnode:eta {
+                     set nextnode:eta to nextnode:eta-stepSize.
+                     set lasteta to nextnode:eta.
+                  } else {
+                     set nextnode:eta to nextnode:eta+stepSize.
+                     set lasteta to nextnode:eta.
+                  }
+                  if lastlastpe < nextnode:orbit:nextpatch:periapsis and nextnode:orbit:nextpatch:periapsis > targetPeriapsis + 100 set nextnode:prograde to nextnode:prograde+stepSize. //break.
+                  else if nextnode:orbit:nextpatch:periapsis < targetPeriapsis - 100 set nextnode:prograde to nextnode:prograde-stepSize.
+                  print "not"+stepSize at(0, 2).
+               }
+            }
+            print "etaError: "+(nextnode:eta-starteta) at(0, 11).
+            print "error%: "+(100*(nextnode:eta-starteta)/ship:orbit:period) at(0, 12).
+            print "errorDeg: "+((nextnode:eta-starteta)/ship:orbit:period)*360 at(0, 13).
 
             until false {
                print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta-10):orbit:mag at(0, 3).
