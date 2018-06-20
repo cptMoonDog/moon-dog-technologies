@@ -10,3 +10,4 @@ maneuver_ctl["defEngine"]("beagle", 325, 100).
 maneuver_ctl["defEngine"]("skipper", 320, 650).
 maneuver_ctl["defEngine"]("doubleThud", 305, 240).
 maneuver_ctl["defEngine"]("wolfhound", 412, 375).
+maneuver_ctl["defEngine"]("skiff", 330, 300).

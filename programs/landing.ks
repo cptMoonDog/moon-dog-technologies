@@ -44,7 +44,7 @@ set available_programs[programName] to {
         print "Work in progress.  Do not expect your pilot to survive if you use this".
         print "WARNING WARNING WARNING".
          //deorbit
-         if ship:periapsis > 10000 {
+         if ship:periapsis > 8000 {
             if not ship:orbit:hasnextpatch {
                warpto(time:seconds+eta:apoapsis).
                lock steering to ship:retrograde.

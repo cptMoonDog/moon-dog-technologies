@@ -42,25 +42,32 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
          MISSION_PLAN:add({
-        print "WARNING WARNING WARNING".
-        print "Work in progress.  Do not expect your pilot to survive if you use this".
-        print "WARNING WARNING WARNING".
+            print "WARNING WARNING WARNING".
+            print "Work in progress.  Do not expect your pilot to survive if you use this".
+            print "WARNING WARNING WARNING".
             if start=0 set start to time:seconds.
             if time:seconds < start + 10 return OP_CONTINUE.
             if ship:apoapsis < 20000 {
-               lock throttle to 1.
                lock steering to heading(h, p).
-               if ship:altitude < 8500 {
-                  local dAlt is (alt:radar-lastAlt)/(time:seconds-lastTime).
-                  if dAlt < 0 or ship:verticalspeed < 10 set p to min(90, p + 0.5).
-                  else set p to max(0, p - 0.5).
-               } else if ship:verticalspeed < 10 and ship:periapsis < 0 set p to min(90, p + 0.5). 
-               else set p to max(0, p - 0.5).
-               set lastAlt to alt:radar.
+               lock throttle to {
+                  local ttOV is (phys_lib["OVatAlt"]("Mun", ship:altitude) - ship:velocity:orbit:mag)/(ship:maxthrust/ship:mass).
+                  if ship:verticalspeed < 10 and ship:altitude > 100 {
+                     set p to min(90, max(0, ttOV - eta:apoapsis)).
+                  }
+                  return ttOV/eta:apoapsis.
+               }.
+               //if ship:altitude < 8500 {
+               //   local dAlt is (alt:radar-lastAlt)/(time:seconds-lastTime).
+               //   if dAlt < 0 or ship:verticalspeed < 10 set p to min(90, p + 0.5).
+               //   else set p to max(0, p - 0.5).
+               //} else if ship:verticalspeed < 10 and ship:periapsis < 0 set p to min(90, p + 0.5). 
+               //else set p to max(0, p - 0.5).
+               //set lastAlt to alt:radar.
                return OP_CONTINUE.
             } else {
-               set throttle to 0.
-               set start to 0.
+               lock throttle to 0.
+               lock steering to ship:prograde.
+               //set start to 0.
                return OP_FINISHED.
             }
          }).

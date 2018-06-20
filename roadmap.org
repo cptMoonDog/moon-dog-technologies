@@ -3,6 +3,9 @@
       - [ ] change-ap
       - [ ] Transfer Mun to Minmus
       - [ ] Transfer Minmus to Mun
+      - [ ] Airless launch
+        - Regulate throttle so burnTime(OrbitalVelocity@currentAlt - horizontal speed) = etaApo
+        - Regulate pitch so that etaApo = 
     - [ ] Fix programs
       - [ ] landing
       - [ ] return-from-moon

@@ -30,7 +30,7 @@ if ship:status = "PRELAUNCH" {
    //Wait until program is finished, and then wait 5 seconds.
    wait 5.
    local payloadCore is processor(ship:name).
-   if payloadCore {
+   if payloadCore:tag {
       print "Handing off...".
       payloadCore:connection:sendmessage("handoff").
    }
