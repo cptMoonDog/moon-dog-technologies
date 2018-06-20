@@ -44,7 +44,7 @@ runpath("0:/lib/core/kernel.ks").
          if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
             stage. 
          }
-         maneuver_ctl["add_burn"](launch_ctl["steeringProgram"], launch_param["upperstage"], "ap", "circularize").
+         maneuver_ctl["add_burn"]("prograde", launch_param["upperstage"], "ap", "circularize").
          if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height lock throttle to 1.
          else {
             lock steering to ship:prograde.
