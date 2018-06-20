@@ -19,12 +19,14 @@ if ship:status = "PRELAUNCH" {
                runpath("0:/programs/rendezvous.ks").
                available_programs["rendezvous"](launch_param["upperStage"], target:name).
             } else if target:istype("Body") {
-               runpath("0:/programs/lko-to-moon.ks").
-               runpath("0:/programs/warp-to-soi.ks").
-               runpath("0:/programs/powered-capture.ks").
-               available_programs["lko-to-moon"](target:name, launch_param["upperStage"]).
-               available_programs["warp-to-soi"](target:name).
-               available_programs["powered-capture"](target:name, launch_param["upperStage"]).
+               if target:name = "Minmus" or target:name = "Mun" {
+                  runpath("0:/programs/lko-to-moon.ks").
+                  runpath("0:/programs/warp-to-soi.ks").
+                  runpath("0:/programs/powered-capture.ks").
+                  available_programs["lko-to-moon"](target:name, launch_param["upperStage"]).
+                  available_programs["warp-to-soi"](target:name).
+                  available_programs["powered-capture"](target:name, launch_param["upperStage"]).
+               }
             }
          } else if exists("0:/lv/"+data[0]+".ks") { // Launch to defined plane
             local raan is "none".
