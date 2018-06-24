@@ -1,14 +1,13 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "lko-to-minmus". //<------- put the name of the script here
+local programName is "run-maneuver". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
     // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-declare parameter p1 is "". 
 //declare parameter p2 is "". 
 
 if not (defined available_programs) declare global available_programs is lexicon().
@@ -25,7 +24,6 @@ set available_programs[programName] to {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
    if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
    
 //======== Parameters used by the program ====
@@ -53,8 +51,3 @@ set available_programs[programName] to {
 }. //End of initializer delegate
 
 // If run standalone, initialize the MISSION_PLAN and run it.
-if p1 {
-   available_programs[programName](p1).
-   kernel_ctl["start"]().
-   shutdown.
-} 

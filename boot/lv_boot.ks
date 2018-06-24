@@ -7,10 +7,12 @@ if ship:status = "PRELAUNCH" {
    // 2. For inclined orbits, append to the nameTag: ", [inclination], [LAN]" 
    // For example, to use the "Spud Atlas" launch vehicle and launch into an orbit coplanar with Minmus,
    // give the core on the launch vehicle the nameTag: "Spud Atlas, 6, 78".
+   // Or, just set the nameTag to "Spud Atlas, Minmus"
    if core:tag {
       local data is core:tag:split(",").
       if data:length > 1 {
          if data:length = 2 and data[1]:tonumber(-1) = -1 {
+            print "target: "+ data[1].
             set target to data[1]:trim.
             if target:body = ship:body {
                runpath("0:/lv/"+data[0]+".ks", target:orbit:inclination, target:orbit:lan).

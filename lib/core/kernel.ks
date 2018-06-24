@@ -14,7 +14,7 @@ global OP_FINISHED is 1.
 global OP_CONTINUE is 0.
 global OP_PREVIOUS is -1.
 
-global OP_FAIL is 0.5.
+global OP_FAIL is -2.
 
 global MISSION_PLAN is list().
 global INTERRUPTS is list().
@@ -28,7 +28,10 @@ global INTERRUPTS is list().
          //Runmodes
          if runmode < MISSION_PLAN:length {
             set_runmode(MISSION_PLAN[runmode]()).
-         } else break.
+         } else {
+            print "end program.".
+            break.
+         }
 
          //Interrupts
          for subroutine in INTERRUPTS {
@@ -42,7 +45,7 @@ global INTERRUPTS is list().
 ///Private functions
    declare function set_runmode {
       parameter n.
-      if n = OP_FAIL set runmode to MISSION_PLAN:length+1.
+      if n = OP_FAIL set runmode to MISSION_PLAN:length+100.
       if n >= -1 and n <= 1 set runmode to runmode+n.
    }
 }

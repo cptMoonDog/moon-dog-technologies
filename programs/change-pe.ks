@@ -34,6 +34,10 @@ set available_programs[programName] to {
 //======== Local Variables =====
       local steerDir is "retrograde".
       if ship:orbit:periapsis < newPe set steerDir to "prograde". 
+      if ship:orbit:apoapsis > newPe {
+         print "Error" at(0, 0).
+         shutdown.
+      }
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
