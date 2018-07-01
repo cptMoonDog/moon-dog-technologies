@@ -47,7 +47,12 @@ set available_programs[programName] to {
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
+         print "staging, Max thrust: "+ship:maxthrust.
          stage. 
+         if ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
+            print "error in programs/powered-capture.ks: staging.".
+            return OP_FAIL.
+         }
       }
       local newSMA is (ship:orbit:periapsis+ship:orbit:body:radius*2+newAp)/2.
       local newVatPe is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:periapsis, newSMA).
