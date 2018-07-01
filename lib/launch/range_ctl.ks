@@ -127,7 +127,7 @@
 
       //Trig functions generally do not return exactly 0, even if they did, Vy=0 would produce a div by zero error.
       //Also, microscopic values of Vy that are < 0, will produce +90.
-      local adjustmentForTOF is 0.
+      local adjustmentForTOF is 0. //Time of Flight.  Now fixed elsewhere.  TODO:remove this.
       if south {
          //inclination: 0
          if Vx < 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
