@@ -32,7 +32,6 @@ set available_programs[programName] to {
    declare parameter newInc.
 
 //======== Local Variables =====
-      local steerDir is "normal".
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
@@ -41,31 +40,35 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
+      local count is 0.
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
-         if ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-            print "error in programs/powered-capture.ks: staging.".
+         wait until stage:ready.
+         if ship:maxthrust = 0 print "Likely a staging problem: Check yo' stagin!".
+         if count > 2 {
             return OP_FAIL.
          }
+         set count to count +1.
       }
-      local ensuredSPV is lookdirup(solarprimevector, north).
-      local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:top).
+      local ensuredSPV is lookdirup(solarprimevector, north:forevector).
+      local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:topvector):forevector.
       local angleToAN is vang(ship:position-ship:body:position, lanVec).
       local angleToDN is vang(ship:position-ship:body:position, -1*lanVec).
       //Assuming circular orbit:
       local ttAN is (ship:orbit:period/360)*angleToAN.
       local ttDN is (ship:orbit:period/360)*angleToDN.
 
-      local dvNormal is ship:velocity:orbit*sin(dInc).
-      local dvPrograde is ship:velocity:orbit*cos(dInc)-ship:velocity:orbit.
-      if dvInc > 0 {
+      local dInc is newInc:tonumber(0) - ship:orbit:inclination.
+      local dvNormal is ship:velocity:orbit:mag*sin(dInc).
+      local dvPrograde is ship:velocity:orbit:mag*cos(dInc)-ship:velocity:orbit:mag.
+      if dInc > 0 {
         if ttAN < ttDN {
            add(node(ttAN+time:seconds, 0, dvNormal, dvPrograde)).
         } else {
            add(node(ttDN+time:seconds, 0, -dvNormal, dvPrograde)).
         }
-      } else if dvInc < 0 {
+      } else if dInc < 0 {
         if ttAN < ttDN {
            add(node(ttAN+time:seconds, 0, dvNormal, dvPrograde)).
         } else {
@@ -73,7 +76,7 @@ set available_programs[programName] to {
         }
       }
 
-      maneuver_ctl["add_burn"]("node", engineName, "node", dv).
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
