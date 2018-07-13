@@ -25,7 +25,7 @@
       set h0 to ship:altitude.
       if launch_param["steeringProgram"] = "atmospheric" {
          if not (defined steering_functions) {
-            runpath("0:/config/steering-functions.ks").
+            runpath("0:/config/launch/steering-functions.ks").
          }
          lock steering to steering_functions[launch_param["steeringProgram"]](azimuth, h0).
       }

@@ -24,7 +24,7 @@
             set pid:maxoutput to 1.
          } else if launch_param["throttleProgramType"] = "function" {
             if not (defined throttle_functions)
-               runpath("0:/config/throttle-functions.ks").
+               runpath("0:/config/launch/throttle-functions.ks").
            
             set throttFunction to throttle_functions[launch_param["throttleFunction"]].
          }

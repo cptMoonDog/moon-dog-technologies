@@ -1,16 +1,15 @@
 @lazyglobal off.
 
 //Boot script for the payload; probe; spacecraft
-//  Ship will be renamed to the name of the core on launch,
-//  so missions do not necessarily have to have the same name as the craft.
+//  Ship will be renamed to the first parameter in the nameTag of the core on launch.
 if ship:status = "PRELAUNCH" {
-   //To pass information into this boot script, change the value of the core nameTag.  Format expected: "[Ship Name]:[Mission Name]".  
-   //This keeps it easy to name ships, missions and designs in the hangar differently.
+   //To pass information into this boot script, change the value of the core nameTag.  Format: "[Ship Name]:[Mission Name]".  
+   //This keeps it easy to name ships, missions and designs-in-the-hangar differently.
    local mission is "none".
    if core:tag {
       local data is core:tag:split(":").
       if data:length > 1 {
-         set ship:name to core:tag.
+         set ship:name to core:tag. //I know this seems weird, but the lv_boot script needs to be able to identify the payload's processor, and right now, the only way to do that, is if the ship:name and core:tag are the same.
          set mission to data[1]:trim.
       }
       print "waiting for handoff...".

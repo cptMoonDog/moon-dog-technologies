@@ -31,6 +31,7 @@ global steering_functions is lexicon().
          local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).
          // Pitch up sufficient to have a vertical TWR = 1.
          local pitchAngle is -1*min(pitchLimit, arcsin(1/max(1,twr))).
+         set pitchAngle to pitchAngle*(abs(ship:verticalspeed)/sqrt(1+abs(ship:verticalspeed)*abs(ship:verticalspeed))).
          set progradeVector to progradeDirection:forevector*angleaxis(pitchAngle, progradeDirection:starvector).
       }
       if ship:orbit:inclination >= launch_param["inclination"]-0.001 {
