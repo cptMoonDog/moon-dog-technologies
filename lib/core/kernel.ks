@@ -14,7 +14,7 @@ global OP_FINISHED is 1.
 global OP_CONTINUE is 0.
 global OP_PREVIOUS is -1.
 
-global OP_FAIL is -2.
+global OP_FAIL is "panic".
 
 global MISSION_PLAN is list().
 global INTERRUPTS is list().
