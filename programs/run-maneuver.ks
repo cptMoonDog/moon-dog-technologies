@@ -49,5 +49,3 @@ set available_programs[programName] to {
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
-
-// If run standalone, initialize the MISSION_PLAN and run it.

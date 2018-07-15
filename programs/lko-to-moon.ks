@@ -65,4 +65,3 @@ set available_programs[programName] to {
 //========== End program sequence ===============================
    
 }. //End of initializer delegate
-

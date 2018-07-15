@@ -10,6 +10,7 @@ local programName is "return-from-moon". //<------- put the name of the script h
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
@@ -25,6 +26,7 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
+   declare parameter engineName.
 
 //======== Local Variables =====
 
@@ -106,18 +108,26 @@ set available_programs[programName] to {
             print "error%: "+(100*(nextnode:eta-starteta)/ship:orbit:period) at(0, 12).
             print "errorDeg: "+((nextnode:eta-starteta)/ship:orbit:period)*360 at(0, 13).
 
-            until false {
-               print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta-10):orbit:mag at(0, 3).
-               print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta+10):orbit:mag at(0, 4).
-               print "ejectionangle: "+ejectionAngle at(0, 6).
-               print "angle to retro: "+ angleToBodyRetro() at(0, 9).
-               print ship:body:soiradius at(0, 10).
-               print nextnode:orbit:nextpatch:apoapsis at(0, 14).
-               print "mun alt: "+ship:body:altitude at(0, 15).
-               wait 0.0001.
-            }
+//            until false {
+//               print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta-10):orbit:mag at(0, 3).
+//               print velocityat(ship, time:seconds+nextnode:orbit:nextpatcheta+10):orbit:mag at(0, 4).
+//               print "ejectionangle: "+ejectionAngle at(0, 6).
+//               print "angle to retro: "+ angleToBodyRetro() at(0, 9).
+//               print ship:body:soiradius at(0, 10).
+//               print nextnode:orbit:nextpatch:apoapsis at(0, 14).
+//               print "mun alt: "+ship:body:altitude at(0, 15).
+//               wait 0.0001.
+//            }
             return OP_FINISHED.
          }).
+   MISSION_PLAN:add({
+      if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
+         stage. 
+      }
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
+      return OP_FINISHED.
+   }).
+   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
 
 //========== End program sequence ===============================
    

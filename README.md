@@ -72,6 +72,12 @@ You can also add your own routines to the mission sequence in the following way:
  * `OP_PREVIOUS` tells the kernel to go back to the previous function in the `MISSION_PLAN`.
  * `OP_FAIL`     tells the kernel to panic and quit.
 
+Standalone Operation
+====================
+Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
+
+    runpath("0:/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], [PARAMETER n])).
+    
 Extending the System
 ====================
 Programs
@@ -81,6 +87,7 @@ Describing the structure of program files is beyond the scope of this document. 
 Libraries
 ---------
 The libraries in `lib` are Scope-Lexicon-Delegate libraries inspired by [gisikw's KNU system.](https://www.youtube.com/watch?v=cqtMpk2GaIY&list=PLb6UbFXBdbCrvdXVgY_3jp5swtvW24fYv&index=44)
+
 
 Disclaimer
 ==========
