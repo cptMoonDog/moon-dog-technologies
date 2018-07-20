@@ -14,7 +14,7 @@ Quickstart
  1. Make a booster, make sure to include a KOS processor and a probe core.
  2. Make a copy of `template.ks` in the `lv` directory. Name it for your new booster.
  3. Edit your new Launch Vehicle definition file.  Change the default values to ones appropriate for your booster.
-    - Ex. pitchover magnitude, pitchover start velocity, throttle program type to use, etc...
+    - Ex. pitchover magnitude, pitchover start velocity, throttle program to use, etc...
  4. In the VAB:
     - Set the bootfile for your booster to `lv_boot.ks`
     - Set the nameTag of the KOS processor on your booster to the name of your Launch Vehicle definition file.  E.g. if the file is Atlas.ks, set the nameTag of your booster's KOS part to Atlas.
