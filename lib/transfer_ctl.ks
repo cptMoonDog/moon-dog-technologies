@@ -2,15 +2,6 @@
    global transfer_ctl is lexicon().
    if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
 
-   declare function currentPhaseAngle {
-      // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
-      //Assumes orbits are both in the same plane.
-      local a1 is ship:orbit:lan+ship:orbit:argumentofperiapsis+ship:orbit:trueanomaly.
-      local a2 is target:orbit:lan+target:orbit:argumentofperiapsis+target:orbit:trueanomaly.
-      local diff is a2-a1.
-      set diff to diff-360*floor(diff/360).
-      return diff.
-   }
 
    declare function transfer_dV {
       declare parameter origin.
@@ -24,6 +15,16 @@
       return txfrVel-startVel.
    }
    transfer_ctl:add("dv", transfer_dv@).
+
+   declare function currentPhaseAngle {
+      // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
+      //Assumes orbits are both in the same plane.
+      local a1 is ship:orbit:lan+ship:orbit:argumentofperiapsis+ship:orbit:trueanomaly.
+      local a2 is target:orbit:lan+target:orbit:argumentofperiapsis+target:orbit:trueanomaly.
+      local diff is a2-a1.
+      set diff to diff-360*floor(diff/360).
+      return diff.
+   }
 
    declare function etaPhaseAngle {
       local pa is phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
@@ -39,15 +40,6 @@
       } else set diff to current-pa.
 
       if diff < 0 set diff to diff+360.
-      // Scratch pad:
-      // Angle rate: 360/period
-      // p1+r1*t=p2+r2*t
-      // r1*t=p2-p1+r2*t
-      // r1*t-r2*t=p2-p1
-      // t(r1-r2)=p2-p1
-      // --> t=(p2-p1)/(r1-r2)
-      // p1=0, p2=10, r1=5, r2=1 then t=2.5
-      // p1=5, p2=10, r1=5, r2=1 then t=1.25 
       local rateShip is 360/ship:orbit:period.
       local rateTarget is 360/target:orbit:period.
 

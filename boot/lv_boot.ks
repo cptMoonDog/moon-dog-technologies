@@ -21,7 +21,10 @@ if ship:status = "PRELAUNCH" {
             if target:body = ship:body {
                runpath("0:/lv/"+data[0]+".ks", target:orbit:inclination, target:orbit:lan).
             } else {
-               print "Bad Launch Target".
+               runpath("0:/lib/physics.ks").
+               local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
+               print ttWindow.
+               runpath("0:/lv/"+data[0]+".ks").
             }
          } else {
             local raan is "none".
