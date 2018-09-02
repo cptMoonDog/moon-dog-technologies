@@ -31,6 +31,7 @@
    }
    launch_ctl:add("init_range", init@).
 
+      
    declare function countdown_launchWindow {
       if timeOfWindow-time:seconds > countdown+1 {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
@@ -62,7 +63,7 @@
    declare function getUT_window {
       parameter RAAN. //LAN
       parameter i. //inclination
-      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination (fudge factor :(.
+      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination fudge factor :.
       parameter allowableTrajectories is "all". 
 
       //Longitude correction of launch window due to latitude.

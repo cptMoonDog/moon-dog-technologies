@@ -45,20 +45,75 @@
    }
    phys_lib:add("OVatAlt", OVatAlt@).
 
-   declare function getEjectionAngle {
-            parameter targetPeriapsis is 34000.
-            local vinf is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag - phys_lib["VatAlt"](ship:body:body, ship:body:altitude, phys_lib["sma"](ship:body:body, ship:body:orbit:apoapsis, targetPeriapsis)). //365. //Should be 373.789, Defines the velocity going into the other SOI, which determines some features of the new patch.
-
-            local r0 is ship:altitude+ship:body:radius.
-            local vejection is sqrt((r0*(ship:body:soiradius*vinf^2-2*ship:body:mu)+2*ship:body:soiradius*ship:body:mu)/(r0*ship:body:soiradius)). 
-            local epsilon is (vejection^2)/2 - ship:body:mu/r0.
-            local h is r0*(vejection)*sin(90). //vectorcross ship position and ship velocity
-            local hecc is sqrt(1+(2*epsilon*(h^2))/(ship:body:mu^2)).
-            local theta is arccos(1/hecc).
-            
-            return 180-theta. 
-   }
+   /// The SOI of the Mun is unusually large, so this is not accurate for a return from there.
+   declare function ejectionAngle {
+      parameter vinf.
       
+      local r0 is ship:altitude+ship:body:radius.
+      local vejection is sqrt((r0*(ship:body:soiradius*vinf^2-2*ship:body:mu)+2*ship:body:soiradius*ship:body:mu)/(r0*ship:body:soiradius)). 
+      local epsilon is (vejection^2)/2 - ship:body:mu/r0.
+      local h is r0*(vejection)*sin(90). //vectorcross ship position and ship velocity
+      local hecc is sqrt(1+(2*epsilon*(h^2))/(ship:body:mu^2)).
+      local theta is arccos(1/hecc).
+
+      return 180-theta. 
+   }
+
+   declare function etaEjectionAngle {
+      parameter desiredInterplanetaryVelocity.
+      local vinf is 0.
+      local planetOrbitalSpeed is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag.
+      local referenceAngle is 0.
+      if desiredInterplanetaryVelocity > planetOrbitalSpeed {
+         set referenceAngle to angleToBodyPrograde().
+         set vinf to desiredInterplanetaryVelocity - planetOrbitalSpeed.
+      } else {
+         set referenceAngle to angleToBodyRetro().
+         set vinf to planetOrbitalSpeed - desiredInterplanetaryVelocity.
+      }
+      local ejectAngle is ejectionAngle(vinf).
+
+      local diff is (referenceAngle-ejectAngle).
+      if diff < 0 set diff to diff + 360.
+      local rateShip is 360/ship:orbit:period.
+      local rateBody is 360/ship:body:orbit:period.
+
+      local etaBurn is (diff)/(rateShip-rateBody).
+      if ship:orbit:inclination > 90 set etaBurn to diff/(rateShip+rateBody).
+      return etaBurn.
+   }
+   phys_lib:add("etaEjectionAngle", etaEjectionAngle@).
+
+   declare function ejectionVelocity {
+      parameter desiredInterplanetaryVelocity.
+      local vinf is 0.
+      local planetOrbitalSpeed is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag.
+      if desiredInterplanetaryVelocity > planetOrbitalSpeed {
+         set vinf to desiredInterplanetaryVelocity - planetOrbitalSpeed.
+      } else {
+         set vinf to planetOrbitalSpeed - desiredInterplanetaryVelocity.
+      }
+      local r0 is ship:altitude+ship:body:radius.
+      local vejection is sqrt((r0*(ship:body:soiradius*vinf^2-2*ship:body:mu)+2*ship:body:soiradius*ship:body:mu)/(r0*ship:body:soiradius)). 
+      return vejection.
+   }
+   phys_lib:add("ejectionVelocity", ejectionVelocity@).
+   
+
+   declare function angleToBodyPrograde {
+      local bodyVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
+      local velPrograde is ship:velocity:orbit:mag*cos(vang(bodyVelocity, ship:velocity:orbit)).
+
+      local angleToPrograde is (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
+      if (velPrograde/abs(velPrograde)) < 0 set angleToPrograde to 360 + (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
+      return angleToPrograde.
+   }
+   declare function angleToBodyRetro {
+      local ang is angleToBodyPrograde()+180.
+      if ang > 360 set ang to ang-360.
+      return ang.
+   }
+
    declare function phaseAngle {
       parameter startAlt.
       parameter finalAlt.
@@ -69,35 +124,42 @@
    }
 
    declare function currentPhaseAngle {
+      parameter source.
+      parameter tgt.
       // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
       //Assumes orbits are both in the same plane.
-      local a1 is ship:orbit:lan+ship:orbit:argumentofperiapsis+ship:orbit:trueanomaly.
-      local a2 is target:orbit:lan+target:orbit:argumentofperiapsis+target:orbit:trueanomaly.
+      local a1 is source:orbit:lan+source:orbit:argumentofperiapsis+source:orbit:trueanomaly.
+      local a2 is tgt:orbit:lan+tgt:orbit:argumentofperiapsis+tgt:orbit:trueanomaly.
       local diff is a2-a1.
       set diff to diff-360*floor(diff/360).
       return diff.
    }
 
    declare function etaPhaseAngle {
-      local pa is phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
-      local current is currentPhaseAngle().
+      parameter source.
+      parameter tgt.
+      
+      local pa is phaseAngle(source:orbit:semimajoraxis, tgt:orbit:semimajoraxis).
+      local current is currentPhaseAngle(source, tgt).
 
       // I want some time to burn my engines, so I need to lead a bit to have time
       // I'm sure there is a better way to do this, but for now...
       local minDiff is 20.
       
+      print "current Phase Angle: "+current at(0, 1).
+      print "desired Phase Angle: "+pa at(0, 2).
       local diff is  0.
-      if pa > current-minDiff {
+      if pa > current {
          set diff to 360+current-pa.
       } else set diff to current-pa.
 
       if diff < 0 set diff to diff+360.
-      local rateShip is 360/ship:orbit:period.
-      local rateTarget is 360/target:orbit:period.
+      local rateShip is 360/source:orbit:period.
+      local rateTarget is 360/tgt:orbit:period.
 
       local t is (diff)/(rateShip-rateTarget).
       return t.
 
    }
-   transfer_ctl:add("etaPhaseAngle", etaPhaseAngle@).
+   phys_lib:add("etaPhaseAngle", etaPhaseAngle@).
 }
