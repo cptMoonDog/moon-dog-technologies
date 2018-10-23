@@ -74,6 +74,7 @@
    declare function throttleMonitor_function {
       //This prevents the program from shutting down if drag could still have an influence.
       if ship:apoapsis >= launch_param["throttleProfile"][1] and ((not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height)  {
+         if launch_param["forceMECO"] = "true" AG10 ON.
          lock throttle to 0.
          return OP_FINISHED.
       }

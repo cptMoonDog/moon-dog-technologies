@@ -46,6 +46,10 @@
 
    //current staging trigger
    declare function genStaging {
+      if launch_param:haskey("stageAndAHalf") and launch_param["stageandahalf"] = "true" and ship:altitude > 34000 {
+         stage.
+         set launch_param["stageandahalf"] to "false".
+      }
       if fairing and not fairingJettisoned and ship:altitude > 60000 {
          AG1 on.
          set fairingJettisoned to true.
