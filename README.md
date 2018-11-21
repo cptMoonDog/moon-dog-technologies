@@ -17,7 +17,7 @@ Quickstart
 Launch Vehicles
 --------
  1. Make a Launch Vehicle, make sure to include a KOS processor, with the bootfile `lv_boot.ks`(on the upperstage) and a probe core.
- 2. Make a copy of `template.ks` in the `lv` directory. Name it using the following format: [VEHICLE NAME].ks
+ 2. Make a copy of `template.ks` in the `lv` directory. Name it using the following format: `[VEHICLE NAME].ks`
  3. Edit your new Launch Vehicle definition file, and change any of the the default values to ones appropriate for your launch vehicle.
  4. In the VAB:
     - Set the bootfile for your launch vehicle to `lv_boot.ks`
@@ -27,14 +27,14 @@ Launch Vehicles
       - `[VEHICLE NAME], [INCLINATION], [RAAN]        ` Launch to: This plane, at 80km.
       - `[VEHICLE NAME], [INCLINATION], [RAAN], [SMA] ` Launch to: This plane, circularize at this SMA.
 
-Example: Given a craft with a KOS processor named: `Atlas, 6, 78`, and the bootfile `lv_boot.ks`, on launch this ship will run `0:/lv/Atlas.ks' and attempt to launch to an orbit coplanar with Minmus.
+Example: Given a craft with a KOS processor named: `Atlas, 6, 78`, and the bootfile `lv_boot.ks`, on launch this ship will run `0:/lv/Atlas.ks` and attempt to launch to an orbit coplanar with Minmus.
 
 Payloads and Missions
 --------------------
  1. Make your spacecraft, and make sure to include a KOS processor and a probe core.
  2. In the VAB:
     - Set the bootfile for the KOS processor on the spacecraft to `payload_boot.ks`.
-    - Set the nameTag of the KOS processor to [name you want your ship to have]:[name of mission to run].
+    - Set the nameTag of the KOS processor to `[name you want your ship to have]:[name of mission to run]`.
  3. Mount your payload to your launch vehicle. The payload will wait until the launch vehicle delivers it to circular orbit and then run it's mission.
 
 Mission Structure
@@ -67,7 +67,7 @@ Programs may be invoked individually.  Unfortunately, the overhead required to m
 
     runpath("0:/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], [PARAMETER n])).
     
-For more information about extending the system and technical details, see the wiki.  (A work in progress).
+For more information about extending the system and technical details, see the [wiki](wiki).  (A work in progress).
 
 Libraries
 ---------
