@@ -67,7 +67,7 @@ Programs may be invoked individually.  Unfortunately, the overhead required to m
 
     runpath("0:/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], [PARAMETER n])).
     
-For more information about extending the system and technical details, see the [wiki](wiki).  (A work in progress).
+For more information about extending the system and technical details, see the [wiki](../../wiki).  (A work in progress).
 
 Libraries
 ---------
