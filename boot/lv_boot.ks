@@ -27,6 +27,7 @@ if ship:status = "PRELAUNCH" {
                   runpath("0:/lib/physics.ks").
                   local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
                   print ttWindow.
+                  //TODO make this work
                   runpath("0:/lv/"+data[0]+".ks").
                }
             }

@@ -5,23 +5,29 @@ Primarily focused on reducing non-reusable code, while maintaining significant f
 
 Features
 ========
- - Rapid Launcher Family development and optimization
- - Efficient, fully customizable Gravity Turns
- - Modular, pluggable mission development
+ - Rapid launch script development
+   - FULLY customize launch profile for each Launch Vehicle
+   - Fast and easy Gravity Turns 
+   - Easily target different orbital planes with the same script.
+ - Modular, pluggable mission scripting
  
 Quickstart
 ==========
 
-Boosters
+Launch Vehicles
 --------
- 1. Make a booster, make sure to include a KOS processor and a probe core.
- 2. Make a copy of `template.ks` in the `lv` directory. Name it for your new booster.
- 3. Edit your new Launch Vehicle definition file.  Change the default values to ones appropriate for your booster.
-    - Ex. pitchover magnitude, pitchover start velocity, throttle program to use, etc...
+ 1. Make a Launch Vehicle, make sure to include a KOS processor, with the bootfile `lv_boot.ks`(on the upperstage) and a probe core.
+ 2. Make a copy of `template.ks` in the `lv` directory. Name it using the following format: [VEHICLE NAME].ks
+ 3. Edit your new Launch Vehicle definition file, and change any of the the default values to ones appropriate for your launch vehicle.
  4. In the VAB:
-    - Set the bootfile for your booster to `lv_boot.ks`
-    - Set the nameTag of the KOS processor on your booster to the name of your Launch Vehicle definition file.  E.g. if the file is Atlas.ks, set the nameTag of your booster's KOS part to Atlas.
- 5. That's it for the booster!  Just mount a payload, press launch, and watch your rocket deliver your payload to LKO!
+    - Set the bootfile for your launch vehicle to `lv_boot.ks`
+    - Set the nameTag of the KOS processor on your launch vehicle to one of the following:
+      - `[VEHICLE NAME]                               ` Launch to: equatorial, 80km (default values).
+      - `[VEHICLE NAME], [TARGET]                     ` Launch to: coplanar with target at 80km.
+      - `[VEHICLE NAME], [INCLINATION], [RAAN]        ` Launch to: This plane, at 80km.
+      - `[VEHICLE NAME], [INCLINATION], [RAAN], [SMA] ` Launch to: This plane, circularize at this SMA.
+
+Example: Given a craft with a KOS processor named: `Atlas, 6, 78`, and the bootfile `lv_boot.ks`, on launch this ship will run `0:/lv/Atlas.ks' and attempt to launch to an orbit coplanar with Minmus.
 
 Payloads and Missions
 --------------------
@@ -29,7 +35,7 @@ Payloads and Missions
  2. In the VAB:
     - Set the bootfile for the KOS processor on the spacecraft to `payload_boot.ks`.
     - Set the nameTag of the KOS processor to [name you want your ship to have]:[name of mission to run].
- 3. Mount your payload to your booster. The payload will wait until the launch vehicle delivers it to LKO and then run it's mission.
+ 3. Mount your payload to your launch vehicle. The payload will wait until the launch vehicle delivers it to circular orbit and then run it's mission.
 
 Mission Structure
 =================
@@ -55,34 +61,13 @@ They *can* be used to create a list of `programs` to be run in order, to achieve
  2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission.
  3. Finally, you call the kernel to start running the mission.
     
-### Writing Additions to the `MISSION_PLAN`
-You can also add your own routines to the mission sequence in the following way:
-
-    MISSION_PLAN:add({
-       print "waiting...".
-       wait until ship:orbit:body = body("Mun").
-       print "finished waiting...".
-       return OP_FINISHED.
-    }).
-
-#### Return values tell the kernel how to behave.
-
- * `OP_CONTINUE` tells the kernel to run this function again.
- * `OP_FINISHED` tells the kernel to advance to the next function in the `MISSION_PLAN`.
- * `OP_PREVIOUS` tells the kernel to go back to the previous function in the `MISSION_PLAN`.
- * `OP_FAIL`     tells the kernel to panic and quit.
-
 Standalone Operation
 ====================
 Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
 
     runpath("0:/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], [PARAMETER n])).
     
-Extending the System
-====================
-Programs
---------
-Describing the structure of program files is beyond the scope of this document.  For information about how to build them, see the examples provided.  
+For more information about extending the system and technical details, see the wiki.  (A work in progress).
 
 Libraries
 ---------
