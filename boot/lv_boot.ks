@@ -17,14 +17,18 @@ if ship:status = "PRELAUNCH" {
       if data:length > 1 {
          if data:length = 2 and data[1]:tonumber(-1) = -1 {
             print "target: "+ data[1].
-            set target to data[1]:trim.
-            if target:body = ship:body {
-               runpath("0:/lv/"+data[0]+".ks", target:orbit:inclination, target:orbit:lan).
+            if data[1]:trim = "Polar" {
+               runpath("0:/lv/"+data[0]+".ks", 90).
             } else {
-               runpath("0:/lib/physics.ks").
-               local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
-               print ttWindow.
-               runpath("0:/lv/"+data[0]+".ks").
+               set target to data[1]:trim.
+               if target:body = ship:body {
+                  runpath("0:/lv/"+data[0]+".ks", target:orbit:inclination, target:orbit:lan).
+               } else {
+                  runpath("0:/lib/physics.ks").
+                  local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
+                  print ttWindow.
+                  runpath("0:/lv/"+data[0]+".ks").
+               }
             }
          } else {
             local raan is "none".
@@ -35,8 +39,8 @@ if ship:status = "PRELAUNCH" {
             if data:length > 2 set raan to data[2]:tonumber(0).
             if data:length > 3 set alt to data[3]:tonumber(0).
             //One might think that the raan/lan should be given last in the parameter list. 
-            //However, that would block the case of a launch to KEO in a target-coplanar orbit.
-            //That is why altitude is given last; i.e. by default assume all launches want KEO altitude.
+            //However, that would block the case of a launch to LKO in a target-coplanar orbit.
+            //That is why altitude is given last; i.e. by default assume all launches want LKO altitude.
             runpath("0:/lv/"+data[0]+".ks", data[1]:tonumber(0), raan, alt).
          }
       } else {
