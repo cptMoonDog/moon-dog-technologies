@@ -119,16 +119,19 @@ declare parameter launchToAlt is 80000.
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      20).
 
-   //Indicates use of a stage-and-a-half design (stage at 34km altitude to drop the booster).
-   launch_param:add("stageandahalf", "true").
+   //Indicates use of a stage-and-a-half design, and altitude to force staging.
+   launch_param:add("stageandahalf", 34000).
 
-   //Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
-   launch_param:add("forceMECO", "true").
+   // These assume certain parts have been added to action groups
+   // Activate AG1 at 60km (Jettison fairing)
+   launch_param:add("AG1", 60000).
+   // Activate AG2 at 65km (Activate solar panels and antennas)
+   launch_param:add("AG2", 65000).
+   // Force MECO Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
+   launch_param:add("AG10", ship:orbit:body:atm:height).
    
    //Initialize the launch system.
-   // Parameter 1: Activate AG1 at 60km
-   // Parameter 2: Activate AG2 at 65km
-   launch_ctl["init"](TRUE, TRUE).
+   launch_ctl["init"]().
 
    //Add a launch to LKO routine to the MISSIONPLAN
    launch_ctl["addLaunchToMissionPlan"]().

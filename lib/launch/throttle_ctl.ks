@@ -63,7 +63,6 @@
          } else {
             //This prevents the program from shutting down if drag could still have an influence.
             if (not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height  {
-               if launch_param["forceMECO"] = "true" AG10 ON.
                return OP_FINISHED.
             }
          }
@@ -75,7 +74,6 @@
    declare function throttleMonitor_function {
       //This prevents the program from shutting down if drag could still have an influence.
       if ship:apoapsis >= launch_param["throttleProfile"][1] and ((not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height)  {
-         if launch_param:haskey("forceMECO") and launch_param["forceMECO"] = "true" AG10 ON.
          lock throttle to 0.
          return OP_FINISHED.
       }
@@ -86,6 +84,12 @@
    local kickWithin is 1.5.
    //Returns the throttle setting
    // If a table based profile is selected by the lv, the throttle will be locked to this function.
+   // Expects a table of throttle values vs a reference variable (altitude, Apoapsis, MET, etc) in launch_param["throttleProfile"]
+   // Ex. If the reference variable is altitude, you might have:
+   // Altitude | Throttle setting
+   //  2000    |    1
+   //  34000   |    0.5
+   //  70000   |    0.1
    declare function getThrottleSetting_table {
       if step = 0 {
          return launch_param["throttleProfile"][step+1].

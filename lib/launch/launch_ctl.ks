@@ -17,11 +17,8 @@ runpath("0:/lib/core/kernel.ks").
    global launch_param is lexicon().
 
    declare function init_system {
-      parameter ag1.
-      parameter ag2.
-      
       launch_ctl["init_range"]().
-      launch_ctl["init_staging"](ag1, ag2).
+      launch_ctl["init_staging"]().
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
    }
