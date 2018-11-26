@@ -57,19 +57,23 @@
       else print "T+"+(time:seconds-start) at(0, 10).
       //Over 3 minutes out, warp
       if time:seconds < start-180 { 
+         print "Warping" at(0, 12).
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
             kuniverse:timewarp:warpto(start-179).
          }
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 3 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-180 AND time:seconds < start-30 { 
+         print "Lock Steering" at(0, 13).
          lock steering to burn_queue:peek()["steeringProgram"]().
       //Less than 30 sec out and more than 25 sec, recalculate burn timing.
       } else if time:seconds > start-30 AND time:seconds < start-25 { 
+         print "recalculate" at(0, 14).
          reset_for_next_burn(). // recalculates to improve precision
          lock throttle to 0.
       //Start of burn. Continue attempting to lock throttle until end of scheduled burn unless already locked.
       } else if time:seconds >= start AND time:seconds < end AND throttle = 0 or (throttle > 0 and hasnode and nextnode:deltav:mag >= 1) { 
+         print "burning" at(0, 16).
          lock throttle to 1.
       //Burn finished.  Engine shutdown.  Wait 5 seconds, then queue up next burn.
       } else if time:seconds >= end { 
@@ -149,7 +153,7 @@
          print "ENGINE: "+name+" DOES NOT EXIST IN THE DB.".
          print "COUGH...COUGH...GURGLE...GURGLE.".
          print "You watch helplessly as *NPC Name here* dies in your arms.".
-         set OP_FAIL to true.
+         return OP_FAIL.
       }
    }  
    maneuver_ctl:add("engineStat", engineStat@).

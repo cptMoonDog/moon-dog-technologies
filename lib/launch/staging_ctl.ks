@@ -88,6 +88,7 @@
             if launch_param:haskey("stageAndAHalf") and (twr > launch_param["stageAndAHalf"] or ship:altitude > launch_param["stageAndAhalf"]) {
                stage.
                launch_param:remove("stageAndAHalf").
+               list Engines in engList.
             } else for eng in engList {
                if eng:ignition and eng:flameout {
                   if engList:length > 1 {
@@ -102,6 +103,4 @@
       } else return OP_FINISHED.
    }
    launch_ctl:add("staging", genStaging@).
-
-   declare function actionGroup
 }

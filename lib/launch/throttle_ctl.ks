@@ -63,6 +63,12 @@
          } else {
             //This prevents the program from shutting down if drag could still have an influence.
             if (not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height  {
+               if launch_param:haskey("forceMECO") and launch_param["forceMECO"] = "true" {
+                  local engList is list().
+                  list engines in engList.
+                  for eng in engList 
+                     if eng:tag:tolower:contains("main") eng:shutdown.
+               }
                return OP_FINISHED.
             }
          }
@@ -75,6 +81,12 @@
       //This prevents the program from shutting down if drag could still have an influence.
       if ship:apoapsis >= launch_param["throttleProfile"][1] and ((not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height)  {
          lock throttle to 0.
+         if launch_param:haskey("forceMECO") and launch_param["forceMECO"] = "true" {
+            local engList is list().
+            list engines in engList.
+            for eng in engList 
+               if eng:tag:tolower:contains("main") eng:shutdown.
+         }
          return OP_FINISHED.
       }
       return OP_CONTINUE.
