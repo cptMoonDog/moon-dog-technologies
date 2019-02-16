@@ -140,10 +140,11 @@
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
          //Max function ensures this will not cause throttling down, if already throttled up.
+         local minThrottSetting is abs(vang(up:forevector, ship:prograde:forevector)-90)/kickWithin.
          if launch_param["throttleProfile"]:length = 3 // If a setpoint, or parameter for the function is provided, pass it.
-            return max(throttFunction(launch_param["throttleProfile"][2]), -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+kickWithin).
+            return max(throttFunction(launch_param["throttleProfile"][2]), minThrottSetting).
          else
-            return max(throttFunction(), -1*abs(vang(up:forevector, ship:prograde:forevector)-90)+kickWithin).
+            return max(throttFunction(), minThrottSetting).
       } else {
          if launch_param["throttleProfile"]:length = 3
             return throttFunction(launch_param["throttleProfile"][2]).
