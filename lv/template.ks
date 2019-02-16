@@ -48,10 +48,7 @@ declare parameter launchToAlt is 80000.
    launch_param:add("timeOfFlight",         180+2*inclination).
 
    ///////////////////////////// Gravity turn parameters ////////////////////////////////
-   local emptyMass is 33.002. //Tons
-   local maxPayload is 12. //tons
-   local payloadMass is ship:mass-emptyMass.
-   launch_param:add("pOverDeg",             5). //20*(1-payloadMass/maxPayload)).  // Pitchover magnitude in degrees
+   launch_param:add("pOverDeg",             10). //20*(1-payloadMass/maxPayload)).  // Pitchover magnitude in degrees
    launch_param:add("pOverV0",              50). // Vertical speed at which to start pitchover                        
    launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
@@ -86,7 +83,7 @@ declare parameter launchToAlt is 80000.
    launch_param:add("throttleProfile", list( 
                                             1000, //Apo to Activate function, max prior
                                             launchToAlt, //Apo to Deactivate function 
-                                            50)).  //Setpoint
+                                            40)).  //Setpoint
 
       // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
       // You can make your own functions too! See configs/launch/throttle-functions.ks
@@ -114,13 +111,13 @@ declare parameter launchToAlt is 80000.
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "doubleTwitch").
+   launch_param:add("upperstage", "terrier").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      20).
 
    //Indicates use of a stage-and-a-half design, and altitude to force staging.
-   launch_param:add("stageandahalf", 34000).
+   //launch_param:add("stageandahalf", 34000).
 
    // These assume certain parts have been added to action groups
    // Activate AG1 at 60km (Jettison fairing)
@@ -128,7 +125,7 @@ declare parameter launchToAlt is 80000.
    // Activate AG2 at 65km (Activate solar panels and antennas)
    launch_param:add("AG2", 65000).
    // Force MECO Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
-   launch_param:add("AG10", ship:orbit:body:atm:height).
+   //launch_param:add("AG10", ship:orbit:body:atm:height).
    
    //Initialize the launch system.
    launch_ctl["init"]().

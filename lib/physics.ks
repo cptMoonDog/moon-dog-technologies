@@ -100,6 +100,7 @@
    phys_lib:add("ejectionVelocity", ejectionVelocity@).
    
 
+   //The angle between the ship's position in it's orbit, and the prograde vector of the body it is orbiting.
    declare function angleToBodyPrograde {
       local bodyVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
       local velPrograde is ship:velocity:orbit:mag*cos(vang(bodyVelocity, ship:velocity:orbit)).

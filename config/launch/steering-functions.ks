@@ -4,11 +4,14 @@ global steering_functions is lexicon().
       declare parameter azimuth, h0.
 
       ///From launch to pitchover complete
-      if ship:altitude < ship:body:atm:height/2 and vang(up:forevector, ship:facing:forevector) < 45 {
+      if ship:altitude < ship:body:atm:height/2 and
+         vang(up:forevector, ship:facing:forevector) < launch_param["pOverDeg"]*2 and
+         // ^ Don't activate after pitchover complete.  \/ Do not end until pitchover complete.
+         (ship:verticalspeed < launch_param["pOverVf"] or vang(up:forevector, ship:srfprograde:forevector) < launch_param["pOverDeg"]) {
          if ship:altitude < h0 + 10 {
             //Prior to clearing the tower
             return ship:facing.
-         }else if ship:verticalspeed < launch_param["pOverVf"] {
+         }else {//if ship:verticalspeed < launch_param["pOverVf"] {
             //First part says, "Wait for roll to complete.", second part says, "If you started the pover already, don't come back here."
             if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and
                vang(up:forevector, ship:facing:forevector) < 0.5 or
