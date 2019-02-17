@@ -21,6 +21,11 @@ runpath("0:/lib/core/kernel.ks").
       launch_ctl["init_staging"]().
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
+      if launch_param:haskey("show telemetry") and launch_param["show telemetry"] = "true" {
+         print "showing telemetry" at(0, 2).
+         runpath("0:/lib/core/telemetry.ks").
+         INTERRUPTS:add(telemetry_ctl["display"]).
+      }
    }
    launch_ctl:add("init", init_system@).
    
