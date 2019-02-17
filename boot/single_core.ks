@@ -1,7 +1,7 @@
 @lazyglobal off.
-
 ////// Single Core boot /////
-// Assumes core nametag gives the lv name, and ship:name gives the mission
+// Core nameTag parameters are the same as for lv_boot
+// Assumes core nameTag gives the lv name, and ship:name gives the mission
 //If this ship is on the launch pad... 
 if ship:status = "PRELAUNCH" {
    //IMPORTANT:

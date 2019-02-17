@@ -14,3 +14,4 @@ maneuver_ctl["defEngine"]("wolfhound", 412, 375).
 maneuver_ctl["defEngine"]("skiff", 330, 300).
 maneuver_ctl["defEngine"]("doubleTwitch", 290, 32).
 maneuver_ctl["defEngine"]("doubleThud", 305, 240).
+maneuver_ctl["defEngine"]("dawn", 4200, 2).
