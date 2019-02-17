@@ -53,8 +53,17 @@
          print "No burn loaded!!!".
          return OP_FINISHED.
       }
-      if time:seconds < start print "T-"+(start-time:seconds) at(0, 10).
-      else print "T+"+(time:seconds-start) at(0, 10).
+      if (defined telemetry_ctl) {
+         if not (defined telemetry_ctl["items"]["eta"]["Burn"]) {
+            telemetry_ctl["items"]["eta"]:add("Burn", {
+               if time:seconds < start return "T-"+(start-time:seconds).
+               else return "T+"+(time:seconds-start).
+            }).
+         }
+      } else {
+         if time:seconds < start print "T-"+(start-time:seconds) at(0, 10).
+         else print "T+"+(time:seconds-start) at(0, 10).
+      }
       //Over 3 minutes out, warp
       if time:seconds < start-180 { 
          print "Warping" at(0, 12).
