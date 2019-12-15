@@ -15,6 +15,7 @@ if ship:status = "PRELAUNCH" {
          shutdown.
       }
       if data:length > 1 {
+         //target handling
          if data:length = 2 and data[1]:tonumber(-1) = -1 {
             print "target: "+ data[1].
             if data[1]:trim = "Polar" {
@@ -36,7 +37,9 @@ if ship:status = "PRELAUNCH" {
             local alt is 80000.
             // data[1] is inclination
             // data[2] is raan/lan
-            // data[3] is target altitude
+            // data[3] is target(periapsis) altitude
+            // data[4] is Argument of Periapsis
+            // data[5] is apoapsis altitude
             if data:length > 2 set raan to data[2]:tonumber(0).
             if data:length > 3 set alt to data[3]:tonumber(0).
             //One might think that the raan/lan should be given last in the parameter list. 

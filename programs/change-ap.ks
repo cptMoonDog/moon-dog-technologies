@@ -7,8 +7,6 @@ local programName is "change-ap". //<------- put the name of the script here
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-declare parameter p1 is "". 
-declare parameter p2 is "". 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -27,15 +25,15 @@ set available_programs[programName] to {
    if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
-   // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter engineName.
    declare parameter newAp.
+   declare parameter AOP is "NA". 
 
 //======== Local Variables =====
       local steerDir is "retrograde".
       if ship:orbit:apoapsis < newAp set steerDir to "prograde". 
       if ship:orbit:periapsis > newAp {
-         print "Error" at(0, 0).
+         print "Error: New Ap is less than Pe." at(0, 0).
          shutdown.
       }
 
@@ -46,22 +44,39 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
+      print "running" at(0, 20).
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
          if ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-            print "error in programs/powered-capture.ks: staging.".
+            print "error in programs/change-ap.ks: staging.".
             return OP_FAIL.
          }
       }
       
+      //Trying to account for situations where a change of AOP is desired. 
+      local burnAngle is AOP - 180.
+      if burnAngle < 0 set burnAngle to burnAngle + 360.
+      
       local newSMA is (ship:orbit:periapsis+ship:orbit:body:radius*2+newAp)/2.
       local newVatPe is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:periapsis, newSMA).
       local dv is abs(newVatPe - velocityat(ship, eta:periapsis):orbit:mag).
-      maneuver_ctl["add_burn"](steerDir, engineName, "pe", dv).
+
+      if AOP = "NA" {
+         maneuver_ctl["add_burn"](steerDir, engineName, "pe", dv).
+      } else {
+         print "changing AOP".
+         local angleDistToBurn is (ship:orbit:trueanomaly-burnAngle).
+         if angleDistToBurn < 0 set angleDistToBurn to angleDistToBurn + 360.
+         local etaBurnAngle is angleDistToBurn/ship:orbit:period.
+         maneuver_ctl["add_burn"](steerDir, engineName, time:seconds+etaBurnAngle, dv).
+      }
+   
       return OP_FINISHED.
    }).
+      print "adding to MP".
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+      print "adding to MP".
    MISSION_PLAN:add({
       if (steerDir = "prograde" and ship:apoapsis < newAp*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.01) {
          if steerDir = "prograde" {
@@ -85,6 +100,7 @@ set available_programs[programName] to {
       }
       return OP_FINISHED.
    }).
+      print "finished adding to MP".
    
          
 //========== End program sequence ===============================

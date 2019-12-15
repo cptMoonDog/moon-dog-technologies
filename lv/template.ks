@@ -4,7 +4,8 @@
 
 declare parameter inclination is 0.
 declare parameter lan is "none".
-declare parameter launchToAlt is 80000.
+declare parameter periapsisAltitude is 80000.
+
 
 {
    /////////////////// Standard Boiler plate /////////////////////
@@ -82,7 +83,7 @@ declare parameter launchToAlt is 80000.
    launch_param:add("throttleReferenceVar", "etaAPO"). 
    launch_param:add("throttleProfile", list( 
                                             1000, //Apo to Activate function, max prior
-                                            launchToAlt, //Apo to Deactivate function 
+                                            periapsisAltitude, //Apo to Deactivate function 
                                             40)).  //Setpoint
 
       // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
@@ -91,7 +92,7 @@ declare parameter launchToAlt is 80000.
    //launch_param:add("throttleFunction", "constantTWR").
    //launch_param:add("throttleProfile", list( 
    //                                          2000, //Apo to Activate function, max prior
-   //                                          launchToAlt //Apo to Deactivate function 
+   //                                          periapsisAltitude //Apo to Deactivate function 
    //                                          , 1.5 //Functions can take an optional parameter, in this case the TWR to maintain is 1.5
    //                                          )).
 

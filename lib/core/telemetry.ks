@@ -1,3 +1,4 @@
+// For launch vehicles, the display function is setup in launch/launch_ctl.ks.  Layouts and telemetry items are in config/tel_conf.ks
 @LAZYGLOBAL OFF.
 global telemetry_ctl is lexicon().
 
@@ -12,7 +13,8 @@ global telemetry_ctl is lexicon().
    declare function show {
       for m in telemetry_ctl["layouts"][telemetry_ctl["active layout"]] {
          local iter is m:iterator.
-         iter:next.//0
+         iter:next.//0 iterator starts at -1
+         //Layout begins with 3 values: top, left, width.  Height is defined by the number of items.
          local top is iter:value.
          iter:next.//1
          local left is iter:value.
@@ -35,7 +37,6 @@ global telemetry_ctl is lexicon().
          }
       }
    }
-
    telemetry_ctl:add("display", show@).
 
 ///Private functions

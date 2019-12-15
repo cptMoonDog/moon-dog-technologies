@@ -2,6 +2,7 @@
 // Program Template
 
 local programName is "change-pe". //<------- put the name of the script here
+print "in change-pe".
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
@@ -35,7 +36,8 @@ set available_programs[programName] to {
       local steerDir is "retrograde".
       if ship:orbit:periapsis < newPe set steerDir to "prograde". 
       if ship:orbit:apoapsis < newPe {
-         print "Error" at(0, 0).
+         clearscreen.
+         print "Error: New Pe is HIGHER than Ap." at(0, 0).
          shutdown.
       }
 
@@ -60,7 +62,9 @@ set available_programs[programName] to {
       maneuver_ctl["add_burn"](steerDir, engineName, "ap", dv).
       return OP_FINISHED.
    }).
+      print "adding to MP2".
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+      print "adding to MP2".
    MISSION_PLAN:add({
       if (steerDir = "prograde" and ship:periapsis < newPe*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newPe*1.01) {
          if steerDir = "prograde" {
@@ -84,6 +88,7 @@ set available_programs[programName] to {
       }
       return OP_FINISHED.
    }).
+      print "finished adding to MP".
    
          
 //========== End program sequence ===============================

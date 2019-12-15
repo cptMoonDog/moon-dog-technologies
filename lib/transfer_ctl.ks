@@ -19,16 +19,34 @@
    declare function currentPhaseAngle {
       // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
       //Assumes orbits are both in the same plane.
+      declare parameter t is target.
       local a1 is ship:orbit:lan+ship:orbit:argumentofperiapsis+ship:orbit:trueanomaly.
-      local a2 is target:orbit:lan+target:orbit:argumentofperiapsis+target:orbit:trueanomaly.
+      local a2 is 0.
+      if t:istype("Orbitable") {
+         set a2 to t:orbit:lan+t:orbit:argumentofperiapsis+t:orbit:trueanomaly.
+      } else {
+         set a2 to t.
+      }
+      
       local diff is a2-a1.
       set diff to diff-360*floor(diff/360).
       return diff.
    }
 
    declare function etaPhaseAngle {
-      local pa is phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
-      local current is currentPhaseAngle().
+      declare parameter t is target.
+      local rateShip is 360/ship:orbit:period.
+      local rateTarget is 0.
+      local pa is 0.
+      if t:istype("Orbitable") {
+         set pa to phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
+         set rateTarget to 360/target:orbit:period.
+      } else {
+         set pa to phaseAngle(ship:orbit:semimajoraxis, t).
+         set rateTarget to 0.
+      }
+      
+      local current is currentPhaseAngle(t).
 
       // I want some time to burn my engines, so I need to lead a bit to have time
       // I'm sure there is a better way to do this, but for now...
@@ -40,8 +58,6 @@
       } else set diff to current-pa.
 
       if diff < 0 set diff to diff+360.
-      local rateShip is 360/ship:orbit:period.
-      local rateTarget is 360/target:orbit:period.
 
       local t is (diff)/(rateShip-rateTarget).
       return t.

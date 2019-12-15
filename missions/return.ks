@@ -1,34 +1,27 @@
 @lazyglobal off.
-//A mission template
+// Title: Return From Orbit
+// 
 //Objectives and routines will be run in the order they are added here.
-//When writing your own, avoid loops and wait statements.
-//If a routine in the MISSION_PLAN list returns OP_CONTINUE, it will be run again,
-// if it returns OP_FINISHED, the system will advance to the next routine in the MISSION_PLAN.
 
-//Load up pluggable objectives.
-//runpath("0:/programs/return-from-moon.ks").
-//runpath("0:/programs/warp-to-soi.ks").
-//
-//available_programs["return-from-moon"]("terrier").
-//available_programs["warp-to-soi"]("Kerbin").
-//MISSION_PLAN:add({
-//   print "waiting...".
-//   wait until ship:orbit:body = body("Kerbin").
-//   print "finished waiting...".
-//   return OP_FINISHED.
-//}).
 runpath("0:/lib/core/kernel.ks").
+if not (defined telemetry_ctl) {
+   runpath("0:/lib/core/telemetry.ks").
+   INTERRUPTS:add(telemetry_ctl["display"]).
+}
+
+
 MISSION_PLAN:add({
-   if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() and ship:altitude > 80000 {
-      set warp to 5.
-      return OP_CONTINUE.
-   } else if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
+   lock steering to ship:retrograde.
+   wait 30.
+   lock throttle to 1.
+   wait until ship:periapsis < 45000.
+   lock throttle to 0.
    return OP_FINISHED.
 }).
 MISSION_PLAN:add({
    lock steering to ship:north.
    wait 10.
-   stage.
+   //stage.
    lock steering to ship:retrograde.
    wait 10.
    unlock steering.

@@ -14,6 +14,7 @@
 
    local eisp is lexicon().
    local ethrust is lexicon().
+   local emts is lexicon().
 ///Public functions
 
    declare function getStartTime {
@@ -54,7 +55,7 @@
          return OP_FINISHED.
       }
       if (defined telemetry_ctl) {
-         if not (defined telemetry_ctl["items"]["eta"]["Burn"]) {
+         if not (telemetry_ctl["items"]["eta"]:haskey("Burn")) {
             telemetry_ctl["items"]["eta"]:add("Burn", {
                if time:seconds < start return "T-"+(start-time:seconds).
                else return "T+"+(time:seconds-start).
@@ -132,6 +133,11 @@
       local burnLengthSecondHalf is ((m2-m3)/(burn_queue:peek()["ff"])).
 
       set start to impulse_time(burn_queue:peek()["ip"]) - burnLengthFirstHalf.
+      if start < time:seconds {
+         set burn_queue:peek()["ip"] to burn_queue:peek()["ip"] + ship:orbit:period.
+         reset_for_next_burn().
+         return.
+      }
       set end to impulse_time(burn_queue:peek()["ip"]) + burnLengthSecondHalf.
    }
 
@@ -140,10 +146,12 @@
       declare parameter name.
       declare parameter i.
       declare parameter t.
+      declare parameter m.
 
       if not eisp:haskey(name) {
          eisp:add(name, i).
          ethrust:add(name, t).
+         emts:add(name, m).
       }
    }
    maneuver_ctl:add("defEngine", defineEngine@).
@@ -156,6 +164,7 @@
          if stat="isp" return eisp[name].
          if stat="thrust" return ethrust[name].
          if stat="ff" return ethrust[name]*1000/(eisp[name]*9.80665).
+         if stat="mts" return emts[name].
          return 1.
       } else {
          //Fail 
