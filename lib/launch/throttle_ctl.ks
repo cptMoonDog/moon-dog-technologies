@@ -174,7 +174,7 @@
       parameter throwaway is eta:apoapsis.
       if launch_param["throttleProfile"]:length > 3 and launch_param["throttleProfile"][2] = "variable" {
          local theta is vang(up:forevector, ship:prograde:forevector).
-         local factorB is launch_param["throttleProfile"][1] - ship:apoapsis)/launch_param["throttleProfile"][1].
+         local factorB is (launch_param["throttleProfile"][1] - ship:apoapsis)/launch_param["throttleProfile"][1].
          set pid:setpoint to max(min(ship:orbit:period/2, eta), launch_param["throttleProfile"][3]).
          print "setpoint: "+ pid:setpoint at(0, 25).
       }

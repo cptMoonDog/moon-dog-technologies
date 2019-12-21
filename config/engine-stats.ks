@@ -6,6 +6,8 @@ if not (defined maneuver_ctl)
    global maneuver_ctl is lexicon().
 
 maneuver_ctl["defEngine"]("ant",          315,  2  ,        0.0).
+maneuver_ctl["defEngine"]("bobcat",       310,  400,        0.0).
+maneuver_ctl["defEngine"]("cheetah",      355,  125,        0.0).
 maneuver_ctl["defEngine"]("spark",        320,  20 ,        0.0).
 maneuver_ctl["defEngine"]("swivel",       320,  215,        0.1).
 maneuver_ctl["defEngine"]("poodle",       350,  250,        0.0).
