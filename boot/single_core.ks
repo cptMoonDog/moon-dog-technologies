@@ -1,6 +1,12 @@
 @lazyglobal off.
 ////// Single Core boot /////
-// Core nameTag parameters are the same as for lv_boot
+// Core nameTag parameters are the same as for lv_boot:
+   //IMPORTANT:
+   // 1. In the VAB, set the nameTag of this core to the name of lifter definition file in the lv directory.
+   // 2. For inclined orbits, append to the nameTag: ", [inclination], [LAN]" 
+   // For example, to use the "Spud Atlas" launch vehicle and launch into an orbit coplanar with Minmus,
+   // give the core on the launch vehicle the nameTag: "Spud Atlas, 6, 78".
+   // Or, just set the nameTag to "Spud Atlas, Minmus"
 // Assumes core nameTag gives the lv name, and ship:name gives the mission
 //If this ship is on the launch pad... 
 if ship:status = "PRELAUNCH" {
@@ -20,12 +26,7 @@ if ship:status = "PRELAUNCH" {
                available_programs["rendezvous"](launch_param["upperStage"], target:name).
             } else if target:istype("Body") {
                if target:name = "Minmus" or target:name = "Mun" {
-                  runpath("0:/programs/lko-to-moon.ks").
-                  runpath("0:/programs/warp-to-soi.ks").
-                  runpath("0:/programs/powered-capture.ks").
-                  available_programs["lko-to-moon"](target:name, launch_param["upperStage"]).
-                  available_programs["warp-to-soi"](target:name).
-                  available_programs["powered-capture"](target:name, launch_param["upperStage"]).
+                  runpath("0:/missions/moonTransfer.ks", target:name, launch_param["upperStage"],launch_param["upperStage"],launch_param["upperStage"]).
                }
             }
          } else if exists("0:/lv/"+data[0]+".ks") { // Launch to defined plane

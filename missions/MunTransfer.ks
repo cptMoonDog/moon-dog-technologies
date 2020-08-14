@@ -9,4 +9,4 @@
 //It accepts two parameters: inclination and Longitude of Ascending Node.
 //Values for Minmus are 6 and 78 respectively.
 
-runpath("0:/missions/moonTransfer.ks", "Mun", "skiff", "wolfhound", "wolfhound").
+runpath("0:/missions/moonTransfer.ks", "Minmus", "terrier", "terrier", "terrier").

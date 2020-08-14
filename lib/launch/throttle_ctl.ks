@@ -180,6 +180,7 @@
       }
       if ship:apoapsis > launch_param["throttleProfile"][1] return pid:update(time:seconds, getReferenceValue_setpoint()). 
       return max(0.10, pid:update(time:seconds, getReferenceValue_setpoint())).
+      //return max(1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)), pid:update(time:seconds, getReferenceValue_setpoint())).
    }
    
      

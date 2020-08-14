@@ -8,9 +8,9 @@
       declare parameter target.
       local startAlt is body(origin):altitudeof(positionat(ship, etaPhaseAngle())).
 
-      local transferSMA is semimajoraxis(body(origin), startAlt, target:altitude).
+      local transferSMA is phys_lib["sma"](body(origin), startAlt, target:altitude).
 
-      local txfrVel is visViva_velocity(body(origin), startAlt, transferSMA).
+      local txfrVel is phys_lib["VatAlt"](body(origin), startAlt, transferSMA).
       local startVel is velocityat(ship, etaPhaseAngle()):orbit:mag.
       return txfrVel-startVel.
    }

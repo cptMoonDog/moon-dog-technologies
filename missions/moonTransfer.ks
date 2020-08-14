@@ -22,7 +22,7 @@ runpath("0:/programs/change-pe.ks").
 available_programs["lko-to-moon"](bod, transferStageEngine).
 MISSION_PLAN:add({
    print "waiting...".
-   wait until ship:orbit:body = body("Mun").
+   wait until ship:orbit:body = body(bod).
    print "finished waiting...".
    return OP_FINISHED.
 }).

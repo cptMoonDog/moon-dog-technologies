@@ -25,23 +25,21 @@ global steering_functions is lexicon().
          }
       }
       local progradeDirection is ship:srfprograde.
-      if vang(ship:prograde:forevector, ship:srfprograde:forevector) < 5 and ((not(ship:body:atm:exists)) or ship:altitude > ship:body:atm:height/2) {
+      if vang(ship:prograde:forevector, ship:srfprograde:forevector) < 4 and ((not(ship:body:atm:exists)) or ship:altitude > ship:body:atm:height/2) {
          set progradeDirection to ship:prograde.
       }
       local progradeVector is progradeDirection:forevector.
-      if ship:velocity:orbit:mag > 500 and (ship:verticalspeed < 5) {
-         local pitchLimit is vang(up:forevector, progradeVector)*min(1, ship:altitude/ship:body:atm:height).
+      if ship:velocity:orbit:mag > 500 and (ship:verticalspeed < 50 and ship:periapsis < ship:body:atm:height/2) {
+         local pitchLimit is min(45, vang(up:forevector, progradeVector)*(ship:altitude/ship:body:atm:height)).
          local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).
          // Pitch up sufficient to have a vertical TWR = 1.
-         local pitchAngle is -1*min(pitchLimit, arcsin(1/max(1,twr)))*(1-max(0, ship:verticalspeed/5)).
-         set pitchAngle to pitchAngle*(abs(ship:verticalspeed)/sqrt(1+abs(ship:verticalspeed)*abs(ship:verticalspeed))).
-         if twr > 1 {
-            set progradeVector to progradeDirection:forevector*angleaxis(pitchAngle, progradeDirection:starvector).
-         } else {
-            set progradeVector to progradeDirection:forevector*angleaxis(-45, progradeDirection:starvector).
-         }
-         print("*ANGLE TO* SHALLOW*") at(0, 5).
-         print(pitchAngle) at(0, 6).
+         local criticalSpeed is 0.
+         if ship:verticalspeed < 0 set criticalSpeed to 0.
+         else set criticalSpeed to ship:verticalspeed.
+         local pitchAngle is -1*min(pitchLimit, arcsin(1/max(1,twr)))*(1-max(0, min(1, (criticalSpeed/20)*(criticalSpeed/20)))).
+         set progradeVector to progradeDirection:forevector*angleaxis(pitchAngle, progradeDirection:starvector).
+         print("*ANGLE TOO SHALLOW*") at(5, 0).
+         print(pitchAngle) at(6, 0).
       }
       if ship:orbit:inclination >= launch_param["inclination"]-0.001 {
          return progradeVector.
