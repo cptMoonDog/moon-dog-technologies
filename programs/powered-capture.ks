@@ -41,7 +41,7 @@ set available_programs[programName] to {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust/engineName: "+ship:maxthrust+" "+engineName.
          stage. 
-         wait until stage:ready.
+         wait 10.
          if ship:maxthrust = 0 print "Likely a staging problem: Check yo' stagin!".
          if count > 2 {
             return OP_FAIL.

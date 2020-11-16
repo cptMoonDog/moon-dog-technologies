@@ -80,6 +80,7 @@
       
       if engList:length > 0 {
          if time:seconds > lastTime + 1 {
+            list Engines in engList.
             local thrst is 0.
             for eng in engList 
                set thrst to thrst + eng:thrust.

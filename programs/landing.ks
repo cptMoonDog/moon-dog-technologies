@@ -90,7 +90,9 @@ set available_programs[programName] to {
                   if ship:verticalspeed > -10 and ship:verticalspeed < 0 or ship:verticalspeed > 10 lock steering to ship:srfretrograde.
                   else lock steering to up:forevector*angleaxis(pitchangle, ship:srfretrograde:starvector).//min(pitchLimit, max(0,pitchAngle))
 
+                  local throttMargin is 0.1.
                   if ship:verticalspeed > -2 set thrott to 0.
+                  //else set thrott to throttMargin*ttImpact/min(ttZeroSrf-ttImpact, throttMargin*ttImpact).
                   else if ttImpact-3 < ttZeroSrf set thrott to min(1, thrott + 0.01).
                   else set thrott to max(0, thrott - 0.01).
                   lock throttle to thrott.

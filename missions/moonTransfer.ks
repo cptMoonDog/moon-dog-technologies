@@ -10,6 +10,7 @@
 //Values for Minmus are 6 and 78 respectively.
 
 declare parameter bod, transferStageEngine, captureStageEngine, finalEngine.
+declare parameter sma is 250000.
 
 //Load up pluggable objectives.
 runpath("0:/programs/lko-to-moon.ks").
@@ -29,11 +30,11 @@ MISSION_PLAN:add({
 available_programs["powered-capture"](bod, captureStageEngine).
 MISSION_PLAN:add({
    if ship:periapsis > 250000 {
-      available_programs["change-pe"](finalEngine, "250000").
-      available_programs["change-ap"](finalEngine, "250000").
+      available_programs["change-pe"](finalEngine, sma).
+      available_programs["change-ap"](finalEngine, sma).
    } else {
-      available_programs["change-ap"](finalEngine, "250000").
-      available_programs["change-pe"](finalEngine, "250000").
+      available_programs["change-ap"](finalEngine, sma).
+      available_programs["change-pe"](finalEngine, sma).
    }
    return OP_FINISHED.
 }).
