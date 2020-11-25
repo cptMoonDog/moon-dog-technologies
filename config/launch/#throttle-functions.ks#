@@ -18,3 +18,10 @@ throttle_functions:add("vOV", {
    return max(minimum, 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude))).
    //return max(minimum, 1-(vang(up:forevector, facing:forevector))*(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude))).
 }).
+
+throttle_functions:add("pitchIsEtaApo", {
+   parameter minimum is 0.1.
+   local pitch is vang(up:forevector, ship:prograde:forvector);
+   local setting is ((eta:apoapsis)/(pitch)).
+   return max(minimum, ).
+}).

@@ -1,14 +1,12 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "testing". //<------- put the name of the script here
+local programName is "lko-to-moon". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-    // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -28,7 +26,8 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   //declare parameter engineName.
+   declare parameter targetBody.
+   declare parameter engineName.
 
 //======== Local Variables =====
 
@@ -38,22 +37,31 @@ set available_programs[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
-      declare function angleToBodyPrograde {
-         local bodyVelocity is ship:body:velocity:orbit - ship:body:body:velocity:orbit.
-         local velPrograde is ship:velocity:orbit:mag*cos(vang(bodyVelocity, ship:velocity:orbit)).
-         //local velPrograde is ((ship:velocity:orbit+bodyVelocity):mag-bodyVelocity:mag).
-
-         local angleToPrograde is (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
-         if (velPrograde/abs(velPrograde)) < 0 set angleToPrograde to 360 + (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
-         return angleToPrograde.
-      }
-      local angleToBodyRetro is angleToBodyPrograde()+180.
-      if angleToBodyRetro > 360 set angleToBodyRetro to angleToBodyRetro-360.
-      print "prograde: "+angleToBodyPrograde() at(0, 5).
-      
-      return OP_CONTINUE.
-   }).
+         MISSION_PLAN:add({
+            until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
+               stage. 
+            }
+            wait 5.
+            set target to body(targetBody).
+            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).
+            add(mnvr).
+            until false {
+               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis > body(targetBody):radius+10000 {
+                  break.
+               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis < body(targetBody):radius+10000 {
+                  print "adjusting pe" at(0, 1).
+                  set mnvr:prograde to mnvr:prograde + 0.01.
+               }else if mnvr:orbit:apoapsis > body("Mun"):altitude {
+                  print "adjusting ap" at(0, 1).
+                  set mnvr:prograde to mnvr:prograde - 0.01.
+               }else {
+                  break. 
+               }
+            }
+            maneuver_ctl["add_burn"]("node", engineName, "node", mnvr:deltav:mag).
+            return OP_FINISHED.
+         }).
+         MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

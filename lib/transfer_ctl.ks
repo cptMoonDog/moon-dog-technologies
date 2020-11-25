@@ -6,11 +6,13 @@
    declare function transfer_dV {
       declare parameter origin.
       declare parameter target.
-      local startAlt is body(origin):altitudeof(positionat(ship, etaPhaseAngle())).
+      
+      if origin:istype("String") {set origin to body(origin).}
+      local startAlt is origin:altitudeof(positionat(ship, etaPhaseAngle())).
 
-      local transferSMA is phys_lib["sma"](body(origin), startAlt, target:altitude).
+      local transferSMA is phys_lib["sma"](origin, startAlt, target:altitude).
 
-      local txfrVel is phys_lib["VatAlt"](body(origin), startAlt, transferSMA).
+      local txfrVel is phys_lib["VatAlt"](origin, startAlt, transferSMA).
       local startVel is velocityat(ship, etaPhaseAngle()):orbit:mag.
       return txfrVel-startVel.
    }

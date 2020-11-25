@@ -44,9 +44,9 @@ You can put anything you want in a mission file.  When they are called, they are
 They *can* be used to create a list of `programs` to be run in order, to achieve a goal.  For instance, say you wanted to go to the Mun.  You can write up a mission to the Mun like this:
 
     //Load programs into memory
-    runpath("0:/programs/lko-to-moon.ks").
-    runpath("0:/programs/warp-to-soi.ks").
-    runpath("0:/programs/powered-capture.ks").
+    runpath("0:/programs/std/lko-to-moon.ks").
+    runpath("0:/programs/std/warp-to-soi.ks").
+    runpath("0:/programs/std/powered-capture.ks").
 
     //Define the sequence in which to run them
     available_programs["lko-to-moon"]("Mun", "spark").

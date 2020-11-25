@@ -1,7 +1,7 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "rendezvous". //<------- put the name of the script here
+local programName is "std/rendezvous". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
@@ -47,11 +47,11 @@ set available_programs[programName] to {
       MISSION_PLAN:add({
          if not hastarget set target to targetName.
          if not hasnode {
-            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"]("Kerbin", target)).
+            local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).
             add(mnvr).
             set t to mnvr:eta+mnvr:orbit:period/2+time:seconds.
 
-            maneuver_ctl["add_burn"]("node", "wolfhound", "node", mnvr:deltav:mag).
+            maneuver_ctl["add_burn"]("node", engineName, "node", mnvr:deltav:mag).
          }
          return OP_FINISHED.
       }).
@@ -64,27 +64,28 @@ set available_programs[programName] to {
          print "toward: "+velToward() at(0, 5).
          print "RelVelocity: "+relVelocity():mag at(0, 6).
          lock steering to -1*relVelocity().
-         if dist():mag < 150 {
+         if dist():mag < 150 { // Within relativistic frame
             if relVelocity():mag < 1 {
                lock throttle to 0.
                lock steeering to ship:prograde.
                return OP_FINISHED.
             } else if relVelocity():mag > 1 {
                lock steering to -1*relVelocity().
-               wait until vang(-1*(ship:velocity:orbit - target:velocity:orbit), ship:facing:forevector) < 1.
+               // Below: Wait until ship is pointed at retrograde in reference to target.
+               if vang(-1*(ship:velocity:orbit - target:velocity:orbit), ship:facing:forevector) > 1 {return OP_CONTINUE.}
                lock throttle to abs(relVelocity():mag)/100.
             }
-         } else {
-            if velToward() < -0.5 {
-               wait until vang(-1*relVelocity(), ship:facing:forevector) < 1.
+         } else { // Not close enough
+            if velToward() < -0.5 { // drifting away
+               if vang(-1*relVelocity(), ship:facing:forevector) > 1 {return OP_CONTINUE.}
                lock throttle to abs(relVelocity():mag)/100.
-               wait until abs(relVelocity():mag) < 1.
+               if abs(relVelocity():mag) > 1 {return OP_CONTINUE.}
                lock throttle to 0.
-            } else if abs(velToward()) < 5 and relVelocity():mag < 6 {
-               lock steering to dist().
-               wait until vang(dist(), ship:facing:forevector) < 1.
+            } else if abs(velToward()) < 5 and relVelocity():mag < 6 { // Need to move a little faster
+               lock steering to dist().  // Point at target
+               if vang(dist(), ship:facing:forevector) > 1 {return OP_CONTINUE.}
                lock throttle to 0.1.
-               wait until abs((ship:velocity:orbit - target:velocity:orbit):mag) > dist():mag/180. //
+               if abs((ship:velocity:orbit - target:velocity:orbit):mag) < dist():mag/180 {return OP_CONTINUE.}
                lock throttle to 0.
             }
          }

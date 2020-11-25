@@ -11,7 +11,7 @@ global steering_functions is lexicon().
          if ship:altitude < h0 + 10 {
             //Prior to clearing the tower
             return ship:facing.
-         }else {//if ship:verticalspeed < launch_param["pOverVf"] {
+         }else {
             //First part says, "Wait for roll to complete.", second part says, "If you started the pover already, don't come back here."
             if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and
                vang(up:forevector, ship:facing:forevector) < 0.5 or
@@ -30,6 +30,7 @@ global steering_functions is lexicon().
       }
       local progradeVector is progradeDirection:forevector.
       if ship:velocity:orbit:mag > 500 and (ship:verticalspeed < 50 and ship:periapsis < ship:body:atm:height/2) {
+         /// Attempts to compensate for not reaching orbit by the time apoapsis is reached.  ///
          local pitchLimit is min(45, vang(up:forevector, progradeVector)*(ship:altitude/ship:body:atm:height)).
          local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).
          // Pitch up sufficient to have a vertical TWR = 1.

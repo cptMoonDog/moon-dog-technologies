@@ -13,6 +13,10 @@
 
    declare function init {
       if launch_param["throttleProgramType"] = "table" {
+         if mod(launch_param["throttleProfile"]:length, 2) = 0 {
+            print "Error in throttle profile.  Even number of data points.  Check for final altitude parameter.".
+            shutdown.
+         }
          lock throttle to getThrottleSetting_table().
          launch_ctl:add("throttle_monitor", throttleMonitor_table@).
       } else {
@@ -44,6 +48,8 @@
          return MISSIONTIME.
       else if launch_param["throttleReferenceVar"] = "APO"
          return ship:apoapsis.
+      else if launch_param["throttleReferenceVar"] = "etaAPO"
+         return eta:apoapsis.
       else return 0.
    }
    //Utility function for the setpoint throttling system. Returns the Reference Value.
@@ -60,22 +66,28 @@
    // If a table based profile is selected by the lv, this will be exported as launch_ctl["throttleMonitor"]
    local step is 0.
    declare function throttleMonitor_table {
-      if getReferenceValue_table() > launch_param["throttleProfile"][step] {
-         if step+2 < launch_param["throttleProfile"]:length { //Another step exists
+      if ship:apoapsis < launch_param["throttleProfile"][launch_param["throttleProfile"]:length-1] {
+         if step+2 < launch_param["throttleProfile"]:length-1 //Another step exists
+            and getReferenceValue_table() > launch_param["throttleProfile"][step]
+         { 
             set step to step+2.
-         } else {
-            //This prevents the program from shutting down if drag could still have an influence.
-            if (not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height  {
-               if launch_param:haskey("forceMECO") and launch_param["forceMECO"] = "true" {
-                  local engList is list().
-                  list engines in engList.
-                  for eng in engList 
-                     if eng:tag:tolower:contains("main") eng:shutdown.
-               }
-               return OP_FINISHED.
-            }
+         } else if step > 1 //A previous step exists
+            and getReferenceValue_table() < launch_param["throttleProfile"][step-2]
+         { 
+            set step to step-2.
          }
+         return OP_CONTINUE.
       } 
+      //This prevents the program from shutting down if drag could still have an influence.
+      if (not (ship:orbit:body:atm:exists)) or ship:altitude > ship:orbit:body:atm:height  {
+         if launch_param:haskey("forceMECO") and launch_param["forceMECO"] = "true" {
+            local engList is list().
+            list engines in engList.
+            for eng in engList 
+               if eng:tag:tolower:contains("main") eng:shutdown.
+         }
+         return OP_FINISHED.
+      }
       return OP_CONTINUE.
    }
    // If shutdown condition reached, cut throttle, but stay alive until above atmosphere.
@@ -106,10 +118,12 @@
    //  34000   |    0.5
    //  70000   |    0.1
    declare function getThrottleSetting_table {
-      if step = 0 {
+      if ship:apoapsis > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-1] {
+         return 0.
+      } else if step = 0 {
          return launch_param["throttleProfile"][step+1].
       } else {
-         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2] {
+         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] {
             return 0. 
          } else {
             if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
