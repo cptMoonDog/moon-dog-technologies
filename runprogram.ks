@@ -2,8 +2,16 @@
 declare parameter name.
 declare parameter p is list().
 
-if exists("0:/programs/"+name+".ks") {
-   runpath("0:/programs/"+name+".ks").
+local allowAlpha is false.
+local allowBeta is false.
+
+if exists("0:/programs/std/"+name+".ks") 
+   runpath("0:/programs/std/"+name+".ks").
+if allowAlpha AND exists("0:/programs/alpha/"+name+".ks") 
+   runpath("0:/programs/alpha/"+name+".ks").
+if allowBeta AND exists("0:/programs/beta/"+name+".ks") 
+   runpath("0:/programs/beta/"+name+".ks").
+if available_programs:haskey(name) {
    if p:length = 0 available_programs[name]().
    if p:length = 1 available_programs[name](p[0]).
    if p:length = 2 available_programs[name](p[0], p[1]).
