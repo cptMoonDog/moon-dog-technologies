@@ -1,7 +1,7 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "std/rendezvous". //<------- put the name of the script here
+local programName is "rendezvous". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and

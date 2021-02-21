@@ -34,7 +34,7 @@ Payloads and Missions
  1. Make your spacecraft, and make sure to include a KOS processor and a probe core.
  2. In the VAB:
     - Set the bootfile for the KOS processor on the spacecraft to `payload_boot.ks`.
-    - Set the nameTag of the KOS processor to `[name you want your ship to have]:[name of mission to run]`.
+    - Set the nameTag of the KOS processor to `[name you want your ship to have]:[name of mission to run], [mission parameter 1], [mission parameter 2], ... [mission parameter n]`.
  3. Mount your payload to your launch vehicle. The payload will wait until the launch vehicle delivers it to circular orbit and then run it's mission.
 
 Mission Structure
@@ -65,7 +65,7 @@ Standalone Operation
 ====================
 Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
 
-    runpath("0:/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], [PARAMETER n])).
+    runpath("0:/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], ... [PARAMETER n])).
     
 For more information about extending the system and technical details, see the [wiki](../../wiki).  (A work in progress).
 
