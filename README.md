@@ -13,6 +13,7 @@ Features
  
 Quickstart
 ==========
+[Example Mission to Minmus Orbit](https://youtu.be/8BtfHxGP5ns)
 
 Launch Vehicles
 --------
