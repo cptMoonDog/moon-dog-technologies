@@ -32,6 +32,7 @@ if ship:status = "PRELAUNCH" {
       } else {
          print "Handoff failed! Check KOS Module nameTags...".
       }
+      return OP_FINISHED.
       }).
       kernel_ctl:["start"]().
    } 
