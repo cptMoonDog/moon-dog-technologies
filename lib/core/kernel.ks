@@ -21,6 +21,10 @@ global INTERRUPTS is list().
 
 {
    local runmode is 0.
+   local time-share is 5.
+   local time-count is 0.
+
+   local next-interrupt is 0.
 
 ///Public functions
    declare function run {
@@ -34,8 +38,16 @@ global INTERRUPTS is list().
          }
 
          //Interrupts
-         for subroutine in INTERRUPTS {
-            subroutine().
+         if time-count < time-share {
+            set time-count to time-count +1.
+         } else {
+            set time-count to 0.
+            if next-interrupt < INTERRUPTS:length {
+               INTERRUPTS[next-interrupt]().
+               set next-interrupt to next-interrupt +1.
+            else {
+               set next-interrupt to 0.
+            }
          }
       }
       set ship:control:pilotmainthrottle to 0.
