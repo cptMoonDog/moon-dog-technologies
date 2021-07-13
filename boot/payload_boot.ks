@@ -16,7 +16,7 @@ if ship:status = "PRELAUNCH" {
       }
       runpath("0:/core/kernel.ks").
       MISSION_PLAN:add({
-         print "waiting for handoff...".
+         print "waiting for handoff..." at(0,3).
          if core:messages:empty return OP_CONTINUE.
       if not core:messages:empty {
          print "handoff accepted".
