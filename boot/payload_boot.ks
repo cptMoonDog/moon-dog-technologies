@@ -16,7 +16,7 @@ if ship:status = "PRELAUNCH" {
       }
       runpath("0:/lib/core/kernel.ks").
       MISSION_PLAN:add({
-         print "waiting for handoff..." at(0,3).
+         kernel_ctl["log"]("waiting for handoff...", "status").
          if core:messages:empty return OP_CONTINUE.
          if not core:messages:empty {
             print "handoff accepted".
@@ -30,11 +30,10 @@ if ship:status = "PRELAUNCH" {
                else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
             } 
          } else {
-            print "Handoff failed! Check KOS Module nameTags...".
+            kernel_ctl["log"]("Handoff failed! Check KOS Module nameTags...", "status").
          }
          return OP_FINISHED.
       }).
-      print "Starting command processor...".
       runpath("0:/lib/core/command_proc.ks").
       INTERRUPTS:add(kernel_ctl["command processor"]).
       kernel_ctl["start"]().
