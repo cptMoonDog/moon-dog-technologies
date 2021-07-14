@@ -14,26 +14,29 @@ if ship:status = "PRELAUNCH" {
          set mission to data[1]:trim.
          set mission to mission:split(",").  
       }
-      runpath("0:/core/kernel.ks").
+      runpath("0:/lib/core/kernel.ks").
       MISSION_PLAN:add({
          print "waiting for handoff..." at(0,3).
          if core:messages:empty return OP_CONTINUE.
-      if not core:messages:empty {
-         print "handoff accepted".
-         set ship:name to data[0].
-         if exists("0:/missions/"+mission[0]:trim+".ks") {
-            if mission:length = 6 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim, mission[5]:trim).
-            else if mission:length = 5 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim).
-            else if mission:length = 4 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim).
-            else if mission:length = 3 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim).
-            else if mission:length = 2 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim).
-            else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
-         } 
-      } else {
-         print "Handoff failed! Check KOS Module nameTags...".
-      }
-      return OP_FINISHED.
+         if not core:messages:empty {
+            print "handoff accepted".
+            set ship:name to data[0].
+            if exists("0:/missions/"+mission[0]:trim+".ks") {
+               if mission:length = 6 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim, mission[5]:trim).
+               else if mission:length = 5 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim).
+               else if mission:length = 4 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim).
+               else if mission:length = 3 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim).
+               else if mission:length = 2 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim).
+               else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
+            } 
+         } else {
+            print "Handoff failed! Check KOS Module nameTags...".
+         }
+         return OP_FINISHED.
       }).
-      kernel_ctl:["start"]().
+      print "Starting command processor...".
+      runpath("0:/lib/core/command_proc.ks").
+      INTERRUPTS:add(kernel_ctl["command processor"]).
+      kernel_ctl["start"]().
    } 
 }

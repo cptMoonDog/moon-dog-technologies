@@ -21,10 +21,10 @@ global INTERRUPTS is list().
 
 {
    local runmode is 0.
-   local time-share is 5.
-   local time-count is 0.
+   local time_share is 5.
+   local time_count is 0.
 
-   local next-interrupt is 0.
+   local next_interrupt is 0.
 
 ///Public functions
    declare function run {
@@ -38,15 +38,15 @@ global INTERRUPTS is list().
          }
 
          //Interrupts
-         if time-count < time-share {
-            set time-count to time-count +1.
+         if time_count < time_share {
+            set time_count to time_count +1.
          } else {
-            set time-count to 0.
-            if next-interrupt < INTERRUPTS:length {
-               INTERRUPTS[next-interrupt]().
-               set next-interrupt to next-interrupt +1.
-            else {
-               set next-interrupt to 0.
+            set time_count to 0.
+            if next_interrupt < INTERRUPTS:length {
+               INTERRUPTS[next_interrupt]().
+               set next_interrupt to next_interrupt +1.
+            } else {
+               set next_interrupt to 0.
             }
          }
       }

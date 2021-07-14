@@ -27,7 +27,6 @@ set available_programs[programName] to {
    if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
-   // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter engineName.
    declare parameter newAp.
 

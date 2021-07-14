@@ -9,6 +9,11 @@
 //It accepts two parameters: inclination and Longitude of Ascending Node.
 //Values for Minmus are 6 and 78 respectively.
 
+// The kernel really should be loaded by now.
+// These mission files are simply run with no checks, so you can do anything you want with them, but if you intend to use the runmode system,
+// don't count on it being pulled by some other initializer.
+if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+
 declare parameter bod, transferStageEngine, captureStageEngine, finalEngine.
 declare parameter sma is 250000.
 
