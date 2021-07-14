@@ -88,7 +88,10 @@
       } else if cmd_list[0] = "echo" {
          print input_string:remove(0, 5).
       } else if cmd_list[0] = "ls" or cmd_list[0] = "dir" {
-         list.
+         list.   
+      } else if cmd_list[0] = "runprogram" {
+         runpath("0:/programs/"+cmd_list[1]+".ks").
+         available_programs[cmd_list[1]](). //appends to the end of the mission plan.
       } else if cmd_list[0] = "display" {
          if cmd_list[1] = "telemetry" {
             INTERRUPTS:add(telemetry_ctl["display"]).
