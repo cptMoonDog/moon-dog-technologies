@@ -86,7 +86,7 @@
       } else if cmd_list[0] = "log" {
          log cmd_list[1] to "0:/log.txt".
       } else if cmd_list[0] = "echo" {
-         print cmd_list[1].
+         print input_string:remove(0, 5).
       } else if cmd_list[0] = "ls" or cmd_list[0] = "dir" {
          list.
       } else if cmd_list[0] = "display" {
