@@ -90,7 +90,9 @@
       } else if cmd_list[0] = "ls" or cmd_list[0] = "dir" {
          list.
       } else if cmd_list[0] = "display" {
-         if cmd_list[1] = "status" {
+         if cmd_list[1] = "telemetry" {
+            INTERRUPTS:add(telemetry_ctl["display"]).
+         } else if cmd_list[1] = "status" {
             print open("status"):readall:string.
          } else if cmd_list[1] = "eta:apo" {
             print eta:apoapsis.
