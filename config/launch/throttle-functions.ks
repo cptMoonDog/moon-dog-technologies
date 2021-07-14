@@ -11,15 +11,17 @@ throttle_functions:add("constantTWR", {
    return twr*(ship:body:mu/(r^2))*(ship:mass/max(0.1, ship:availablethrust)).
 }).
 
+// Experimental
 // Vertical Acceleration needed to achieve
 // target apo by within half an orbit.
-throttle_functions:add("half-orbit-apo", {
-   parameter target is 80000.
-
-   local numerator is 2*(target-ship:orbit:apoapsis)*ship:mass.
-   local denominator is ship:period*ship:availablethrust*ship:orbit:eta:apoapsis*sin(vang(up:forevector, ship:facing:forevector)).
-   return numerator/denominator.
-}).
+//
+//throttle_functions:add("half-orbit-apo", {
+//   parameter target is 80000.
+//
+//   local VertThrust is ship:availablethrust*sin(vang(up:forevector, ship:facing:forevector)).
+//   local thrott is (2*(target-ship:orbit:body:radius-ship:orbit:apoapsis)*ship:mass)/(ship:orbit:period*ship:orbit:eta:apoapsis*VertThrust)+ship:mass*ship:mass*constant:g0/VertThrust.
+//   return thrott.
+//}).
 
 
 //Throttle decreases as horizontal velocity approaches orbital velocity.
