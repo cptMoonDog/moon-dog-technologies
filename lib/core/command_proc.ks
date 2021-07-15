@@ -10,14 +10,17 @@
 
    //Some status registers
    kernel_ctl:add("status", "Initializing").
-   if not exists("0:/errorlog.txt") create("0:/errorlog.txt"). 
+   kernel_ctl:add("output", ""). //Output of last command.
    kernel_ctl:add("error log file", open("0:/errorlog.txt")).
    kernel_ctl:add("log", {
       parameter mesg.
       parameter logto is "error".
 
       if logto = "error" {
-         kernel_ctl["error log file"]:writeln(mesg).
+         if not exists("0:/errorlog.txt") {
+            create("0:/errorlog.txt"). 
+         }
+         open("0:/errorlog.txt"):write(mesg).
       } else if logto = "status" {
          if not exists("status") create("status").
          open("status"):clear.
@@ -25,15 +28,26 @@
       }
    }).
 
+   declare function draw_display {
+      //Draw a box
+      from {local i is 0.} until i = terminal:width-1 step {set i to i+1.} do {print "=" at(i, 0).}
+      from {local i is 0.} until i = terminal:width-1 step {set i to i+1.} do {print "=" at(i, terminal:height-2).}
+      from {local i is 1.} until i = terminal:height-2 step {set i to i+1.} do {print "|":padright(terminal:width-2)+"|" at(0, i).}
 
-   clearscreen.
-   print "KOS-Missions Command Processor v0.0.1 Alpha".
-   print "Copyright Year 1 Mikrosoft".
+         //Top status line
+      from {local i is 1.} until i = terminal:width-2 step {set i to i+1.} do {print "=" at(i, 2).}
+      print kernel_ctl["status"] at(1, 1).
+      from {local i is 1.} until i = terminal:width-2 step {set i to i+1.} do {print "=" at(i, 4).}
+      print kernel_ctl["output"] at(1, 3).
+   }
+
+
    print prompt at(0, terminal:height-1).
    print cursor at(cur_col, terminal:height-1).
 
    local command_history_index is command_history:length-1.
    declare function monitor_input {
+      draw_display().
       if terminal:input:haschar {
          print prompt at(0, terminal:height-1).
          print cursor at(cur_col, terminal:height-1).
@@ -86,7 +100,7 @@
       } else if cmd_list[0] = "log" {
          log cmd_list[1] to "0:/log.txt".
       } else if cmd_list[0] = "echo" {
-         print input_string:remove(0, 5).
+         set kernel_ctl["output"] to input_string:remove(0, 5).
       } else if cmd_list[0] = "ls" or cmd_list[0] = "dir" {
          list.   
       } else if cmd_list[0] = "runprogram" {

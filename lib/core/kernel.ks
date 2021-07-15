@@ -21,7 +21,7 @@ global INTERRUPTS is list().
 
 {
    local runmode is 0.
-   local time_share is 5.
+   local time_share is 1.
    local time_count is 0.
 
    local next_interrupt is 0.

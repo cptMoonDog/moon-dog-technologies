@@ -26,16 +26,16 @@ if ship:status = "PRELAUNCH" {
          }
          return OP_FINISHED.
       }). 
-runpath("0:/lib/core/command_proc.ks").
+      runpath("0:/lib/core/command_proc.ks").
       INTERRUPTS:add(kernel_ctl["command processor"]). 
-if exists("0:/missions/"+mission[0]:trim+".ks") {
-               if mission:length = 6 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim, mission[5]:trim).
-               else if mission:length = 5 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim).
-               else if mission:length = 4 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim).
-               else if mission:length = 3 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim).
-               else if mission:length = 2 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim).
-               else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
-            } 
-     
+      if exists("0:/missions/"+mission[0]:trim+".ks") {
+         if mission:length = 6 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim, mission[5]:trim).
+         else if mission:length = 5 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim).
+         else if mission:length = 4 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim).
+         else if mission:length = 3 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim).
+         else if mission:length = 2 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim).
+         else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
+      } 
+
    } 
 }

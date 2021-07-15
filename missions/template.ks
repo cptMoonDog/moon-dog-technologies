@@ -11,9 +11,8 @@
 //runpath("0:/programs/std/powered-capture.ks").
 //runpath("0:/programs/std/landing.ks").
 
+// If using the "single_core.ks" boot file,
 //The Launch Vehicle adds launch to LKO to the MISSION_PLAN
-//If the current core is the only core, assume that it needs to take responsibility for launch as well.
-//if exists("1:/boot/single_core.ks") runpath("0:/lv/template.ks").
 
 //Add Pluggable objectives like this:
 //available_programs["lko-to-mun"]("terrier").
@@ -46,3 +45,5 @@
 //available_programs["powered-capture"]("terrier").
 //available_programs["landing"]("terrier").
 
+// This line calls the kernel to start the runmode system and start execution.
+kernel_ctl["start"]().
