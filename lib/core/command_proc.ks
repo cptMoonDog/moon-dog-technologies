@@ -19,7 +19,7 @@
       print "==================":padright(terminal:width-17) at(0, terminal:height-2).      
       for key in status_items:keys {
          local keysplit is key:split(":").
-         print keysplit[0] + ":" + status_items[key]():tostring:substring(0, 10) at(keysplit[2]:tonumber, keysplit[1]:tonumber).
+         print keysplit[0] + ":" + status_items[key]() at(keysplit[2]:tonumber, keysplit[1]:tonumber).
       }
    }
 
@@ -89,9 +89,10 @@
          available_programs[cmd_list[1]](). //appends to the end of the mission plan.
       } else if cmd_list[0] = "display" {
          if cmd_list:length > 1 {                      // "          "
-            if cmd_list[1] = "eta:apo" status_items:add(  "eta apo:1:0", {return ETA:apoapsis.}). 
-            else if cmd_list[1] = "alt" status_items:add( "alt:1:20", {return ship:altitude.}). 
-            else if cmd_list[1] = "apo" status_items:add( "apo:2:0", {return ship:apoapsis.}). 
+            if cmd_list[1] = "eta:apo" status_items:add(  "eta apo:1:0", {return ETA:apoapsis:tostring:substring(0, 10).}). 
+            else if cmd_list[1] = "alt" status_items:add( "alt:1:20", {return ship:altitude:tostring:substring(0, 10).}). 
+            else if cmd_list[1] = "apo" status_items:add( "apo:2:0", {return ship:apoapsis:tostring:substring(0, 10).}). 
+            else if cmd_list[1] = "status" status_items:add( "status:2:20", {return kernel_ctl["status"].}). 
          }
       }
    }
