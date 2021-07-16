@@ -2,7 +2,6 @@
 // Program Template
 
 local programName is "change-pe". //<------- put the name of the script here
-print "in change-pe".
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and

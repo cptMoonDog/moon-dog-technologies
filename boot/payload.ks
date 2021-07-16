@@ -15,13 +15,13 @@ if ship:status = "PRELAUNCH" {
          set mission to data[1]:trim.
          set mission to mission:split(",").  
          MISSION_PLAN:add({
-            kernel_ctl["log"]("waiting for handoff...", "status").
+            set kernel_ctl["status"] to "waiting for handoff...".
             if core:messages:empty return OP_CONTINUE.
             if not core:messages:empty {
-               print "handoff accepted".
+               set kernel_ctl["status"] to "handoff accepted".
                set ship:name to data[0].
             } else {
-               kernel_ctl["log"]("Handoff failed! Check KOS Module nameTags...", "status").
+               set kernel_ctl["status"] to "Handoff failed! Check KOS Module nameTags...".
             }
             return OP_FINISHED.
          }). 

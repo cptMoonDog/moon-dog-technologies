@@ -8,37 +8,19 @@
    local input_string is "".
    local command_history is list().
 
-   //Some status registers
-   kernel_ctl:add("status", "Initializing").
-   kernel_ctl:add("output", ""). //Output of last command.
-   kernel_ctl:add("error log file", open("0:/errorlog.txt")).
-   kernel_ctl:add("log", {
-      parameter mesg.
-      parameter logto is "error".
+   clearscreen.
 
-      if logto = "error" {
-         if not exists("0:/errorlog.txt") {
-            create("0:/errorlog.txt"). 
-         }
-         open("0:/errorlog.txt"):write(mesg).
-      } else if logto = "status" {
-         if not exists("status") create("status").
-         open("status"):clear.
-         open("status"):write(mesg).
-      }
-   }).
-
+   local status_lines is 2.
+   local status_items is lexicon().
    declare function draw_display {
-      //Draw a box
-      from {local i is 0.} until i = terminal:width-1 step {set i to i+1.} do {print "=" at(i, 0).}
-      from {local i is 0.} until i = terminal:width-1 step {set i to i+1.} do {print "=" at(i, terminal:height-2).}
-      from {local i is 1.} until i = terminal:height-2 step {set i to i+1.} do {print "|":padright(terminal:width-2)+"|" at(0, i).}
-
-         //Top status line
-      from {local i is 1.} until i = terminal:width-2 step {set i to i+1.} do {print "=" at(i, 2).}
-      print kernel_ctl["status"] at(1, 1).
-      from {local i is 1.} until i = terminal:width-2 step {set i to i+1.} do {print "=" at(i, 4).}
-      print kernel_ctl["output"] at(1, 3).
+      //Draw some dividers
+      print "===KOS-MISSIONS===":padright(terminal:width-17) at(0,0).
+      print "==================":padright(terminal:width-17) at(0, status_lines+1).
+      print "==================":padright(terminal:width-17) at(0, terminal:height-2).      
+      for key in status_items:keys {
+         local keysplit is key:split(":").
+         print keysplit[0] + ":" + status_items[key]():tostring:substring(0, 10) at(keysplit[2]:tonumber, keysplit[1]:tonumber).
+      }
    }
 
 
@@ -97,22 +79,19 @@
       } else if cmd_list[0] = "exit" {
          local index is INTERRUPTS:find(kernel_ctl["command processor"]).
          INTERRUPTS:remove(index).
+         set kernel_ctl["output"] to "exit".
       } else if cmd_list[0] = "log" {
          log cmd_list[1] to "0:/log.txt".
       } else if cmd_list[0] = "echo" {
          set kernel_ctl["output"] to input_string:remove(0, 5).
-      } else if cmd_list[0] = "ls" or cmd_list[0] = "dir" {
-         list.   
       } else if cmd_list[0] = "runprogram" {
          runpath("0:/programs/"+cmd_list[1]+".ks").
          available_programs[cmd_list[1]](). //appends to the end of the mission plan.
       } else if cmd_list[0] = "display" {
-         if cmd_list[1] = "telemetry" {
-            INTERRUPTS:add(telemetry_ctl["display"]).
-         } else if cmd_list[1] = "status" {
-            print open("status"):readall:string.
-         } else if cmd_list[1] = "eta:apo" {
-            print eta:apoapsis.
+         if cmd_list:length > 1 {                      // "          "
+            if cmd_list[1] = "eta:apo" status_items:add(  "eta apo:1:0", {return ETA:apoapsis.}). 
+            else if cmd_list[1] = "alt" status_items:add( "alt:1:20", {return ship:altitude.}). 
+            else if cmd_list[1] = "apo" status_items:add( "apo:2:0", {return ship:apoapsis.}). 
          }
       }
    }

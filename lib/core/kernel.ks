@@ -19,9 +19,14 @@ global OP_FAIL is "panic".
 global MISSION_PLAN is list().
 global INTERRUPTS is list().
 
+// Kernel Registers
+kernel_ctl:add("status", "").
+kernel_ctl:add("output", "").
+
+
 {
    local runmode is 0.
-   local time_share is 1.
+   local time_share is 0.
    local time_count is 0.
 
    local next_interrupt is 0.
@@ -45,8 +50,9 @@ global INTERRUPTS is list().
             if next_interrupt < INTERRUPTS:length {
                INTERRUPTS[next_interrupt]().
                set next_interrupt to next_interrupt +1.
-            } else {
+            } else if next_interrupt = INTERRUPTS:length and INTERRUPTS:length > 0 {
                set next_interrupt to 0.
+               INTERRUPTS[next_interrupt]().
             }
          }
       }

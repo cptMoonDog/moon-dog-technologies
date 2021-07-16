@@ -1,6 +1,6 @@
 @lazyglobal off.
 ////// Single Core boot /////
-// Core nameTag parameters are the same as for lv_boot:
+// Core nameTag parameters are the same as for lv:
    //IMPORTANT:
    // 1. In the VAB, set the nameTag of this core to the name of lifter definition file in the lv directory.
    // 2. For inclined orbits, append to the nameTag: ", [inclination], [LAN]" 
