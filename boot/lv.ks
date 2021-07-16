@@ -2,7 +2,7 @@
 
 //If this ship is on the launch pad... 
 if ship:status = "PRELAUNCH" {
-   runpath("0:/boot/common.ks").
+   runpath("0:/lib/launch/boot_common.ks").
    kernel_ctl["start"]().
    //Wait until program is finished, and then wait 5 seconds.
    //The following attempts to pass off control of the craft, from the KOS Processor on the Booster, 

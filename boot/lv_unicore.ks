@@ -10,7 +10,7 @@
 // Assumes core nameTag gives the lv name, and ship:name gives the mission
 //If this ship is on the launch pad... 
 if ship:status = "PRELAUNCH" {
-   runpath("0:/boot/common.ks").
+   runpath("0:/lib/launch/boot_common.ks").
    if HASTARGET and target:body = ship:body { /// Targets in orbit of Origin Body ///
       if target:istype("Vessel") {
          runpath("0:/programs/std/rendezvous.ks").
