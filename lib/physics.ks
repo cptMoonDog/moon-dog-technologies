@@ -8,6 +8,12 @@
       return temp. 
    }
 
+   declare function linearTangent {
+      parameter orbit_height is 80000.
+      return 90-arctan(18*ship:apoapsis/orbit_height).
+   }
+   phys_lib:add("linearTan", linearTangent@).
+
    declare function visViva_altitude {
       parameter bod.
       parameter vel.

@@ -23,8 +23,8 @@
          if launch_param["throttleProgramType"] = "setpoint" {
             set throttFunction to thrott_function_setpoint@.
             set pid to PIDLOOP().
-            if launch_param["throttleProfile"]:length > 3
-               set pid:setpoint to launch_param["throttleProfile"][3].
+            if launch_param["throttleReferenceVar"] = "linearTangent" 
+               set pid:setpoint to phys_lib["linearTan"](launch_param["throttleProfile"][1]).
             else
                set pid:setpoint to launch_param["throttleProfile"][2].
             set pid:minoutput to 0.
@@ -53,13 +53,11 @@
       else return 0.
    }
    //Utility function for the setpoint throttling system. Returns the Reference Value.
-   local currentThrust is 0.
-   local lastRefCheck is time:seconds.
    declare function getReferenceValue_setpoint {
      if launch_param["throttleReferenceVar"] = "etaAPO"
         return eta:apoapsis.
-     else if launch_param["throttleReferenceVar"] = "progradePitch"
-        return (90-vang(ship:prograde:forevector, up:forevector)).
+     else if launch_param["throttleReferenceVar"] = "linearTangent"
+        return (phys_lib["linearTan"](launch_param["throttleProfile"][1])).
       else return 0.
    }
 
@@ -188,11 +186,9 @@
    // If a setpoint based profile is selected by the lv, this will be the throttFunction.
    declare function thrott_function_setpoint {
       parameter throwaway is eta:apoapsis.
-      if launch_param["throttleProfile"]:length > 3 and launch_param["throttleProfile"][2] = "variable" {
-         local theta is vang(up:forevector, ship:prograde:forevector).
-         local factorB is (launch_param["throttleProfile"][1] - ship:apoapsis)/launch_param["throttleProfile"][1].
-         set pid:setpoint to max(min(ship:orbit:period/2, eta), launch_param["throttleProfile"][3]).
-         print "setpoint: "+ pid:setpoint at(0, 25).
+      //Variable setpoints
+      if launch_param["throttleProfile"][2] = "linearTangent" {
+         set pid:setpoint to phys_lib["linearTan"](launch_param["throttleProfile"][1]).
       }
       if ship:apoapsis > launch_param["throttleProfile"][1] return pid:update(time:seconds, getReferenceValue_setpoint()). 
       return max(0.10, pid:update(time:seconds, getReferenceValue_setpoint())).

@@ -35,9 +35,9 @@ runmode:add("pitchover", {
    print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
    print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
    print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
+   set pid:setpoint to (linearTangent()).
    if vang(ship:srfprograde:forevector, up:forevector) > pitchover_angle and ship:airspeed > 2*pitchover_V0 {
       lock steering to ship:srfprograde.
-      set pid:setpoint to (linearTangent()).
       set current_mode to "gravity turn".
    }
 }).
