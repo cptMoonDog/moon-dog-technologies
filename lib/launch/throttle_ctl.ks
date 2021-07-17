@@ -58,6 +58,8 @@
    declare function getReferenceValue_setpoint {
      if launch_param["throttleReferenceVar"] = "etaAPO"
         return eta:apoapsis.
+     else if launch_param["throttleReferenceVar"] = "progradePitch"
+        return (90-vang(ship:prograde:forevector, up:forevector)).
       else return 0.
    }
 
