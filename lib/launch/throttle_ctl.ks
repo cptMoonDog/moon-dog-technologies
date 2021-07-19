@@ -57,7 +57,7 @@
      if launch_param["throttleReferenceVar"] = "etaAPO"
         return eta:apoapsis.
      else if launch_param["throttleReferenceVar"] = "linearTangent"
-        return (phys_lib["linearTan"](launch_param["throttleProfile"][1])).
+        return (90-vang(ship:prograde:forevector, up:forevector)).//Angle of prograde vector from up.
       else return 0.
    }
 
@@ -187,7 +187,7 @@
    declare function thrott_function_setpoint {
       parameter throwaway is eta:apoapsis.
       //Variable setpoints
-      if launch_param["throttleProfile"][2] = "linearTangent" {
+      if launch_param["throttleReferenceVar"] = "linearTangent" {
          set pid:setpoint to phys_lib["linearTan"](launch_param["throttleProfile"][1]).
       }
       if ship:apoapsis > launch_param["throttleProfile"][1] return pid:update(time:seconds, getReferenceValue_setpoint()). 

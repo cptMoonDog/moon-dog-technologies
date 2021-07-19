@@ -27,7 +27,7 @@
       }
       if steering_functions["mode"] = "pitchover" {
          print "pitchover" at(0, 6).
-         print "arctan: "+ (linearTangent()) at(0, 7).
+         print "arctan: "+ (phys_lib["linearTan"]()) at(0, 7).
          print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
          print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
          print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
@@ -39,11 +39,10 @@
       }
       if steering_functions["mode"] = "gravity turn" {
          print "gravity turn" at(0, 6).
-         print "arctan: "+ (linearTangent()) at(0, 7).
+         print "arctan: "+ (phys_lib["linearTan"]()) at(0, 7).
          print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
          print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
          print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
-         print "pid:setpoint: "+pid:setpoint at(0, 12).
          print "ref: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 13).
          return ship:srfprograde.
       }
