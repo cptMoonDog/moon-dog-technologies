@@ -16,6 +16,8 @@ Quickstart
 ==========
 [Example Mission to Minmus Orbit](https://youtu.be/8BtfHxGP5ns)
 
+[Gravity Turn Versus Linear Tangent Steering](https://youtu.be/coE-mWIxKf0)
+
 Launch Vehicles
 --------
  1. Make a Launch Vehicle, make sure to include a KOS processor on the upper stage.
