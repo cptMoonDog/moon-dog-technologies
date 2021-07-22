@@ -49,11 +49,16 @@ declare parameter periapsisAltitude is 80000.
    launch_param:add("timeOfFlight",         180+2*inclination).
 
    ///////////////////////////// Gravity turn parameters ////////////////////////////////
-   launch_param:add("pOverDeg",             10). //20*(1-payloadMass/maxPayload)).  // Pitchover magnitude in degrees
+   launch_param:add("pOverDeg",             10). // Pitchover magnitude in degrees
    launch_param:add("pOverV0",              50). // Vertical speed at which to start pitchover                        
    launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
-   launch_param:add("steeringProgram", "atmospheric").
+   //Steering Program
+   // Available by default: "LTGT": Pitchover follows a linear tangent curve, but during main body of the ascent follows ship:srfprograde.  Probably the most efficient.
+   //                       "atmospheric": Legacy code.  Initiates a gravity turn using the "pOver" parameters above, and follows ship:srfprograde to altitude.  Not bad, but a little adhoc.
+   //                       "linearTangent": Follows a linear tangent curve.  NOT A GRAVITY TURN.  DOES NOT follow ship:srfprograde.
+   launch_param:add("steeringProgram", "LTGT").
+   
 
    //Throttle program parameters
    // There are three possible values for launch_param["throttleProgramType"]:
@@ -61,6 +66,11 @@ declare parameter periapsisAltitude is 80000.
    //    1. "setpoint" maintains a set value for the launch_param["throttleReferenceVar"] using a PID.
    //          In this case, launch_param["throttleProfile"] is a list of three items:
    //             [apo at which this function should take control], [apo of final orbit], and [setpoint for PID]
+   //          Possible values for "throttleReferenceVar": "etaApo": ETA:apoapsis
+   //                                                      "flightPathAngle": The angle the facing vector of your rocket makes with vertical.  Intended for use use with a linear tangent setpoint.
+   //         1.A. Variable setpoints: 
+   //              The system expects a scalar quantity as the third item in "throttleProfile", but if instead you use "linearTangent" 
+   //              it will continuously update the value of the setpoint to phys_lib["linearTan"]
 
    //    2. "function" returns the value of a custom function defined in: config/throttle_functions.ks
    //          In this case, launch_param["throttleProfile"] is a list of two or three items:
@@ -71,20 +81,31 @@ declare parameter periapsisAltitude is 80000.
    //          Note: The throttle setting in a row of the table is the value for the throttle up to, NOT following the reference value.  
    //          Note 2: This is the best method if you want the "perfect" ascent.
    //                  It can be fully customized for your lift vehicle, no other method can account for the peculiarities of one specific rocket.
+   //          Possible values for "throttleReferenceVar": "etaAPO": ETA:apoapsis
+   //                                                      "MET": Mission elapsed time.
+   //                                                       
 
    //   Note: For comparison, MechJeb defines a curve versus altitude and forces the rocket to follow it.
    //         The Gravity Turn mod uses a "Zero-Lift" maneuver (Always pointing prograde), and adjusts the throttle to maintain a constant eta:apoapsis.
-   //         Any ascent using this system will be a "Zero-Lift" maneuver (AKA Gravity Turn). The various methods are different ways to manage the throttle during the ascent.
+   //         This system is mostly designed with Gravity turns in mind, although linear tangent steering is now an option.  
+   //   Note 2: See lib/launch/throttle_ctl.ks to add more "throttleReferenceVar"s
    
    //Examples:
 
-     // This is a decent general ascent
+     // Manages the throttle to cause the ship:prograde vector to follow a linear tangent curve on ascent
    launch_param:add("throttleProgramType", "setpoint"). 
-   launch_param:add("throttleReferenceVar", "etaAPO"). 
+   launch_param:add("throttleReferenceVar", "flightPathAngle"). 
    launch_param:add("throttleProfile", list( 
                                             1000, //Apo to Activate function, max prior
                                             periapsisAltitude, //Apo to Deactivate function 
-                                            40)).  //Setpoint
+                                            "linearTangent")).  //Setpoint
+     // This is a decent general ascent
+   //launch_param:add("throttleProgramType", "setpoint"). 
+   //launch_param:add("throttleReferenceVar", "etaApo"). 
+   //launch_param:add("throttleProfile", list( 
+   //                                         1000, //Apo to Activate function, max prior
+   //                                         periapsisAltitude, //Apo to Deactivate function 
+   //                                         40)).  //Setpoint
 
       // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
       // You can make your own functions too! See configs/launch/throttle-functions.ks

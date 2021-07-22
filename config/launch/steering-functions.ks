@@ -4,6 +4,8 @@
 
    steering_functions:add("mode", "launch").
 
+   // "Linear Tangent Gravity Turn": The pitchover follows a linear tangent curve.
+   // See lib/physics.ks for the linear tangent function used.
    steering_functions:add("LTGT", {
       declare parameter azimuth, h0.
       if steering_functions["mode"] = "launch" {
@@ -49,6 +51,54 @@
       
    }).
 
+   // "Linear Tangent" Ship is steered following a linear tangent function.  ship:srfprograde is ignored.
+   // See lib/physics.ks for the linear tangent function used.
+   steering_functions:add("linearTangent", {
+      declare parameter azimuth, h0.
+      if steering_functions["mode"] = "launch" {
+         print "launch!" at(0, 6).
+         print ship:altitude at(0, 7).
+         print h0 at(0, 8).
+         if ship:altitude > h0 +10 {
+            set steering_functions["mode"] to "roll".
+            return heading(azimuth,90).
+         }
+         return ship:facing.
+      }
+      if steering_functions["mode"] = "roll" {
+         print "roll" at(0, 6).
+         print eta:apoapsis at(0, 7).
+         if vang(ship:facing:starvector, heading(azimuth,90):starvector) < 0.5 and ship:airspeed > launch_param["pOverV0"] {
+            set steering_functions["mode"] to "pitchover".
+            return heading(azimuth, phys_lib["linearTan"]()).
+         }
+         return heading(azimuth,90).
+      }
+      if steering_functions["mode"] = "pitchover" {
+         print "pitchover" at(0, 6).
+         print "arctan: "+ (phys_lib["linearTan"]()) at(0, 7).
+         print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
+         print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
+         print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
+         if vang(ship:srfprograde:forevector, up:forevector) > launch_param["pOverDeg"] and ship:airspeed > launch_param["pOverVf"] {
+            set steering_functions["mode"] to "gravity turn".
+            return heading(azimuth, phys_lib["linearTan"]()).
+         }
+         return heading(azimuth, phys_lib["linearTan"]()).
+      }
+      if steering_functions["mode"] = "gravity turn" {
+         print "gravity turn" at(0, 6).
+         print "arctan: "+ (phys_lib["linearTan"]()) at(0, 7).
+         print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
+         print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
+         print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
+         print "ref: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 13).
+         return heading(azimuth, phys_lib["linearTan"]()).
+      }
+      
+   }).
+
+   // Old trial and error gravity turn steering program.  May depreciate.  Could still be something useful in it.
    steering_functions:add("atmospheric", {
       declare parameter azimuth, h0.
       ///From launch to pitchover complete

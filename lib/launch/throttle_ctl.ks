@@ -23,10 +23,7 @@
          if launch_param["throttleProgramType"] = "setpoint" {
             set throttFunction to thrott_function_setpoint@.
             set pid to PIDLOOP().
-            if launch_param["throttleReferenceVar"] = "linearTangent" 
-               set pid:setpoint to phys_lib["linearTan"](launch_param["throttleProfile"][1]).
-            else
-               set pid:setpoint to launch_param["throttleProfile"][2].
+            set pid:setpoint to getValue_setpoint().
             set pid:minoutput to 0.
             set pid:maxoutput to 1.
          } else if launch_param["throttleProgramType"] = "function" {
@@ -56,9 +53,15 @@
    declare function getReferenceValue_setpoint {
      if launch_param["throttleReferenceVar"] = "etaAPO"
         return eta:apoapsis.
-     else if launch_param["throttleReferenceVar"] = "linearTangent"
+     else if launch_param["throttleReferenceVar"] = "flightPathAngle"
         return (90-vang(ship:prograde:forevector, up:forevector)).//Angle of prograde vector from up.
       else return 0.
+   }
+   
+   declare function getValue_setpoint {
+      if launch_param["ThrottleProfile"][2] = "linearTangent" {
+         return phys_lib["linearTan"](launch_param["throttleProfile"][1]).
+      } else return launch_param["throttleProfile"][2].
    }
 
    /////// Monitors (A function that reports to the kernel during the zero-lift portion of the launch sequence.)
@@ -187,12 +190,9 @@
    declare function thrott_function_setpoint {
       parameter throwaway is eta:apoapsis.
       //Variable setpoints
-      if launch_param["throttleReferenceVar"] = "linearTangent" {
-         set pid:setpoint to phys_lib["linearTan"](launch_param["throttleProfile"][1]).
-      }
+      set pid:setpoint to getValue_setpoint().
       if ship:apoapsis > launch_param["throttleProfile"][1] return pid:update(time:seconds, getReferenceValue_setpoint()). 
       return max(0.10, pid:update(time:seconds, getReferenceValue_setpoint())).
-      //return max(1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude)), pid:update(time:seconds, getReferenceValue_setpoint())).
    }
    
      

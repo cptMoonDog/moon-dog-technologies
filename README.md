@@ -6,8 +6,9 @@ Primarily focused on reducing non-reusable code, while maintaining significant f
 Features
 ========
  - Rapid launch script development
-   - FULLY customize launch profile for each Launch Vehicle
+   - Customize launch profile for each Launch Vehicle
    - Fast and easy Gravity Turns 
+   - Linear tangent steering aware
    - Easily target different orbital planes with the same script.
  - Modular, pluggable mission scripting
  
@@ -17,24 +18,24 @@ Quickstart
 
 Launch Vehicles
 --------
- 1. Make a Launch Vehicle, make sure to include a KOS processor, with the bootfile `lv_boot.ks`(on the upperstage) and a probe core.
- 2. Make a copy of `template.ks` in the `lv` directory. Name it using the following format: `[VEHICLE NAME].ks`
+ 1. Make a Launch Vehicle, make sure to include a KOS processor on the upper stage.
+ 2. Make a copy of `template.ks` in the `lv` directory. 
  3. Edit your new Launch Vehicle definition file, and change any of the the default values to ones appropriate for your launch vehicle.
  4. In the VAB:
-    - Set the bootfile for your launch vehicle to `lv_boot.ks`
+    - Set the bootfile for the processor on your launch vehicle to `lv.ks`
     - Set the nameTag of the KOS processor on your launch vehicle to one of the following:
-      - `[VEHICLE NAME]                               ` Launch to: equatorial, 80km (default values).
-      - `[VEHICLE NAME], [TARGET]                     ` Launch to: coplanar with target at 80km.
-      - `[VEHICLE NAME], [INCLINATION], [RAAN]        ` Launch to: This plane, at 80km.
-      - `[VEHICLE NAME], [INCLINATION], [RAAN], [SMA] ` Launch to: This plane, circularize at this SMA.
+      - `[LAUNCH SCRIPT]                               ` Launch to: equatorial, 80km (default values).
+      - `[LAUNCH SCRIPT], [TARGET]                     ` Launch to: coplanar with target at 80km.
+      - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN]        ` Launch to: This plane, at 80km.
+      - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN], [SMA] ` Launch to: This plane, circularize at this SMA.
 
-Example: Given a craft with a KOS processor named: `Atlas, 6, 78`, and the bootfile `lv_boot.ks`, on launch this ship will run `0:/lv/Atlas.ks` and attempt to launch to an orbit coplanar with Minmus.
+Example: Given a craft with a KOS processor named: `Atlas, 6, 78`, and the bootfile `lv.ks`, on launch this ship will run `0:/lv/Atlas.ks` and attempt to launch to an orbit coplanar with Minmus.
 
 Payloads and Missions
 --------------------
  1. Make your spacecraft, and make sure to include a KOS processor and a probe core.
  2. In the VAB:
-    - Set the bootfile for the KOS processor on the spacecraft to `payload_boot.ks`.
+    - Set the bootfile for the KOS processor on the spacecraft to `payload.ks`.
     - Set the nameTag of the KOS processor to `[name you want your ship to have]:[name of mission to run], [mission parameter 1], [mission parameter 2], ... [mission parameter n]`.
  3. Mount your payload to your launch vehicle. The payload will wait until the launch vehicle delivers it to circular orbit and then run it's mission.
 
