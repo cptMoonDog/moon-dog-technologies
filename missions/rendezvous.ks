@@ -16,7 +16,7 @@ runpath("0:/programs/std/rendezvous.ks").
 //Add Pluggable objectives like this:
 //available_programs["lko-to-mun"]("terrier").
 
-available_programs["rendezvous"]("terrier").
+available_programs["rendezvous"]("terrier", "KSS").
 //
 //available_programs["warp-to-soi"]("Mun").
 //available_programs["powered-capture"]("terrier").

@@ -101,6 +101,7 @@
    // Old trial and error gravity turn steering program.  May depreciate.  Could still be something useful in it.
    steering_functions:add("atmospheric", {
       declare parameter azimuth, h0.
+
       ///From launch to pitchover complete
       if ship:altitude < ship:body:atm:height/2 and
          vang(up:forevector, ship:facing:forevector) < launch_param["pOverDeg"]*2 and
