@@ -5,6 +5,7 @@
 if not (defined maneuver_ctl)
    global maneuver_ctl is lexicon().
 
+maneuver_ctl["defEngine"]("flintlock",    355,  125,        0.0).//Alias for cheetah
 maneuver_ctl["defEngine"]("ant",          315,  2  ,        0.0).
 maneuver_ctl["defEngine"]("bobcat",       310,  400,        0.0).
 maneuver_ctl["defEngine"]("cheetah",      355,  125,        0.0).

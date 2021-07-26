@@ -27,7 +27,7 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    declare parameter engineName.
    declare parameter newAp.
-   declare parameter AOP is "NA". 
+   declare parameter AOP is ship:orbit:argumentofperiapsis. //Argument of periapsis
 
 //======== Local Variables =====
       local steerDir is "retrograde".
@@ -44,7 +44,6 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
-      print "running" at(0, 20).
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
@@ -55,6 +54,7 @@ set available_programs[programName] to {
       }
       
       //Trying to account for situations where a change of AOP is desired. 
+
       local burnAngle is AOP - 180.
       if burnAngle < 0 set burnAngle to burnAngle + 360.
       
@@ -62,7 +62,7 @@ set available_programs[programName] to {
       local newVatPe is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:periapsis, newSMA).
       local dv is abs(newVatPe - velocityat(ship, eta:periapsis):orbit:mag).
 
-      if AOP = "NA" {
+      if AOP > ship:orbit:argumentofperiapsis - 0.01 and AOP < ship:orbit:argumentofperiapsis + 0.01{
          maneuver_ctl["add_burn"](steerDir, engineName, "pe", dv).
       } else {
          print "changing AOP".

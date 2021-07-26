@@ -40,7 +40,7 @@
          return OP_CONTINUE.
       }
       if time:seconds-lastTime > 1 {
-         hudtext("T-"+timespan(timeOfWindow-time:seconds):full+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
+         hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
          if timeOfWindow-time:seconds < 11 {
             if timeOfWindow-time:seconds > 1 {
                //V0:play(note("C5", 0.1)).

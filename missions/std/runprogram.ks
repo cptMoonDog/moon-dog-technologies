@@ -22,8 +22,6 @@ if available_programs:haskey(name) {
    if p:length = 7 available_programs[name](p[0], p[1], p[2], p[3], p[4], p[5], p[6]).
    if p:length = 8 available_programs[name](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]).
    if p:length = 9 available_programs[name](p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8]).
-   kernel_ctl["start"]().
-   shutdown.
 } else print "Program named: "+name+" Does not exist".
 
    

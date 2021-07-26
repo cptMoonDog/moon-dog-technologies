@@ -6,7 +6,8 @@
 // if it returns OP_FINISHED, the system will advance to the next routine in the MISSION_PLAN.
 
 //Load up pluggable objectives.
-runpath("0:/programs/std/rendezvous.ks").
+runpath("0:/programs/std/change-ap.ks").
+//runpath("0:/programs/std/rendezvous.ks").
 //runpath("0:/programs/std/lko-to-mun.ks").
 //runpath("0:/programs/std/warp-to-soi.ks").
 //runpath("0:/programs/std/powered-capture.ks").
@@ -16,11 +17,9 @@ runpath("0:/programs/std/rendezvous.ks").
 //Add Pluggable objectives like this:
 //available_programs["lko-to-mun"]("terrier").
 
-available_programs["rendezvous"]("terrier").
+//available_programs["rendezvous"]("terrier").
 //
 //available_programs["warp-to-soi"]("Mun").
 //available_programs["powered-capture"]("terrier").
 //available_programs["landing"]("terrier").
 
-// This line calls the kernel to start the runmode system and start execution.
-kernel_ctl["start"]().

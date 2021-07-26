@@ -3,15 +3,15 @@
 if not (defined launch_ctl)
    global launch_ctl is lexicon().
 
+runpath("0:/lib/core/kernel.ks").
+
 runpath("0:/lib/physics.ks").
+runpath("0:/lib/maneuver_ctl.ks").
 
 runpath("0:/lib/launch/range_ctl.ks").
 runpath("0:/lib/launch/staging_ctl.ks").
 runpath("0:/lib/launch/steering_ctl.ks").
 runpath("0:/lib/launch/throttle_ctl.ks").
-
-runpath("0:/lib/maneuver_ctl.ks").
-runpath("0:/lib/core/kernel.ks").
 
 {
    global launch_param is lexicon().
@@ -28,7 +28,7 @@ runpath("0:/lib/core/kernel.ks").
    }
    launch_ctl:add("init", init_system@).
    
-   declare function setupLaunchToLKO {   
+   declare function setupLaunch {   
       MISSION_PLAN:add(launch_ctl["countdown"]).
       MISSION_PLAN:add(launch_ctl["launch"]).
       MISSION_PLAN:add({
@@ -40,20 +40,22 @@ runpath("0:/lib/core/kernel.ks").
         }
         return launch_ctl["throttle_monitor"]().
       }).
-      MISSION_PLAN:add({
-         //If the upperstage is not the active engine...
-         if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
-            stage. 
-         }
-         maneuver_ctl["add_burn"]("prograde", launch_param["upperstage"], "ap", "circularize").
-         if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height lock throttle to 1.
-         else {
-            lock steering to ship:prograde.
-            lock throttle to 0.
-         }
-         return OP_FINISHED.
-      }).
-      MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+      if not (launch_param:haskey("launchTo")) or launch_param["launchTo"] = "LKO" {
+         MISSION_PLAN:add({
+            //If the upperstage is not the active engine...
+            if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
+               stage. 
+            }
+            maneuver_ctl["add_burn"]("prograde", launch_param["upperstage"], "ap", "circularize").
+            if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height lock throttle to 1.
+            else {
+               lock steering to ship:prograde.
+               lock throttle to 0.
+            }
+            return OP_FINISHED.
+         }).
+         MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+      }
    }
-   launch_ctl:add("addLaunchToMissionPlan", setupLaunchToLKO@).
+   launch_ctl:add("addLaunchToMissionPlan", setupLaunch@).
 }

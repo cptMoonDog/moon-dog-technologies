@@ -8,4 +8,3 @@ MISSION_PLAN:add({
    }
    return OP_FINISHED.
 }).
-kernel_ctl["start"]().

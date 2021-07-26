@@ -22,5 +22,3 @@ available_programs["rendezvous"]("terrier", "KSS").
 //available_programs["powered-capture"]("terrier").
 //available_programs["landing"]("terrier").
 
-// This line calls the kernel to start the runmode system and start execution.
-kernel_ctl["start"]().

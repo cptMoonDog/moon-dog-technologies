@@ -40,7 +40,7 @@
 
       if impulsePoint = "node" {
          set currentNode to nextnode.
-         burn_queue:push(lexicon("ip", time:seconds+nextnode:eta, "dv", nextnode:deltaV:mag, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
+         burn_queue:push(lexicon("ip", nextnode:time, "dv", nextnode:deltaV:mag, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
       } else {
          burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
       }

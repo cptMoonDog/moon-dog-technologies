@@ -36,5 +36,6 @@ if ship:status = "PRELAUNCH" {
       } else {
          runpath("0:/missions/std/payload_default.ks").
       }
+      kernel_ctl["start"]().
    } 
 }

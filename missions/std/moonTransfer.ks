@@ -44,5 +44,3 @@ MISSION_PLAN:add({
    return OP_FINISHED.
 }).
 
-//This starts the runmode system
-kernel_ctl["start"]().

@@ -9,10 +9,11 @@ if ship:status = "PRELAUNCH" {
    //to the KOS Processor on the payload.
    //For more info, see payload_boot.ks
    wait 5.
-   local payloadCore is processor(ship:name).
-   if payloadCore:tag {
-      print "Handing off...".
-      payloadCore:connection:sendmessage("handoff").
+   for payloadCore in processors {
+      if payloadCore:bootfilename = "payload.ks" {
+         print "Handing off...".
+         payloadCore:connection:sendmessage("handoff").
+      }
+      shutdown.
    }
-   shutdown.
 }
