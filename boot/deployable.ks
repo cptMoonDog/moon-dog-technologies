@@ -1,14 +1,12 @@
 @lazyglobal off.
-copypath("0:/lib/maneuver_ctl.ks", "1:/maneuver_ctl.ks").
-copypath("0:/lib/core/kernel.ks", "1:/kernel.ks").
-copypath("0:/programs/std/circularize-at-ap.ks", "1:/circ.ks").
-runpath("1:/kernel.ks").
-runpath("1:/maneuver_ctl.ks").
-runpath("1:/circ.ks").
-local procs is list().
-until procs:length = 1{
-   list processors in procs.
-}
-available_programs["circularize-at-ap"]("ant").
+if ship:status = "ORBITING" and ship:orbit:eccentricity < 0.8 {
+   local procs is list().
+   until procs:length = 1{
+      list processors in procs.
+   }
 
-kernel_ctl["start"]().
+   runpath("0:/runprogram.k", "circularize-at-ap", list("ant")).
+} else if ship:status = "ORBITING" {
+   //TODO orient panels to sun.
+}
+

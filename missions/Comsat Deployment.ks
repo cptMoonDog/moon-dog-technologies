@@ -6,8 +6,8 @@
 // if it returns OP_FINISHED, the system will advance to the next routine in the MISSION_PLAN.
 
 //Load up pluggable objectives.
-runpath("0:/programs/std/change-ap.ks").
-available_programs["change-ap"]("terrier", 774400).
+runpath("0:/programs/std/change-pe.ks").
+available_programs["change-pe"]("terrier", 294684).
 MISSION_PLAN:add({
    local procs is list().
    list processors in procs.

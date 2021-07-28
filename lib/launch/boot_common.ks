@@ -20,14 +20,12 @@ if core:tag {
       if data:length = 2 and data[1]:tonumber(-1) = -1 { // Second parameter is not numeric.
          print "target: "+ data[1].
          if data[1]:trim = "Polar" { /// Dummy Targets ///
-            launch_param:add("inclination", 90).
-            launch_param:add("lan", 0).
+            setLaunchParams(90, 0).
             runpath("0:/lv/"+data[0]+".ks").
          } else {
             set target to data[1]:trim.
             if target:body = ship:body { /// Targets in orbit of Origin Body ///
-               launch_param:add("inclination", target:orbit:inclination).
-               launch_param:add("lan", target:orbit:lan).
+               setLaunchParams(target:orbit:inclination, target:orbit:lan).
                runpath("0:/lv/"+data[0]+".ks").
             } else { /// Interplanetary Targets ///
                runpath("0:/lib/physics.ks").
@@ -42,31 +40,37 @@ if core:tag {
          // data[1] is inclination
          // data[2] is raan/lan
          // data[3] is Orbit altitude
-         if data:length > 2 launch_param:add("lan", data[2]:tonumber(0)).//set raan to data[2]:tonumber(0).
+         if data:length > 2 setLaunchParams(data[1]:tonumber(0), data[2]:tonumber(-1)).//set raan to data[2]:tonumber(0).
          if data:length > 3 {
             if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
                launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
-               set alt to data[3]:split[":"][1]:tonumber(80)*1000.
+               set alt to data[3]:split(":")[1]:tonumber(80)*1000.
             } else set alt to data[3]:tonumber(80000).
          }
-
          runpath("0:/lv/"+data[0]+".ks", alt).
       }
    } else {
       //If no parameters given; runs the launch with default values
-      launch_param:add("inclination", 90).
-      launch_param:add("lan", 0).
+      setLaunchParams(target:orbit:inclination, target:orbit:lan).
       runpath("0:/lv/"+data[0]+".ks").
    }
 } else if exists("0:/lv/"+ship:name+".ks") {
    //If the nameTag on the core is not used, attempt to find a script with the ship:name instead
-   launch_param:add("inclination", 90).
-   launch_param:add("lan", 0).
+   setLaunchParams(target:orbit:inclination, target:orbit:lan).
    runpath("0:/lv/"+ship:name+".ks").
 }
 
-if launch_param["lan"]="none" or launch_param["inclination"] = 0 or launch_param["inclination"] = 180 {             
-   launch_param:add("launchTime",        "now"). 
-} else if lan:istype("Scalar") {
-   launch_param:add("launchTime",        "window"). 
+declare local function setLaunchParams {
+   parameter inclination is 0.
+   parameter lan is "none".
+   
+   launch_param:add("inclination", inclination).
+   if lan = -1 set lan to "none".
+   launch_param:add("lan", lan).
+   
+   if launch_param["lan"]="none" or launch_param["inclination"] = 0 or launch_param["inclination"] = 180 {             
+      launch_param:add("launchTime",        "now"). 
+   } else if lan:istype("Scalar") {
+      launch_param:add("launchTime",        "window"). 
+   }
 }
