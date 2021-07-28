@@ -2,31 +2,8 @@
 //This is a standard Launch Vehicle parameter file.
 //This holds the information necessary to customize the flight profile for your lifter.
 
-declare parameter inclination is 0.
-declare parameter lan is "none".
 declare parameter periapsisAltitude is 80000.
-
-
 {
-   /////////////////// Standard Boiler plate /////////////////////
-   // You probably don't want to change this stuff.
-
-   //Load the launch system into memory
-   runpath("0:/lib/launch/launch_ctl.ks").
-
-   /////////////////////////// Keplerian Orbital Parameters ////////////////////////
-   //The default 0 is equatorial
-   launch_param:add("inclination",          inclination).
-   
-   //If orbital parameters are not specified, the LAN does not need to be passed. 
-   if lan="none" or inclination = 0 {             
-      launch_param:add("launchTime",        "now"). 
-   } else if lan:istype("Scalar") {
-      launch_param:add("launchTime",        "window"). 
-      launch_param:add("lan",               lan).
-   }
-   /////////////////// End Standard Boiler plate /////////////////////
-
    ////////////////////////// Launch Options /////////////////////////////////////
    //Any inclination can be achieved twice a day.
    // If "north" is specified, rocket will be launched at the Ascending Node.
