@@ -34,11 +34,6 @@ set available_programs[programName] to {
 //======== Local Variables =====
       local steerDir is "retrograde".
       if ship:orbit:periapsis < newPe set steerDir to "prograde". 
-      if ship:orbit:apoapsis < newPe {
-         clearscreen.
-         print "Error: New Pe is HIGHER than Ap." at(0, 0).
-         shutdown.
-      }
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
