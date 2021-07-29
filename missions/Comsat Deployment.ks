@@ -9,13 +9,13 @@
 runpath("0:/programs/std/change-pe.ks").
 available_programs["change-pe"]("terrier", 294684).
 MISSION_PLAN:add({
+   wait until eta:apoapsis < 360.
    local procs is list().
    list processors in procs.
    if procs:length = 1{
       return OP_FINISHED.
    } else {
-      stage.
-      wait ship:orbit:period.
+      stage.// deploy sat
       return OP_CONTINUE.
    }
 }).
