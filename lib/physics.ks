@@ -22,7 +22,7 @@
       return 2/(((vel^2)/bod:mu)+1/sma)-bod:radius.
    }
 
-   global g0 is 9.80665.
+   global g0 is constant:g0.
    
    declare function semimajoraxis {
       parameter bod.

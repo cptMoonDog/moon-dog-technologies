@@ -62,7 +62,7 @@
             }).
          }
       } else {
-         if time:seconds < start print "T-"+(start-time:seconds) at(0, 10).
+         if time:seconds < start print "T-"+(start-time:seconds) at(0, terminal:height-3).
          else print "T+"+(time:seconds-start) at(0, 10).
       }
       //Over 3 minutes out, warp

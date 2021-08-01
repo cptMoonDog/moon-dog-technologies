@@ -33,7 +33,6 @@ set available_programs[programName] to {
 
 //======== Local Variables =====
       local steerDir is "retrograde".
-      if ship:orbit:periapsis < newPe set steerDir to "prograde". 
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
@@ -45,20 +44,27 @@ set available_programs[programName] to {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
-         if ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-            print "error in programs/powered-capture.ks: staging.".
+         wait 1.
+         if ship:maxthrust < 0.99*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
+            print "error in programs/change-pe.ks, wrong engine thrust: staging.".
             return OP_FAIL.
          }
       }
-      local newSMA is (ship:orbit:apoapsis+ship:orbit:body:radius*2+newPe)/2.
+      print "pe requested: " + newPe.
+      if ship:orbit:periapsis < newPe set steerDir to "prograde". 
+      local newSMA is phys_lib["sma"](ship:orbit:body, ship:orbit:apoapsis, newPe).
+      print "sma: "+ship:orbit:semimajoraxis.
+      print "sma needed: "+newSMA.
+      print "mu: "+ship:orbit:body:mu.
       local newVatApo is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:apoapsis, newSMA).
-      local dv is abs(newVatApo - velocityat(ship, eta:apoapsis):orbit:mag).
+      print "vel at apo: "+velocityat(ship, eta:apoapsis):orbit:mag.
+      print "vel at apo needed: " + newVatApo.
+      local dv is abs(newVatApo - phys_lib["VatAlt"](ship:orbit:body, ship:orbit:apoapsis, ship:orbit:semimajoraxis)).//velocityat(ship, eta:apoapsis):orbit:mag).
+      print "dV calculated: "+dv.
       maneuver_ctl["add_burn"](steerDir, engineName, "ap", dv).
       return OP_FINISHED.
    }).
-      print "adding to MP2".
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-      print "adding to MP2".
    MISSION_PLAN:add({
       if (steerDir = "prograde" and ship:periapsis < newPe*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newPe*1.01) {
          if steerDir = "prograde" {
@@ -82,7 +88,6 @@ set available_programs[programName] to {
       }
       return OP_FINISHED.
    }).
-      print "finished adding to MP".
    
          
 //========== End program sequence ===============================

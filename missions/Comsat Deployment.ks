@@ -7,15 +7,14 @@
 
 //Load up pluggable objectives.
 runpath("0:/programs/std/change-pe.ks").
+MISSION_PLAN:add({
+   compile "0:/missions/bootable-deploy-constellation.ks" to "1:/deploy.ksm".
+   set core:bootfilename to "/deploy.ksm".
+   return OP_FINISHED.
+}).
 available_programs["change-pe"]("terrier", 294684).
 MISSION_PLAN:add({
-   wait until eta:apoapsis < 360.
-   local procs is list().
-   list processors in procs.
-   if procs:length = 1{
-      return OP_FINISHED.
-   } else {
-      stage.// deploy sat
-      return OP_CONTINUE.
-   }
+   print "rebooting".
+   wait 5.
+   reboot.
 }).

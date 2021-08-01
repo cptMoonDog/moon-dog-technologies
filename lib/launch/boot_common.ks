@@ -40,7 +40,7 @@ if core:tag {
          // data[1] is inclination
          // data[2] is raan/lan
          // data[3] is Orbit altitude
-         if data:length > 2 setLaunchParams(data[1]:tonumber(0), data[2]:tonumber(-1)).//set raan to data[2]:tonumber(0).
+         if data:length > 2 setLaunchParams(data[1]:tonumber(0), data[2]:tonumber(-1)).
          if data:length > 3 {
             if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
                launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
