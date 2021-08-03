@@ -3,15 +3,15 @@
 if not (defined launch_ctl)
    global launch_ctl is lexicon().
 
-runpath("0:/lib/core/kernel.ks").
+runoncepath("0:/lib/core/kernel.ks").
 
-runpath("0:/lib/physics.ks").
-runpath("0:/lib/maneuver_ctl.ks").
+runoncepath("0:/lib/physics.ks").
+runoncepath("0:/lib/maneuver_ctl.ks").
 
-runpath("0:/lib/launch/range_ctl.ks").
-runpath("0:/lib/launch/staging_ctl.ks").
-runpath("0:/lib/launch/steering_ctl.ks").
-runpath("0:/lib/launch/throttle_ctl.ks").
+runoncepath("0:/lib/launch/range_ctl.ks").
+runoncepath("0:/lib/launch/staging_ctl.ks").
+runoncepath("0:/lib/launch/steering_ctl.ks").
+runoncepath("0:/lib/launch/throttle_ctl.ks").
 
 {
    global launch_param is lexicon().

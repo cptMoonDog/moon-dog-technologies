@@ -44,8 +44,10 @@ if core:tag {
          if data:length > 3 {
             if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
                launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
-               set alt to data[3]:split(":")[1]:tonumber(80)*1000.
-            } else set alt to data[3]:tonumber(80000).
+               set alt to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we accept them reduced by 1000.
+            } else {
+               set alt to data[3]:tonumber(80000).
+            }
          }
          runpath("0:/lv/"+data[0]+".ks", alt).
       }
