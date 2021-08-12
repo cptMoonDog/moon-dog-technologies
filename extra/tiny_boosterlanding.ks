@@ -7,7 +7,6 @@ local isp is 290.
 local thrust is 153.529.
 lock thrust to ship:availablethrust.
 local ff is thrust*1000/(isp*constant:g0).
-lock ff to thrust*1000/(isp*constant:g0).
 
 local dV is 0.
 local mf is 0.
@@ -41,15 +40,15 @@ runmode:add("coast", {
    print "a: "+acceleration at(0, 12).
    print "suicideAlt: "+suicideAlt at(0, 13).
    if ship:altitude-ship:geoposition:terrainheight < suicideAlt { 
-      set pid:setpoint to suicideAlt+10.
-      lock throttle to pid:update(time:seconds, ship:altitude-ship:geoposition:terrainheight).
-      legs on.
-      set current_mode to "controlled".
-
-      //lock throttle to 1.
-      //set starttime to time:seconds.
+      //set pid:setpoint to suicideAlt+10.
+      //lock throttle to pid:update(time:seconds, ship:altitude-ship:geoposition:terrainheight).
       //legs on.
-      //set current_mode to "burn".
+      //set current_mode to "controlled".
+
+      lock throttle to 1.
+      set starttime to time:seconds.
+      legs on.
+      set current_mode to "burn".
    }
 }).
 
