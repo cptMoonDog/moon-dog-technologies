@@ -32,7 +32,7 @@ kernel_ctl:add("output", "").
    local next_interrupt is 0.
 
 ///Public functions
-   declare function run {
+   declare function beginExecution {
       until FALSE {
          //Runmodes
          if runmode < MISSION_PLAN:length {
@@ -58,7 +58,7 @@ kernel_ctl:add("output", "").
       }
       set ship:control:pilotmainthrottle to 0.
    }
-   set kernel_ctl["start"] to run@.
+   set kernel_ctl["start"] to beginExecution@.
 
 ///Private functions
    declare function set_runmode {
