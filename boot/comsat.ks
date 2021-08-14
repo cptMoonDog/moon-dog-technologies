@@ -23,8 +23,13 @@ if ship:status="PRELAUNCH" {
    }
    set kuniverse:activevessel to vessel("Comsat Deployment").
 } else if ship:status="ORBITING" {
+   local procs is list().
+   until procs:length = 1{
+      list processors in procs.
+   }
+   set ship:name to core:tag.
    //Post Deployment code
-   if ship:orbit:eccentricity > 0.8 {
+   if ship:orbit:eccentricity > 0.1 {
       local procs is list().
       until procs:length = 1{
          list processors in procs.

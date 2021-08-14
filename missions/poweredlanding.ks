@@ -1,11 +1,12 @@
 @lazyglobal off.
+runpath("0:/lib/core/kernel.ks").
 mission_plan:add({
    if ship:orbit:periapsis > 45000 and ship:verticalspeed < 0 {
       lock steering to ship:orbit:retrograde.
       wait until vang(ship:facing:forevector, ship:orbit:retrograde) < 0.5.
       lock throttle to 1.
       return OP_CONTINUE.
-   } else ship:orbit:periapsis < 45000 {
+   } else if ship:orbit:periapsis < 45000 {
       lock throttle to 0.
       return OP_FINISHED.
    }
@@ -115,3 +116,4 @@ clearscreen.
 Until current_mode = "finished" runmode[current_mode]().
 return OP_FINISHED.
 }).
+kernel_ctl["start"]().
