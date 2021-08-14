@@ -8,58 +8,38 @@
    // For example, to use the "Spud Atlas" launch vehicle and launch into an orbit coplanar with Minmus,
    // give the core on the launch vehicle the nameTag: "Spud Atlas, 6, 78".
    // Or, just set the nameTag to "Spud Atlas, Minmus"
-if core:tag {
-   runoncepath("0:/lib/launch/launch_ctl.ks").
-   local data is core:tag:split(",").
-   if not(exists("0:/lv/"+data[0]+".ks")) {
-      print "Fatal error: No Launch Vehicle definition file".
-      shutdown.
-   }
-   if data:length > 1 {
-      // Target handling
-      if data:length = 2 and data[1]:tonumber(-1) = -1 { // Second parameter is not numeric.
-         print "target: "+ data[1].
-         if data[1]:trim = "Polar" { /// Dummy Targets ///
-            setLaunchParams(90, 0).
-            runpath("0:/lv/"+data[0]+".ks").
-         } else {
-            set target to data[1]:trim.
-            if target:body = ship:body { /// Targets in orbit of Origin Body ///
-               setLaunchParams(target:orbit:inclination, target:orbit:lan).
-               runpath("0:/lv/"+data[0]+".ks").
-            } else { /// Interplanetary Targets ///
-               runpath("0:/lib/physics.ks").
-               local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
-               print ttWindow.
-               //TODO make this work
-               runpath("0:/lv/"+data[0]+".ks").
-            }
-         }
-      } else { /// Defined orbit, 
-         local alt is 80000.
-         // data[1] is inclination
-         // data[2] is raan/lan
-         // data[3] is Orbit altitude
-         if data:length > 2 setLaunchParams(data[1]:tonumber(0), data[2]:tonumber(-1)).
-         if data:length > 3 {
-            if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
-               launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
-               set alt to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we accept them reduced by 1000.
-            } else {
-               set alt to data[3]:tonumber(80000).
-            }
-         }
-         runpath("0:/lv/"+data[0]+".ks", alt).
-      }
+runOnVolume("0:/lib/launch/launch_ctl.ks").
+if not(exists("0:/lv/"+bootparams["lv"]+".ks")) {
+   print "Fatal error: No Launch Vehicle definition file".
+   shutdown.
+}
+// Target handling
+if bootparams:haskey("target") {
+   print "target: "+ bootparams["target"].
+   if bootparams["target"] = "Polar" { /// Dummy Targets ///
+      setLaunchParams(90, 0).
+      runOnVolume("0:/lv/"+bootparams["lv"]+".ks").
    } else {
-      //If no parameters given; runs the launch with default values
-      setLaunchParams(target:orbit:inclination, target:orbit:lan).
-      runpath("0:/lv/"+data[0]+".ks").
+      set target to bootparams["target"].
+      if target:body = ship:body { /// Targets in orbit of Origin Body ///
+         setLaunchParams(target:orbit:inclination, target:orbit:lan).
+         runOnVolume("0:/lv/"+bootparams["lv"]+".ks").
+      } else { /// Interplanetary Targets ///
+         runOnVolume("0:/lib/physics.ks").
+         local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
+         print ttWindow.
+         //TODO make this work
+         runOnVolume("0:/lv/"+bootparams["lv"]+".ks").
+      }
    }
-} else if exists("0:/lv/"+ship:name+".ks") {
-   //If the nameTag on the core is not used, attempt to find a script with the ship:name instead
-   setLaunchParams(target:orbit:inclination, target:orbit:lan).
-   runpath("0:/lv/"+ship:name+".ks").
+} else { /// Defined orbit, 
+   setLaunchParams(bootparams["inclination"], bootparams["LAN"]).
+   if bootparams:haskey("OrbitType") and bootparams["OrbitType"] = "transfer"  {
+      launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
+      launch_param:add("toPeriapsis", bootparams["toPeriapsis"]).
+   }
+   launch_param:add("orbit altitude", bootparams["launchToAlt"]).
+   runOnVolume("0:/lv/"+bootparams["lv"]+".ks").
 }
 
 declare local function setLaunchParams {
@@ -72,7 +52,7 @@ declare local function setLaunchParams {
    
    if launch_param["lan"]="none" or launch_param["inclination"] = 0 or launch_param["inclination"] = 180 {             
       launch_param:add("launchTime",        "now"). 
-   } else if lan:istype("Scalar") {
+   } else if launch_param["lan"]:istype("Scalar") {
       launch_param:add("launchTime",        "window"). 
    }
 }

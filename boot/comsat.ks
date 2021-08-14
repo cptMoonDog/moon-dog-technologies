@@ -23,7 +23,8 @@ if ship:status="PRELAUNCH" {
    }
    set kuniverse:activevessel to vessel("Comsat Deployment").
 } else if ship:status="ORBITING" {
-   if ship:orbit:eccentricity < 0.8 {
+   //Post Deployment code
+   if ship:orbit:eccentricity > 0.8 {
       local procs is list().
       until procs:length = 1{
          list processors in procs.
@@ -36,10 +37,12 @@ if ship:status="PRELAUNCH" {
          runpath("0:/runprogram.ks", "circularize-at-ap", list("ant")).
       }
       set kuniverse:activevessel to vessel("Comsat Deployment").
+   } else {
+      //On orbit station keeping
+      runpath("1:/kernel.ksm").
+      runpath("1:/orient.ksm").
+      available_programs["orient-to-max-solar"]().
+      if exists("1:/mission.ksm") runpath("1:/mission.ksm").
+      kernel_ctl["start"]().
    }
-   runpath("1:/kernel.ksm").
-   runpath("1:/orient.ksm").
-   available_programs["orient-to-max-solar"]().
-   if exists("1:/mission.ksm") runpath("1:/mission.ksm").
-   kernel_ctl["start"]().
 }

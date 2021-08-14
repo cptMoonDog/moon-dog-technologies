@@ -142,6 +142,7 @@
          print(pitchAngle) at(6, 0).
       }
       if ship:orbit:inclination >= launch_param["inclination"]-0.001 {
+         print "this is the problem" at(0, 5).
          return progradeVector.
       } else {
          local progradePitch is max(0, 90-vectorangle(up:forevector, progradeVector)).

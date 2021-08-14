@@ -55,7 +55,11 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
             return OP_FINISHED.
          }).
          MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+      } else { //A transfer orbit launch
+         runOnVolume("0:/programs/std/change-pe.ks").
+         available_programs["change-pe"](launch_param["upperstage"], launch_param["toPeriapsis"]).
       }
+         
    }
    launch_ctl:add("addLaunchToMissionPlan", setupLaunch@).
 }

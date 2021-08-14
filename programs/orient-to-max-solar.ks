@@ -30,7 +30,7 @@ set available_programs[programName] to {
    local lastLightMag is -1.
    local lastVector is ship:facing:forevector.
    local lastTime is time:seconds.
-   local rotMag is 10.
+   local rotMag is 1.
    local axis is "roll".
 
    declare function setSteeringLock {
@@ -50,23 +50,28 @@ set available_programs[programName] to {
    MISSION_PLAN:add({
       if lastLightMag = -1 {
          set lastLightMag to ship:sensors:light.
+         set lastTime to time:seconds.
          setSteeringLock().
          return OP_CONTINUE.
-      } else if time:seconds > lastTime + 10 {
+      } else if time:seconds > lastTime + 0.25 {
          if ship:sensors:light > lastLightMag { 
             setSteeringLock().
          } else if rotMag > 0 {
-            lock steering to lastVector.
             set rotMag to -rotMag.
+            setSteeringLock().
          } else if rotMag < 0 {
-            lock steering to lastVector.
-            set rotMag to -rotMag.
+            set rotMag to -rotMag.//back to positive
             if axis = "roll" set axis to "yaw".
-            if axis = "yaw" set axis to "pitch".
-            if axis = "pitch" return OP_FINISHED. //all options exhausted, max solar exposure achieved. Hopefully.
+            else if axis = "yaw" set axis to "pitch".
+            else if axis = "pitch" return OP_FINISHED. //all options exhausted, max solar exposure achieved. Hopefully.
+            setSteeringLock().
          }
+         set lastLightMag to ship:sensors:light.
+         set lastTime to time:seconds.
+         print "orienting vectors: "+axis at(0, 5).
+         print "light level: "+ship:sensors:light at(0, 6).
       }
-      return OP_CONTNUE.
+      //return OP_CONTNUE.
    }).
    
          

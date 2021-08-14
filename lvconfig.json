@@ -1,0 +1,69 @@
+{
+    "entries": [
+        {
+            "value": "lv",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": "BBR/JR-steep",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": "onOrbitBoot",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": "missions/bootable-deploy-constellation",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": "runVolume",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": 0,
+            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+        },
+        {
+            "value": "orbitType",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": "transfer",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": "inclination",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": 45,
+            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+        },
+        {
+            "value": "LAN",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": 136,
+            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+        },
+        {
+            "value": "launchToAlt",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": 774400,
+            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+        },
+        {
+            "value": "toPeriapsis",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "value": 294684,
+            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+        }
+    ],
+    "$type": "kOS.Safe.Encapsulation.Lexicon"
+}
