@@ -23,7 +23,7 @@ declare parameter periapsisAltitude is 80000.
    // should be the same as the amount of time it takes to achieve the proper inclination, which 
    // will also be about the same as the amount of time needed to achieve orbital velocity.  
    // For the record, this will vary with the inclination.
-   launch_param:add("timeOfFlight",         180+2**launch_param["inclination"]).
+   launch_param:add("timeOfFlight",         180+2*launch_param["inclination"]).
 
    ///////////////////////////// Gravity turn parameters ////////////////////////////////
    launch_param:add("pOverDeg",             10). // Pitchover magnitude in degrees
