@@ -25,7 +25,12 @@ if core:tag {
          } else {
             set target to data[1]:trim.
             if target:body = ship:body { /// Targets in orbit of Origin Body ///
-               setLaunchParams(target:orbit:inclination, target:orbit:lan).
+               print target:orbit:inclination at(0, 9).
+               if target:orbit:inclination >= abs(ship:latitude) setLaunchParams(target:orbit:inclination, target:orbit:lan).
+               else {
+                  launch_param:add("orbitType", "rendezvous").
+                  setLaunchParams(0, "none").
+               }
                runpath("0:/lv/"+data[0]+".ks").
             } else { /// Interplanetary Targets ///
                runpath("0:/lib/physics.ks").
@@ -36,7 +41,7 @@ if core:tag {
             }
          }
       } else { /// Defined orbit, 
-         local alt is 80000.
+         launch_param:add("targetApo", 80000).
          // data[1] is inclination
          // data[2] is raan/lan
          // data[3] is Orbit altitude
@@ -44,12 +49,12 @@ if core:tag {
          if data:length > 3 {
             if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
                launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
-               set alt to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we accept them reduced by 1000.
+               set launch_param["targetApo"] to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we accept them reduced by 1000.
             } else {
-               set alt to data[3]:tonumber(80000).
+               set launch_param["targetApo"] to data[3]:tonumber(80000).
             }
          }
-         runpath("0:/lv/"+data[0]+".ks", alt).
+         runpath("0:/lv/"+data[0]+".ks").
       }
    } else {
       //If no parameters given; runs the launch with default values

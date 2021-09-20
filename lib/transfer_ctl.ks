@@ -61,8 +61,8 @@
 
       if diff < 0 set diff to diff+360.
 
-      local t is (diff)/(rateShip-rateTarget).
-      return t.
+      local tm is (diff)/(rateShip-rateTarget).
+      return tm.
 
    }
    transfer_ctl:add("etaPhaseAngle", etaPhaseAngle@).

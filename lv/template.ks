@@ -2,7 +2,7 @@
 //This is a standard Launch Vehicle parameter file.
 //This holds the information necessary to customize the flight profile for your lifter.
 
-declare parameter periapsisAltitude is 80000.
+if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
 {
    ////////////////////////// Launch Options /////////////////////////////////////
    //Any inclination can be achieved twice a day.
@@ -74,14 +74,14 @@ declare parameter periapsisAltitude is 80000.
    //launch_param:add("throttleReferenceVar", "flightPathAngle"). 
    //launch_param:add("throttleProfile", list( 
    //                                         1000, //Apo to Activate function, max prior
-   //                                         periapsisAltitude, //Apo to Deactivate function 
+   //                                         launch_param["targetApo"], //Apo to Deactivate function 
    //                                         "linearTangent")).  //Setpoint
      // This is a decent general ascent
    launch_param:add("throttleProgramType", "setpoint"). 
    launch_param:add("throttleReferenceVar", "etaApo"). 
    launch_param:add("throttleProfile", list( 
                                             1000, //Apo to Activate function, max prior
-                                            periapsisAltitude, //Apo to Deactivate function 
+                                            launch_param["targetApo"], //Apo to Deactivate function 
                                             40)).  //Setpoint
 
       // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
@@ -90,7 +90,7 @@ declare parameter periapsisAltitude is 80000.
    //launch_param:add("throttleFunction", "constantTWR").
    //launch_param:add("throttleProfile", list( 
    //                                          2000, //Apo to Activate function, max prior
-   //                                          periapsisAltitude //Apo to Deactivate function 
+   //                                          launch_param["targetApo"] //Apo to Deactivate function 
    //                                          , 1.5 //Functions can take an optional parameter, in this case the TWR to maintain is 1.5
    //                                          )).
 

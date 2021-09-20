@@ -24,7 +24,11 @@
                                           launch_param["timeOfFlight"], 
                                           launch_param["azimuthHemisphere"]).
       } else if launch_param["launchTime"] = "now" {          //Will countdown and launch.
-         set timeOfWindow to time:seconds + countdown + 1.
+         if launch_param:haskey("orbitType") and launch_param["orbitType"] = "rendezvous" {
+            print etaPhaseAngle() at(0, 10).
+            set timeOfWindow to time:seconds+etaPhaseAngle().
+            launch_param:add("targetApo", target:orbit:periapsis).
+         } else set timeOfWindow to time:seconds + countdown + 1.
       } else if launch_param["launchTime"]:istype("Scalar") { //Will warp to (Utime - countdown), then countdown and launch.
          set timeOfWindow to launch_param["launchTime"].
       }
@@ -128,14 +132,13 @@
 
       //Trig functions generally do not return exactly 0, even if they did, Vy=0 would produce a div by zero error.
       //Also, microscopic values of Vy that are < 0, will produce +90.
-      local adjustmentForTOF is 0. //Time of Flight.  Now fixed elsewhere.  TODO:remove this.
       if south {
          //inclination: 0
          if Vx < 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
          //inclination: 180
          else if Vx > 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to -90.
          //inclination: everything else
-         else set rotatingAzimuth to arctan(Vx/Vy)+adjustmentForTOF.
+         else set rotatingAzimuth to arctan(Vx/Vy).
          return 180+rotatingAzimuth.
       } else {
          //inclination: 180
@@ -144,9 +147,65 @@
          else if Vx > 0 and Vy < 0.0001 and Vy > -0.0001 set rotatingAzimuth to 90.
          //inclination: everything else
          else set rotatingAzimuth to arctan(Vx/Vy).
-         if rotatingAzimuth < 0 return 360+rotatingAzimuth-adjustmentForTOF.
-         else return rotatingAzimuth-adjustmentForTOF.
+         if rotatingAzimuth < 0 return 360+rotatingAzimuth.
+         else return rotatingAzimuth.
       }
    }
    launch_ctl:add("launchAzimuth", launchAzimuth@).
+
+   declare function currentPhaseAngle {
+      // From: https://forum.kerbalspaceprogram.com/index.php?/topic/85285-phase-angle-calculation-for-kos/
+      //Assumes orbits are both in the same plane.
+      // And that that plane is equatorial
+      declare parameter t is target.
+      local a1 is ship:longitude.
+      local a2 is 0.
+      if t:istype("Orbitable") {
+         set a2 to t:orbit:lan+t:orbit:argumentofperiapsis+t:orbit:trueanomaly.
+      } else {
+         set a2 to t.
+      }
+       
+      local diff is a2-a1.
+      set diff to diff-360*floor(diff/360).
+      return diff.
+   }
+
+   declare function etaPhaseAngle {
+      declare parameter t is target.
+      local rateShip is 360/ship:orbit:body:rotationperiod.
+      local rateTarget is 0.
+      local pa is 0.
+      set pa to phaseAngle(ship:orbit:body:radius+ship:altitude, target:orbit:semimajoraxis).
+      set rateTarget to 360/target:orbit:period.
+      
+      local current is currentPhaseAngle(t).
+
+     // // I want some time to burn my engines, so I need to lead a bit to have time
+     // // I'm sure there is a better way to do this, but for now...
+     // local minDiff is 20.
+     // 
+     // local diff is  0.
+     // if pa > current-minDiff {
+     //    set diff to 360+current-pa.
+     // } else set diff to current-pa.
+
+     // if diff < 0 set diff to diff+360.
+      local dist is 360-pa.
+      local diff is (360-pa) - current.
+
+      local tm is (diff)/(rateTarget-rateShip).
+      set tm to tm - 0. //Fudge Factor 
+      return tm.
+
+   }
+
+   declare function phaseAngle {
+      parameter startAlt.
+      parameter finalAlt.
+
+      local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
+      local angle is p*360.
+      return 180-angle.
+   }
 }
