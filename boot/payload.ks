@@ -11,19 +11,19 @@ if ship:status = "PRELAUNCH" {
       runpath("0:/lib/core/kernel.ks").
       if data:length > 1 {
          set ship:name to data[0].
-         set core:tag to data[0]. //I know this seems weird, but the lv_boot script needs to be able to identify the payload's processor, and right now, the only way to do that, is if the ship:name and core:tag are the same.
-         set mission to data[1]:trim.
-         set mission to mission:split(",").  
+         //set core:tag to data[0]. //I know this seems weird, but the lv_boot script needs to be able to identify the payload's processor, and right now, the only way to do that, is if the ship:name and core:tag are the same.
+         set mission to data[1]:split(",").  
          MISSION_PLAN:add({
             set kernel_ctl["status"] to "waiting for handoff...".
             if core:messages:empty return OP_CONTINUE.
             if not core:messages:empty {
-               set kernel_ctl["status"] to "handoff accepted".
-               set ship:name to data[0].
+               set kernel_ctl["status"] to "handoff accepted. MISSION_PLAN elements: "+MISSION_PLAN:length.
+               //set ship:name to data[0].
+               return OP_FINISHED.
             } else {
-               set kernel_ctl["status"] to "Handoff failed! Check KOS Module nameTags...".
+               set kernel_ctl["status"] to "Handoff failed!".
+               return OP_FAIL.
             }
-            return OP_FINISHED.
          }). 
          if exists("0:/missions/"+mission[0]:trim+".ks") {
             if mission:length = 6 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim, mission[5]:trim).

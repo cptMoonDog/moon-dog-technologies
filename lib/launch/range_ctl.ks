@@ -25,9 +25,9 @@
                                           launch_param["azimuthHemisphere"]).
       } else if launch_param["launchTime"] = "now" {          //Will countdown and launch.
          if launch_param:haskey("orbitType") and launch_param["orbitType"] = "rendezvous" {
-            print etaPhaseAngle() at(0, 10).
+            print "etaPhaseAngle: "+etaPhaseAngle() at(0, 10).
             set timeOfWindow to time:seconds+etaPhaseAngle().
-            launch_param:add("targetApo", target:orbit:periapsis).
+            set launch_param["targetApo"] to target:orbit:periapsis.
          } else set timeOfWindow to time:seconds + countdown + 1.
       } else if launch_param["launchTime"]:istype("Scalar") { //Will warp to (Utime - countdown), then countdown and launch.
          set timeOfWindow to launch_param["launchTime"].
@@ -160,11 +160,7 @@
       declare parameter t is target.
       local a1 is ship:longitude.
       local a2 is 0.
-      if t:istype("Orbitable") {
-         set a2 to t:orbit:lan+t:orbit:argumentofperiapsis+t:orbit:trueanomaly.
-      } else {
-         set a2 to t.
-      }
+      set a2 to t:geoposition:lng.
        
       local diff is a2-a1.
       set diff to diff-360*floor(diff/360).
@@ -180,6 +176,8 @@
       set rateTarget to 360/target:orbit:period.
       
       local current is currentPhaseAngle(t).
+      print "current angle: " +current at(0, 11).
+      print "calculated phase angle: "+pa at(0, 12).
 
      // // I want some time to burn my engines, so I need to lead a bit to have time
      // // I'm sure there is a better way to do this, but for now...
@@ -195,7 +193,7 @@
       local diff is (360-pa) - current.
 
       local tm is (diff)/(rateTarget-rateShip).
-      set tm to tm - 0. //Fudge Factor 
+      set tm to tm + 10. //Fudge Factor 
       return tm.
 
    }

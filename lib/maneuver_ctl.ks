@@ -49,41 +49,32 @@
    maneuver_ctl:add("add_burn", schedule_burn@).
 
    declare function execute {
-      print "executing" at(0, 15).
+      set kernel_ctl["status"] to "executing".
       if burn_queue:empty {
-         print "No burn loaded!!!".
+         set kernel_ctl["status"] to "No burn loaded!!!".
          return OP_FINISHED.
       }
-      if (defined telemetry_ctl) {
-         if not (telemetry_ctl["items"]["eta"]:haskey("Burn")) {
-            telemetry_ctl["items"]["eta"]:add("Burn", {
-               if time:seconds < start return "T-"+(start-time:seconds).
-               else return "T+"+(time:seconds-start).
-            }).
-         }
-      } else {
-         if time:seconds < start print "T-"+(start-time:seconds) at(0, terminal:height-3).
-         else print "T+"+(time:seconds-start) at(0, 10).
-      }
+      if time:seconds < start set kernel_ctl["status"] to "T-"+ceiling(start-time:seconds, 2).
+      else set kernel_ctl["status"] to "T+"+ceiling(time:seconds-start, 2).
       //Over 3 minutes out, warp
       if time:seconds < start-180 { 
-         print "Warping" at(0, 12).
+         set kernel_ctl["status"] to "Warping".
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
             kuniverse:timewarp:warpto(start-179).
          }
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 3 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-180 AND time:seconds < start-30 { 
-         print "Lock Steering" at(0, 13).
+         set kernel_ctl["status"] to "Lock Steering".
          lock steering to burn_queue:peek()["steeringProgram"]().
       //Less than 30 sec out and more than 25 sec, recalculate burn timing.
       } else if time:seconds > start-30 AND time:seconds < start-25 { 
-         print "recalculate" at(0, 14).
+         set kernel_ctl["status"] to "recalculate".
          reset_for_next_burn(). // recalculates to improve precision
          lock throttle to 0.
       //Start of burn. Continue attempting to lock throttle until end of scheduled burn unless already locked.
       } else if time:seconds >= start AND time:seconds < end AND throttle = 0 or (throttle > 0 and hasnode and nextnode:deltav:mag >= 1) { 
-         print "burning" at(0, 16).
+         set kernel_ctl["status"] to "burning".
          lock throttle to 1.
       //Burn finished.  Engine shutdown.  Wait 5 seconds, then queue up next burn.
       } else if time:seconds >= end { 
@@ -111,7 +102,7 @@
       if ip:istype("Scalar") return ip.
       if ip = "ap" return time:seconds + eta:apoapsis.
       if ip = "pe" return time:seconds + eta:periapsis.
-      print "Error, with Impulse Point: "+ip.
+      set kernel_ctl["status"] to "Error, with Impulse Point: "+ip.
       return ip.
    }
    declare function get_dV {

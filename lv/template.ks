@@ -110,7 +110,7 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "terrier").
+   launch_param:add("upperstage", "poodle").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      10).

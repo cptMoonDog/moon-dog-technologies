@@ -3,7 +3,7 @@ declare parameter name.
 declare parameter p is list().
 
 local allowAlpha is false.
-local allowBeta is false.
+local allowBeta is true.
 
 if exists("0:/programs/std/"+name+".ks") 
    runpath("0:/programs/std/"+name+".ks").

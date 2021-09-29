@@ -14,6 +14,7 @@ maneuver_ctl["defEngine"]("swivel",       320,  215,        0.1).
 maneuver_ctl["defEngine"]("poodle",       350,  250,        0.0).
 maneuver_ctl["defEngine"]("bollard",      325,  925,        0.0).
 maneuver_ctl["defEngine"]("terrier",      345,  60 ,        0.0).
+maneuver_ctl["defEngine"]("doubleTerrier",345,  120,        0.0).
 maneuver_ctl["defEngine"]("beagle",       325,  100,        0.0).
 maneuver_ctl["defEngine"]("skipper",      320,  650,        0.0).
 maneuver_ctl["defEngine"]("wolfhound",    412,  375,        0.0).

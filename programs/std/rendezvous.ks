@@ -46,6 +46,7 @@ set available_programs[programName] to {
    
       MISSION_PLAN:add({
          if not hastarget set target to targetName.
+         if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED.
          if not hasnode {
             local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).
             add(mnvr).

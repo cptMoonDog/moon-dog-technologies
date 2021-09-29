@@ -40,7 +40,7 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
         }
         return launch_ctl["throttle_monitor"]().
       }).
-      if not (launch_param:haskey("orbitType")) or launch_param["orbitType"] = "LKO" {
+      if not (launch_param:haskey("orbitType")) or not(launch_param["orbitType"] = "transfer") {
          MISSION_PLAN:add({
             //If the upperstage is not the active engine...
             if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 

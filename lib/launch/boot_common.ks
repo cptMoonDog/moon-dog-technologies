@@ -26,7 +26,7 @@ if core:tag {
             set target to data[1]:trim.
             if target:body = ship:body { /// Targets in orbit of Origin Body ///
                print target:orbit:inclination at(0, 9).
-               if target:orbit:inclination >= abs(ship:latitude) setLaunchParams(target:orbit:inclination, target:orbit:lan).
+               if target:orbit:inclination >= 1 or abs(ship:latitude) >= 1 setLaunchParams(target:orbit:inclination, target:orbit:lan).
                else {
                   launch_param:add("orbitType", "rendezvous").
                   setLaunchParams(0, "none").
@@ -58,7 +58,8 @@ if core:tag {
       }
    } else {
       //If no parameters given; runs the launch with default values
-      setLaunchParams(target:orbit:inclination, target:orbit:lan).
+      setLaunchParams(0, "none").
+      launch_param:add("targetApo", 80000).
       runpath("0:/lv/"+data[0]+".ks").
    }
 } else if exists("0:/lv/"+ship:name+".ks") {

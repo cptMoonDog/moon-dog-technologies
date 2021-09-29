@@ -141,11 +141,15 @@ kernel_ctl:add("input", "").
       print "Input: "+ inputbuffer:padright(terminal:width-7) at(0, 6).
       print "formatting test" at(0, 7).
    }
+}
 
-   declare function interactive_mode {
-      clearscreen.
-      print "KOS-Missions Interactive Session".
-      print "$:".
-      
-   }
+if interactive {
+   MISSION_PLAN:add({
+      if MISSION_PLAN:length > 1
+         return OP_FINISHED.
+
+      return OP_CONTINUE.
+   }).
+
+   kernel_ctl["start"]().
 }
