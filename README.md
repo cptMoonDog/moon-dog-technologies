@@ -8,7 +8,7 @@ Features
  - Rapid launch script development
    - Customize launch profile for each Launch Vehicle
    - Fast and easy Gravity Turns 
-   - Linear tangent steering aware
+   - Linear tangent steering capable
    - Easily target different orbital planes with the same script.
  - Modular, pluggable mission scripting
  
@@ -82,17 +82,17 @@ Or just:
 Commands are still in the process of being implemented, but it is working fairly well.  For instance, you can run a mission with the following commands:
 
     setup-launch
+        Inclination: 45
+        LAN: none
+        Orbit height: 80000
+        Launch Vehicle: Atlas
     add-program change-ap terrier 200000
     start
 
-`setup-launch` will ask you for launch parameters and will add the launch routines to the MISSION_PLAN.  Any `add-program` commands will append their routines for that particular program to the end of the MISSION_PLAN, so you can keep adding items to the running plan, if you want, even in flight.  Be sure to invoke the program correctly, however!  The ISH system cannot verify beforehand if you are giving it the correct number of parameters for the program.  If you give it more or less than the program expects, the system will immediately crash.  This is a known problem, but Jebediah said it was worth the risk, although Werner is still looking for a safer failure mode.
+`setup-launch` will ask you for launch parameters and will add the launch routines to the MISSION_PLAN.
+Any `add-program` commands will append their routines for that particular program to the end of the MISSION_PLAN, so you can keep adding items to the running plan, if you want, even in flight.  Be sure to invoke the program correctly, however!  The ISH system cannot verify beforehand if you are giving it the correct number of parameters for the program.  If you give it more or less than the program expects, the system will immediately crash.  This is a known problem, but Jebediah said it was worth the risk, although Werner is still looking for a safer failure mode.
 
-
-*Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
-*
-*    runpath("0:/missions/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], ... [PARAMETER n])).
-*    
-*For more information about extending the system and technical details, see the [wiki](../../wiki).  (A work in progress).
+The kernel will not begin running the MISSION_PLAN until you call `start`, but it will remain interactive even while running.  Try running `display altitude` during ascent, for instance.
 
 Libraries
 ---------
