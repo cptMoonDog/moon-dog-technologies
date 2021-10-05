@@ -1,12 +1,15 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "powered-capture". //<------- put the name of the script here
+local programName is "run-maneuver". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
+    // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
+//declare parameter p2 is "". 
+
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -25,7 +28,6 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter targetBody.
    declare parameter engineName.
 
 //======== Local Variables =====
@@ -37,24 +39,15 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
-      local count is 0.
-      until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-         print "staging, Max thrust/engineName: "+ship:maxthrust+" "+engineName.
+      until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") AND ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          stage. 
-         wait 10.
-         if ship:maxthrust = 0 print "Likely a staging problem: Check yo' stagin!".
-         if count > 2 {
-            return OP_FAIL.
-         }
-         set count to count +1.
+         wait 1.
       }
-      if ship:orbit:body = body(targetBody) {
-         maneuver_ctl["add_burn"]("retrograde", engineName, "pe", "circularize").
-      }
+      //                       steeringProgram, engineName, impulsepoint, dv
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

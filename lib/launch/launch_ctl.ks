@@ -3,8 +3,6 @@
 if not (defined launch_ctl)
    global launch_ctl is lexicon().
 
-runoncepath("0:/lib/core/kernel.ks").
-
 runoncepath("0:/lib/physics.ks").
 runoncepath("0:/lib/maneuver_ctl.ks").
 

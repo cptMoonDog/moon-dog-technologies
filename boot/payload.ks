@@ -34,7 +34,7 @@ if ship:status = "PRELAUNCH" {
             else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
          } 
       } else {
-         runpath("0:/missions/std/payload_default.ks").
+         runpath("0:/missions/payload_default.ks").
       }
       kernel_ctl["start"]().
    } 

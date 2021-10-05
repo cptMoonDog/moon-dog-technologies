@@ -51,9 +51,9 @@ but a `program` should be a well defined objective that can be incorporated into
 For instance, say you wanted to go to the Mun.  You can write up a mission to the Mun like this:
 
     //Load programs into memory
-    runpath("0:/programs/std/lko-to-moon.ks").
-    runpath("0:/programs/std/warp-to-soi.ks").
-    runpath("0:/programs/std/powered-capture.ks").
+    runpath("0:/programs/lko-to-moon.ks").
+    runpath("0:/programs/warp-to-soi.ks").
+    runpath("0:/programs/powered-capture.ks").
 
     //Define the sequence in which to run them
     available_programs["lko-to-moon"]("Mun", "spark").
@@ -90,7 +90,7 @@ Commands are still in the process of being implemented, but it is working fairly
 
 *Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
 *
-*    runpath("0:/missions/std/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], ... [PARAMETER n])).
+*    runpath("0:/missions/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], ... [PARAMETER n])).
 *    
 *For more information about extending the system and technical details, see the [wiki](../../wiki).  (A work in progress).
 

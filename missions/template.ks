@@ -6,12 +6,12 @@
 // if it returns OP_FINISHED, the system will advance to the next routine in the MISSION_PLAN.
 
 //Load up pluggable objectives.
-//runpath("0:/programs/std/change-ap.ks").
-//runpath("0:/programs/std/rendezvous.ks").
-//runpath("0:/programs/std/lko-to-mun.ks").
-//runpath("0:/programs/std/warp-to-soi.ks").
-//runpath("0:/programs/std/powered-capture.ks").
-//runpath("0:/programs/std/landing.ks").
+//runpath("0:/programs/change-ap.ks").
+//runpath("0:/programs/rendezvous.ks").
+//runpath("0:/programs/lko-to-mun.ks").
+//runpath("0:/programs/warp-to-soi.ks").
+//runpath("0:/programs/powered-capture.ks").
+//runpath("0:/programs/landing.ks").
 
 
 //Add Pluggable objectives like this:

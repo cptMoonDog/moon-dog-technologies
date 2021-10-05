@@ -1,12 +1,14 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "change-ap". //<------- put the name of the script here
+local programName is "transfer-to-orbit". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
+declare parameter p1 is "". 
+declare parameter p2 is "". 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -25,15 +27,14 @@ set available_programs[programName] to {
    if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
-   declare parameter newAp.
    declare parameter engineName.
-   declare parameter AOP is ship:orbit:argumentofperiapsis. //Argument of periapsis
+   declare parameter argumentOfPeri.
 
 //======== Local Variables =====
       local steerDir is "retrograde".
       if ship:orbit:apoapsis < newAp set steerDir to "prograde". 
       if ship:orbit:periapsis > newAp {
-         print "Error: New Ap is less than Pe." at(0, 0).
+         print "Error" at(0, 0).
          shutdown.
       }
 
@@ -47,43 +48,21 @@ set available_programs[programName] to {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
-         wait 5.
-         if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust < 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-            print "Error! Engine does not have the same thrust as engine: "+engineName.
-            print "Expected thrust: "+maneuver_ctl["engineStat"](engineName, "thrust").
-            print "Current maxthrust is: "+ship:maxthrust.
-            
+         if ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
+            print "error in programs/powered-capture.ks: staging.".
             return OP_FAIL.
          }
       }
       
-      //Trying to account for situations where a change of AOP is desired. 
-     // local burnAngle is AOP - 180.
-     // if burnAngle < 0 set burnAngle to burnAngle + 360.
-     // 
-      if newAp:isType("String") set newAp to newAp:tonumber(-1).
-      if newAp = -1 or not(newAp:istype("Scalar")) return OP_FAIL.
       local newSMA is (ship:orbit:periapsis+ship:orbit:body:radius*2+newAp)/2.
       local newVatPe is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:periapsis, newSMA).
       local dv is abs(newVatPe - velocityat(ship, eta:periapsis):orbit:mag).
-
-     // if AOP > ship:orbit:argumentofperiapsis - 0.01 and AOP < ship:orbit:argumentofperiapsis + 0.01{
-     //    print "adding maneuver 1".
-         maneuver_ctl["add_burn"](steerDir, engineName, "pe", dv).
-
-      //} else {
-      //   print "changing AOP".
-      //   local angleDistToBurn is (ship:orbit:trueanomaly-burnAngle).
-      //   if angleDistToBurn < 0 set angleDistToBurn to angleDistToBurn + 360.
-      //   local etaBurnAngle is angleDistToBurn/ship:orbit:period.
-      //   print "adding maneuver 2".
-      //   maneuver_ctl["add_burn"](steerDir, engineName, time:seconds+etaBurnAngle, dv).
-      //}
+      maneuver_ctl["add_burn"](steerDir, engineName, "pe", dv).
       return OP_FINISHED.
    }).
    MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-   MISSION_PLAN:add({  //Fining, I think?
-      if (steerDir = "prograde" and ship:apoapsis < newAp*0.995 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.005) {
+   MISSION_PLAN:add({
+      if (steerDir = "prograde" and ship:apoapsis < newAp*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.01) {
          if steerDir = "prograde" {
             if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
                lock throttle to 0.
@@ -93,9 +72,9 @@ set available_programs[programName] to {
                lock throttle to 0.
             wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
          }
-         lock throttle to abs(ship:apoapsis-newAp).
+         lock throttle to 0.1.
          return OP_CONTINUE.
-      } else if (steerDir = "prograde" and ship:apoapsis > newAp*1.005) or (steerDir = "retrograde" and ship:apoapsis < newAp*0.995) {
+      } else if (steerDir = "prograde" and ship:apoapsis > newAp*1.01) or (steerDir = "retrograde" and ship:apoapsis < newAp*0.99) {
          if steerDir = "prograde" {
             set steerDir to "retrograde".
          } else {
@@ -103,7 +82,6 @@ set available_programs[programName] to {
          }
          return OP_CONTINUE.
       }
-      lock throttle to 0.
       return OP_FINISHED.
    }).
    

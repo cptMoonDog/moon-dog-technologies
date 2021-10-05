@@ -6,7 +6,7 @@
 // if it returns OP_FINISHED, the system will advance to the next routine in the MISSION_PLAN.
 
 //Load up pluggable objectives.
-runpath("0:/programs/std/change-pe.ks").
+runpath("0:/programs/change-pe.ks").
 MISSION_PLAN:add({
    compile "0:/missions/bootable-deploy-constellation.ks" to "1:/deploy.ksm".
    set core:bootfilename to "/deploy.ksm".

@@ -13,10 +13,10 @@ if ship:status = "PRELAUNCH" {
    runpath("0:/lib/launch/boot_common.ks").
    if HASTARGET and target:body = ship:body { /// Targets in orbit of Origin Body ///
       if target:istype("Vessel") {
-         runpath("0:/programs/std/rendezvous.ks").
+         runpath("0:/programs/rendezvous.ks").
          available_programs["rendezvous"](launch_param["upperStage"], target:name).
       } else if target:istype("Body") {
-         runpath("0:/missions/std/moonTransfer.ks", target:name, launch_param["upperStage"],launch_param["upperStage"],launch_param["upperStage"]).
+         runpath("0:/missions/moonTransfer.ks", target:name, launch_param["upperStage"],launch_param["upperStage"],launch_param["upperStage"]).
       }
    }
    if exists("0:/missions/"+ship:name+".ks") {

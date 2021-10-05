@@ -5,8 +5,9 @@ declare parameter p is list().
 local allowAlpha is false.
 local allowBeta is true.
 
-if exists("0:/programs/std/"+name+".ks") 
-   runpath("0:/programs/std/"+name+".ks").
+print "This system is depreciated.  Please use ISH instead."
+if exists("0:/programs/"+name+".ks") 
+   runpath("0:/programs/"+name+".ks").
 if allowBeta AND exists("0:/programs/beta/"+name+".ks") 
    runpath("0:/programs/beta/"+name+".ks").
 if allowAlpha AND exists("0:/programs/alpha/"+name+".ks") 

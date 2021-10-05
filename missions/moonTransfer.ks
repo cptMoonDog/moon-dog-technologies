@@ -18,11 +18,11 @@ declare parameter bod, transferStageEngine, captureStageEngine, finalEngine.
 declare parameter sma is 250000.
 
 //Load up pluggable objectives.
-runpath("0:/programs/std/lko-to-moon.ks").
-runpath("0:/programs/std/warp-to-soi.ks").
-runpath("0:/programs/std/powered-capture.ks").
-runpath("0:/programs/std/change-ap.ks").
-runpath("0:/programs/std/change-pe.ks").
+runpath("0:/programs/lko-to-moon.ks").
+runpath("0:/programs/warp-to-soi.ks").
+runpath("0:/programs/powered-capture.ks").
+runpath("0:/programs/change-ap.ks").
+runpath("0:/programs/change-pe.ks").
 
 //Add Pluggable objectives like this:
 available_programs["lko-to-moon"](bod, transferStageEngine).
