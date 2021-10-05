@@ -21,37 +21,35 @@ global OP_FAIL is "panic".
 global MISSION_PLAN is list().
 global INTERRUPTS is list().
 global SYS_CMDS is lexicon().
-SYS_CMDS:add("apo", {return ship:apoapsis.}).
 
 // Kernel Registers
-kernel_ctl:add("status", "").
+kernel_ctl:add("interactive", interactive).
+kernel_ctl:add("status", "ISH: Interactive SHell for kOS").
 kernel_ctl:add("output", "").
+kernel_ctl:add("prompt", ":"). //Prompt
 
-kernel_ctl:add("input", "").
 
 
 {
    local runmode is 0.
 
-   
    local time_share is 0.
    local time_count is 0.
 
    local next_interrupt is 0.
    local inputbuffer is "".
    local cmd_buffer is "".
-
-   SYS_CMDS:add("mode", {return runmode.}).
+   local cmd_hist_num is 0.
+   local display_buffer is list().
 
 ///Public functions
    declare function run {
-      clearscreen.
       until FALSE {
          //Runmodes
          if runmode < MISSION_PLAN:length {
             // Runmode
             set_runmode(MISSION_PLAN[runmode]()).
-            if terminal:input:haschar process_char(terminal:input:getchar()).
+            if kernel_ctl["interactive"] and terminal:input:haschar process_char(terminal:input:getchar()).
          } else {
             print "end program.".
             break.
@@ -82,74 +80,95 @@ kernel_ctl:add("input", "").
       if n >= -1 and n <= 1 set runmode to runmode+n.
    }
 
-
    declare function process_char {
       declare parameter c.
       if c = terminal:input:ENTER {
          process_cmd(inputbuffer).
          set inputbuffer to "".
+         set cmd_hist_num to 0.
+      } else if c = terminal:input:BACKSPACE {
+         set inputbuffer to inputbuffer:substring(0, inputbuffer:length-1).
+      } else if c = terminal:input:UPCURSORONE {
+         set cmd_hist_num to cmd_hist_num + 1.
+         if cmd_hist_num <= display_buffer:length set inputbuffer to display_buffer[display_buffer:length - cmd_hist_num].
+         else {
+            set inputbuffer to "".
+            set cmd_hist_num to 0.
+         }
+      } else if c = terminal:input:DOWNCURSORONE {
+         set cmd_hist_num to abs(cmd_hist_num - 1).
+         if cmd_hist_num set inputbuffer to display_buffer[display_buffer:length - cmd_hist_num].
+         else set inputbuffer to "".
       } else {
          set inputbuffer to inputbuffer + c.
       }
       update_display().
    }
 
+   // Special internal system commands
+   SYS_CMDS:add("start", {
+      declare parameter cmd.
+      set runmode to runmode  + 1.
+      return "finished".
+   }).
+
+   SYS_CMDS:add("exit", {
+      declare parameter cmd.
+      set runmode to MISSION_PLAN:length.
+      return "finished".
+   }).
+
+
    declare function process_cmd {
       declare parameter cmd.
       if not(cmd_buffer) {
-         if cmd:trim:tolower = "disp apo" {
-            set kernel_ctl["output"] to ship:apoapsis.
-         } else if cmd:trim:tolower = "add-launch" {
-            if ship:status = "PRELAUNCH" {
-               runoncepath("0:/lib/launch/launch_ctl.ks").
-
-               set cmd_buffer to cmd:trim:tolower.
-               set kernel_ctl["Output"] to "Inclination: ".
-            } else {
-               set kernel_ctl["output"] to "Not on launch pad".
+         display_buffer:add(cmd).
+         //If not in the middle of a top-level command
+         for token in SYS_CMDS:keys {
+            if cmd:trim:tolower:startswith(token) {
+               // This triggers the secondary input system
+               set cmd_buffer to token.
+               if SYS_CMDS[cmd_buffer](cmd:trim:tolower) = "finished" {
+                  display_buffer:add(kernel_ctl["output"]:tostring).
+                  set cmd_buffer to "".
+                  set kernel_ctl["prompt"] to ":".
+               }
+               return.
             }
          }
-      } else if cmd_buffer = "add-launch" {
-         if kernel_ctl["output"] = "Inclination: " {
-            launch_param:add("inclination", cmd:tonumber(0)).
-            set kernel_ctl["output"] to "LAN: ".
-         } else if kernel_ctl["output"] = "LAN: " {
-            if cmd:tonumber(-1) = -1 or launch_param["inclination"] = 0 {
-               launch_param:add("lan", "none").
-               launch_param:add("launchTime", "now").
-            } else {
-               launch_param:add("lan", cmd:tonumber(0)).
-               launch_param:add("launchTime", "window").
-            }
-            set kernel_ctl["output"] to "Orbit height: ".
-         } else if kernel_ctl["output"] = "Orbit height: " {
-            if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
-            else launch_param:add("targetApo", cmd:tonumber(80000)).    
-            set kernel_ctl["output"] to "Launch Vehicle: ".
-         } else if kernel_ctl["output"] = "Launch Vehicle: " {
-            if exists("0:/lv/"+cmd:trim+".ks") runoncepath("0:/lv/"+cmd:trim+".ks").
-            set kernel_ctl["output"] to "".
+         display_buffer:add("No such command").
+      } else {
+         set kernel_ctl["output"] to "".
+         //display_buffer:add(cmd).
+         if SYS_CMDS[cmd_buffer](cmd) = "finished" {
             set cmd_buffer to "".
+            set kernel_ctl["prompt"] to ":".
          }
+         if kernel_ctl["output"] display_buffer:add("   "+kernel_ctl["output"]:tostring).
       }
    }
             
    declare function update_display {
-      print "Status: "+kernel_ctl["status"] at(0, 3).
-      //print "Countdown: "+kernel_ctl["countDisplay"] at(0, 4).
-      print "Output: "+kernel_ctl["output"] at(0, 5).
-      print "Input: "+ inputbuffer:padright(terminal:width-7) at(0, 6).
-      print "formatting test" at(0, 7).
+      print kernel_ctl["status"] at(0, 1).
+      local lineNum is 1.
+      until display_buffer:length < terminal:height - 2 display_buffer:remove(0).
+      for s in display_buffer {
+         print s:padright(terminal:width - s:length) at(0, lineNum).
+         set lineNum to lineNum + 1.
+      }
+      print kernel_ctl["prompt"]+ inputbuffer:padright(terminal:width-2-kernel_ctl["prompt"]:length) at(0, terminal:height-1).
+      set kernel_ctl["output"] to "".
    }
-}
 
-if interactive {
-   MISSION_PLAN:add({
-      if MISSION_PLAN:length > 1
-         return OP_FINISHED.
+   if kernel_ctl["interactive"] {
+      runoncepath("0:/lib/core/system-cmds.ks").
+      clearscreen.
+      update_display().
+      MISSION_PLAN:add({
+         return OP_CONTINUE.
+      }).
 
-      return OP_CONTINUE.
-   }).
-
-   kernel_ctl["start"]().
+      kernel_ctl["start"]().
+   }
+   
 }

@@ -70,11 +70,29 @@ For instance, say you wanted to go to the Mun.  You can write up a mission to th
     
 Standalone Operation
 ====================
-Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
+The `runprogram.ks` system is being depreciated.  The prefered system should now be to launch the kernel in interactive mode.  I am calling the system ISH, for "Interactive SHell".  Should fit well with the Kerbal ethic.
+To launch the system invoke the following command in the kOS window:
 
-    runpath("0:/missions/std/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], ... [PARAMETER n])).
-    
-For more information about extending the system and technical details, see the [wiki](../../wiki).  (A work in progress).
+    runpath("0:/lib/core/kernel.ks", true).
+
+Or just:
+
+    runpath("0:/ish.ks").
+
+Commands are still in the process of being implemented, but it is working fairly well.  For instance, you can run a mission with the following commands:
+
+    setup-launch
+    add-program change-ap terrier 200000
+    start
+
+`setup-launch` will ask you for launch parameters and will add the launch routines to the MISSION_PLAN.  Any `add-program` commands will append their routines for that particular program to the end of the MISSION_PLAN, so you can keep adding items to the running plan, if you want, even in flight.  Be sure to invoke the program correctly, however!  The ISH system cannot verify beforehand if you are giving it the correct number of parameters for the program.  If you give it more or less than the program expects, the system will immediately crash.  This is a known problem, but Jebediah said it was worth the risk, although Werner is still looking for a safer failure mode.
+
+
+*Programs may be invoked individually.  Unfortunately, the overhead required to make them compatible with the sequencing system makes invoking them more complicated than simply running the file.  Therefore, `runprogram.ks` is provided.  You may invoke individual programs at the KOS terminal in the following manner:
+*
+*    runpath("0:/missions/std/runprogram.ks", [PROGRAM NAME], list([PARAMETER1], [PARAMETER2], ... [PARAMETER n])).
+*    
+*For more information about extending the system and technical details, see the [wiki](../../wiki).  (A work in progress).
 
 Libraries
 ---------
@@ -84,7 +102,8 @@ The libraries in `lib` are Scope-Lexicon-Delegate libraries inspired by [gisikw'
 Disclaimer
 ==========
 While I have used these routines successfully in my own missions, some may still be in an alpha state.  Use at your own risk.
-   
 
 
-
+Updates
+=======
+This latest update (4 Oct 2021), has involved some fairly major refactoring.  Everything should function generally the same as it has, but paths may have changed, so watch for that.
