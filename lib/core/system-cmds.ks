@@ -54,7 +54,7 @@ SYS_CMDS:add("setup-launch", {
          launch_param:add("launchTime", "window").
       }
       set kernel_ctl["output"] to "   LAN: "+cmd.
-      set kernel_ctl["prompt"] to "Orbit height: ".
+      set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
    } else if kernel_ctl["prompt"] = "Target: " {
       // TODO support dummy targets like: Polar
       set target to cmd.
@@ -67,9 +67,9 @@ SYS_CMDS:add("setup-launch", {
          launch_param:add("launchTime", "window").
       }
       set kernel_ctl["output"] to "   Target: "+cmd.
-      set kernel_ctl["prompt"] to "Orbit height: ".
-   } else if kernel_ctl["prompt"] = "Orbit height: " {
-      if cmd = "" set cmd to "lko". //Default value
+      set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
+   } else if kernel_ctl["prompt"] = "Orbit height(*80000*): " {
+      if cmd = "" set cmd to "80000". //Default value
       if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
       else launch_param:add("targetApo", cmd:tonumber(80000)).    
       set kernel_ctl["output"] to "   Orbit height: "+cmd.
