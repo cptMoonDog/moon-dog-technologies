@@ -25,6 +25,7 @@ global SYS_CMDS is lexicon().
 // Kernel Registers
 kernel_ctl:add("interactive", interactive).
 kernel_ctl:add("status", "ISH: Interactive SHell for kOS").
+kernel_ctl:add("countdown", "").
 kernel_ctl:add("output", "").
 kernel_ctl:add("prompt", ":"). //Prompt
 
@@ -50,6 +51,8 @@ kernel_ctl:add("prompt", ":"). //Prompt
             // Runmode
             set_runmode(MISSION_PLAN[runmode]()).
             if kernel_ctl["interactive"] and terminal:input:haschar process_char(terminal:input:getchar()).
+            print kernel_ctl["status"]:padright(terminal:width-kernel_ctl["status"]:length) at(0, 0).
+            print kernel_ctl["countdown"] at(0, 1).
          } else {
             print "end program.".
             break.
@@ -139,7 +142,6 @@ kernel_ctl:add("prompt", ":"). //Prompt
          display_buffer:add("No such command").
       } else {
          set kernel_ctl["output"] to "".
-         //display_buffer:add(cmd).
          if SYS_CMDS[cmd_buffer](cmd) = "finished" {
             set cmd_buffer to "".
             set kernel_ctl["prompt"] to ":".
@@ -149,9 +151,8 @@ kernel_ctl:add("prompt", ":"). //Prompt
    }
             
    declare function update_display {
-      print kernel_ctl["status"] at(0, 1).
-      local lineNum is 1.
-      until display_buffer:length < terminal:height - 2 display_buffer:remove(0).
+      local lineNum is 2. // Status and Countdown shown above output area.
+      until display_buffer:length < terminal:height - 3 display_buffer:remove(0).
       for s in display_buffer {
          print s:padright(terminal:width - s:length) at(0, lineNum).
          set lineNum to lineNum + 1.

@@ -24,19 +24,28 @@ SYS_CMDS:add("display", {
 
 SYS_CMDS:add("setup-launch", {
    declare parameter cmd.
-   if cmd = "setup-launch" {
+   if cmd = "setup-launch" { // Primary command entry
       if ship:status = "PRELAUNCH" or ship:status = "LANDED" {
          runoncepath("0:/lib/launch/launch_ctl.ks").
-         set kernel_ctl["prompt"] to "Inclination: ".
+         set kernel_ctl["prompt"] to "Type(*lko*/coplanar): ".
       } else {
          set kernel_ctl["output"] to "   Not on launch pad".
          return "finished".
       }
-   }else if kernel_ctl["prompt"] = "Inclination: " {
+   // Secondary input items
+   }else if kernel_ctl["prompt"] = "Type(*lko*/coplanar): " {
+      if cmd = "" set cmd to "lko". //Default value
+      launch_param:add("orbitType", cmd).
+      set kernel_ctl["output"] to "   Type: "+cmd.
+      if cmd = "lko" set kernel_ctl["prompt"] to "Inclination(*0*): ".
+      else if cmd = "coplanar" set kernel_ctl["prompt"] to "Target: ".
+   }else if kernel_ctl["prompt"] = "Inclination(*0*): " {
+      if cmd = "" set cmd to "0". //Default value
       launch_param:add("inclination", cmd:tonumber(0)).
       set kernel_ctl["output"] to "   Inclination: "+cmd.
-      set kernel_ctl["prompt"] to "LAN: ".
-   } else if kernel_ctl["prompt"] = "LAN: " {
+      set kernel_ctl["prompt"] to "LAN(*none*): ".
+   } else if kernel_ctl["prompt"] = "LAN(*none*): " {
+      if cmd = "" set cmd to "none". //Default value
       if cmd:tonumber(-1) = -1 or launch_param["inclination"] = 0 {
          launch_param:add("lan", "none").
          launch_param:add("launchTime", "now").
@@ -46,7 +55,21 @@ SYS_CMDS:add("setup-launch", {
       }
       set kernel_ctl["output"] to "   LAN: "+cmd.
       set kernel_ctl["prompt"] to "Orbit height: ".
+   } else if kernel_ctl["prompt"] = "Target: " {
+      // TODO support dummy targets like: Polar
+      set target to cmd.
+      launch_param:add("inclination", target:orbit:inclination).
+      if cmd:tonumber(-1) = -1 or launch_param["inclination"] = 0 {
+         launch_param:add("lan", "none").
+         launch_param:add("launchTime", "now").
+      } else {
+         launch_param:add("lan", target:orbit:LAN).
+         launch_param:add("launchTime", "window").
+      }
+      set kernel_ctl["output"] to "   Target: "+cmd.
+      set kernel_ctl["prompt"] to "Orbit height: ".
    } else if kernel_ctl["prompt"] = "Orbit height: " {
+      if cmd = "" set cmd to "lko". //Default value
       if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
       else launch_param:add("targetApo", cmd:tonumber(80000)).    
       set kernel_ctl["output"] to "   Orbit height: "+cmd.

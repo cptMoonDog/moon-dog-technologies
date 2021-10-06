@@ -49,38 +49,39 @@
    maneuver_ctl:add("add_burn", schedule_burn@).
 
    declare function execute {
-      set kernel_ctl["status"] to "executing".
+      set kernel_ctl["status"] to "Executing maneuver".
       if burn_queue:empty {
          set kernel_ctl["status"] to "No burn loaded!!!".
          return OP_FINISHED.
       }
-      if time:seconds < start set kernel_ctl["status"] to "T-"+ceiling(start-time:seconds, 2).
-      else set kernel_ctl["status"] to "T+"+ceiling(time:seconds-start, 2).
+      if time:seconds < start set kernel_ctl["countdown"] to "T-"+ceiling(start-time:seconds, 2).
+      else set kernel_ctl["countdown"] to "T+"+ceiling(time:seconds-start, 2).
       //Over 3 minutes out, warp
-      if time:seconds < start-180 { 
-         set kernel_ctl["status"] to "Warping".
+      if time:seconds < start-60 { 
+         set kernel_ctl["status"] to "Executing Man.: Warping".
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
             kuniverse:timewarp:warpto(start-179).
          }
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
-      //Less than 3 minutes out and more than 30 sec, attempt to lock steering
-      } else if time:seconds > start-180 AND time:seconds < start-30 { 
-         set kernel_ctl["status"] to "Lock Steering".
+      //Less than 1 minutes out and more than 30 sec, attempt to lock steering
+      } else if time:seconds > start-60 AND time:seconds < start-30 { 
+         set kernel_ctl["status"] to "Executing Man.: Lock Steering".
          lock steering to burn_queue:peek()["steeringProgram"]().
       //Less than 30 sec out and more than 25 sec, recalculate burn timing.
       } else if time:seconds > start-30 AND time:seconds < start-25 { 
-         set kernel_ctl["status"] to "recalculate".
+         set kernel_ctl["status"] to "Executing Man.: Recalculating for accuracy".
          reset_for_next_burn(). // recalculates to improve precision
          lock throttle to 0.
       //Start of burn. Continue attempting to lock throttle until end of scheduled burn unless already locked.
       } else if time:seconds >= start AND time:seconds < end AND throttle = 0 or (throttle > 0 and hasnode and nextnode:deltav:mag >= 1) { 
-         set kernel_ctl["status"] to "burning".
+         set kernel_ctl["status"] to "Executing Man.: Burning".
          lock throttle to 1.
-      //Burn finished.  Engine shutdown.  Wait 5 seconds, then queue up next burn.
+      //Burn finished.  Engine shutdown.  Wait 3 seconds, then queue up next burn.
       } else if time:seconds >= end { 
+         set kernel_ctl["status"] to "Maneuver complete!".
          lock throttle to 0.
          unlock steering.
-         if time:seconds > end+5 { 
+         if time:seconds > end+3 { 
             burn_queue:pop().
             if currentNode <> 0 and hasnode {
                remove nextnode.

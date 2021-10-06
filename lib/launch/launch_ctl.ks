@@ -30,16 +30,18 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
       MISSION_PLAN:add(launch_ctl["countdown"]).
       MISSION_PLAN:add(launch_ctl["launch"]).
       MISSION_PLAN:add({
+         set kernel_ctl["status"] to "Ascent".
         //Calls staging check, and throttle defines end of this mode.
         launch_ctl["staging"]().
         if ship:verticalspeed < -100 {
-           print "WARNING! Failed to achieve orbit!".
+           set kernel_ctl["status"] to "WARNING! Failed to achieve orbit!".
            return OP_FAIL.
         }
         return launch_ctl["throttle_monitor"]().
       }).
       if not (launch_param:haskey("orbitType")) or not(launch_param["orbitType"] = "transfer") {
          MISSION_PLAN:add({
+            set kernel_ctl["status"] to "Setup circularization...".
             //If the upperstage is not the active engine...
             if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
                stage. 

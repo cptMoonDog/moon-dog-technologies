@@ -37,6 +37,7 @@
 
       
    declare function countdown_launchWindow {
+      set kernel_ctl["status"] to "Countdown".
       if timeOfWindow-time:seconds > countdown+1 {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
             kuniverse:timewarp:warpto(timeOfWindow - countdown).
@@ -44,10 +45,11 @@
          return OP_CONTINUE.
       }
       if time:seconds-lastTime > 1 {
+         set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second.
          hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
-         if timeOfWindow-time:seconds < 11 {
+         if timeOfWindow-time:seconds < 5 {
             if timeOfWindow-time:seconds > 1 {
-               //V0:play(note("C5", 0.1)).
+               V0:play(note("C4", 0.1)).
             } 
          }
          set lastTime to time:seconds.
