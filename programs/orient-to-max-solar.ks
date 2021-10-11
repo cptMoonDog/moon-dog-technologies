@@ -25,6 +25,7 @@ set available_programs[programName] to {
    //if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
+   declare parameter argv.
 
 //======== Local Variables =====
    local lastLightMag is -1.
@@ -48,24 +49,9 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
    MISSION_PLAN:add({
-      if lastLightMag = -1 {
-         set lastLightMag to ship:sensors:light.
-         setSteeringLock().
-         return OP_CONTINUE.
-      } else if time:seconds > lastTime + 10 {
-         if ship:sensors:light > lastLightMag { 
-            setSteeringLock().
-         } else if rotMag > 0 {
-            lock steering to lastVector.
-            set rotMag to -rotMag.
-         } else if rotMag < 0 {
-            lock steering to lastVector.
-            set rotMag to -rotMag.
-            if axis = "roll" set axis to "yaw".
-            if axis = "yaw" set axis to "pitch".
-            if axis = "pitch" return OP_FINISHED. //all options exhausted, max solar exposure achieved. Hopefully.
-         }
-      }
+      local solarFacingVector is 0.
+      for s in ship:modulesNamed("ModuleDeployableSolarPanel") {
+         
       return OP_CONTNUE.
    }).
    

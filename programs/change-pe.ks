@@ -28,8 +28,9 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter engineName.
-   declare parameter newPe.
+   declare parameter argv.
+   local engineName is argv:split(" ")[0].
+   local newPe is argv:split(" ")[1]:tonumber(ship:orbit:periapsis).
 
 //======== Local Variables =====
       local steerDir is "retrograde".

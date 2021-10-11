@@ -154,10 +154,12 @@ kernel_ctl:add("prompt", ":"). //Prompt
       local lineNum is 2. // Status and Countdown shown above output area.
       until display_buffer:length < terminal:height - 3 display_buffer:remove(0).
       for s in display_buffer {
-         print s:padright(terminal:width - s:length) at(0, lineNum).
+         //Prints the start of the line
+         if s:length >= terminal:width print s:remove(terminal:width-3, s:length-terminal:width+3)+"..." at(0, lineNum).
+         else print s:padright(terminal:width - s:length) at(0, lineNum).
          set lineNum to lineNum + 1.
       }
-      print kernel_ctl["prompt"]+ inputbuffer:padright(terminal:width-2-kernel_ctl["prompt"]:length) at(0, terminal:height-1).
+      print kernel_ctl["prompt"]+ inputbuffer:remove(0, max(0, inputbuffer:length-terminal:width+2)):padright(terminal:width-kernel_ctl["prompt"]:length-1) at(0, terminal:height-1).//prints the end of the line.
       set kernel_ctl["output"] to "".
    }
 

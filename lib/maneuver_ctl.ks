@@ -60,7 +60,7 @@
       if time:seconds < start-60 { 
          set kernel_ctl["status"] to "Executing Man.: Warping".
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
-            kuniverse:timewarp:warpto(start-179).
+            kuniverse:timewarp:warpto(start-60).
          }
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 1 minutes out and more than 30 sec, attempt to lock steering

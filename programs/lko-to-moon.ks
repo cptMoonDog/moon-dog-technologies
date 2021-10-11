@@ -25,9 +25,9 @@ set available_programs[programName] to {
    if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
    
 //======== Parameters used by the program ====
-   // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter engineName.
-   declare parameter targetBody.
+   declare parameter argv.
+   local engineName is argv:split(" ")[0].
+   local targetBody is argv:split(" ")[1].
 
 //======== Local Variables =====
 

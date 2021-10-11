@@ -27,8 +27,10 @@ set available_programs[programName] to {
    if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
-   declare parameter engineName.
-   declare parameter newAp.
+   // programs are required to have one and only one string parameter for compatibility will generalized callers.
+   declare parameter argv.
+   local engineName is argv:split(" ")[0].
+   local newAp is argv:split(" ")[1]:tonumber(ship:orbit:apoapsis).
 
 //======== Local Variables =====
       local steerDir is "retrograde".

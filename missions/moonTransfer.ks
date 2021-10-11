@@ -25,21 +25,21 @@ runpath("0:/programs/change-ap.ks").
 runpath("0:/programs/change-pe.ks").
 
 //Add Pluggable objectives like this:
-available_programs["lko-to-moon"](bod, transferStageEngine).
+available_programs["lko-to-moon"](bod:tostring+" "+transferStageEngine:tostring).
 MISSION_PLAN:add({
    set kernel_ctl["status"] to "waiting...".
    if not (ship:orbit:body = body(bod)) return OP_CONTINUE.
    set kernel_ctl["status"] to "finished waiting...".
    return OP_FINISHED.
 }).
-available_programs["powered-capture"](bod, captureStageEngine).
+available_programs["powered-capture"](bod:tostring+" "+captureStageEngine:tostring).
 MISSION_PLAN:add({
    if ship:periapsis > 250000 {
-      available_programs["change-pe"](finalEngine, sma).
-      available_programs["change-ap"](finalEngine, sma).
+      available_programs["change-pe"](finalEngine:tostring+" "+sma:tostring).
+      available_programs["change-ap"](finalEngine:tostring+" "+sma:tostring).
    } else {
-      available_programs["change-ap"](finalEngine, sma).
-      available_programs["change-pe"](finalEngine, sma).
+      available_programs["change-ap"](finalEngine:tostring+" "+sma:tostring).
+      available_programs["change-pe"](finalEngine:tostring+" "+sma:tostring).
    }
    return OP_FINISHED.
 }).

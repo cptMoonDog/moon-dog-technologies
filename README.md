@@ -56,16 +56,16 @@ For instance, say you wanted to go to the Mun.  You can write up a mission to th
     runpath("0:/programs/powered-capture.ks").
 
     //Define the sequence in which to run them
-    available_programs["lko-to-moon"]("Mun", "spark").
+    available_programs["lko-to-moon"]("Mun spark").
     available_programs["warp-to-soi"]("Mun").
-    available_programs["powered-capture"]("Mun", "ant").
+    available_programs["powered-capture"]("Mun ant").
 
     //Start running the mission
     kernel_ctl["start"]().
 
 #### What this does:
  1. You have to load each program into memory to make it available to the system.
- 2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission.
+ 2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission. Initializers only accept one string as a parameter.
  3. Finally, you call the kernel to start running the mission.
     
 Standalone Operation
@@ -107,3 +107,4 @@ While I have used these routines successfully in my own missions, some may still
 Updates
 =======
 This latest update (4 Oct 2021), has involved some fairly major refactoring.  Everything should function generally the same as it has, but paths may have changed, so watch for that.
+(11 Oct 2021) Made a policy where programs only accept one string parameter.  This requires some minimal string processing in program definitions, but increases runtime safety; allowing the system to fail safely in the case of spurious user input.
