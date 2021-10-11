@@ -7,7 +7,7 @@ for k in stowed:keys {
       available_programs[k](stowed[k]).
    } else {
       print "Hibernation Error!  Unknown state: "+k.
-      return 1.
+      shutdown.
    }
 }
 //deletepath("0:/stowed.json").

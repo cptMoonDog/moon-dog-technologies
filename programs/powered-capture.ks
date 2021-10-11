@@ -26,6 +26,7 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
+   set kernel_ctl["output"] to argv.
    local engineName is argv:split(" ")[0].
    local targetBody is argv:split(" ")[1].
 
@@ -37,6 +38,12 @@ set available_programs[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
+   MISSION_PLAN:add({
+      set kernel_ctl["status"] to "waiting...".
+      if not (ship:orbit:body = body(targetBody)) return OP_CONTINUE.
+      set kernel_ctl["status"] to "finished waiting...".
+      return OP_FINISHED.
+   }).
    MISSION_PLAN:add({
       local count is 0.
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {

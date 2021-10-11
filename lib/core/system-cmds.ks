@@ -96,20 +96,12 @@ SYS_CMDS:add("add-program", {
          return "finished".
       }
       if available_programs:haskey(splitCmd[1]) {
-         set kernel_ctl["output"] to "Program does not exist in the lexicon".
          available_programs[splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
-         //if splitCmd:length = 2  available_programs[splitCmd[1]]().
-         //if splitCmd:length = 3  available_programs[splitCmd[1]](splitCmd[2]).
-         //if splitCmd:length = 4  available_programs[splitCmd[1]](splitCmd[2], splitCmd[3]).
-         //if splitCmd:length = 5  available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4]).
-         //if splitCmd:length = 6  available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4], splitCmd[5]).
-         //if splitCmd:length = 7  available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4], splitCmd[5], splitCmd[6]).
-         //if splitCmd:length = 8  available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4], splitCmd[5], splitCmd[6], splitCmd[7]).
-         //if splitCmd:length = 9  available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4], splitCmd[5], splitCmd[6], splitCmd[7], splitCmd[8]).
-         //if splitCmd:length = 10 available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4], splitCmd[5], splitCmd[6], splitCmd[7], splitCmd[8], splitCmd[9]).
-         //if splitCmd:length = 11 available_programs[splitCmd[1]](splitCmd[2], splitCmd[3], splitCmd[4], splitCmd[5], splitCmd[6], splitCmd[7], splitCmd[8], splitCmd[9], splitCmd[10]).
          return "finished".                                                                                                                                      
-      }                                                                            
+      } else {
+         set kernel_ctl["output"] to "Program does not exist in the lexicon".
+         return "finished".
+      }
    }                                                                               
 }).
          
@@ -118,12 +110,15 @@ SYS_CMDS:add("stow-program", {
    declare parameter cmd.
    if cmd:startswith("stow-program") {
       local splitCmd is cmd:split(" ").
-      if exists("0:/stowed.json") local stowed is readjson("0:/stowed.json").
+      //if exists("0:/stowed.json") local stowed is readjson("0:/stowed.json").
+      //else local stowed is lexicon().
+      local stowed is lexicon().
       local params is cmd:remove(0, "stow-program":length+splitCmd[1]:length+1):trim. //parameter list.
       stowed:add(splitCmd[1], params).
       writejson(stowed, "0:/stowed.json").
-      compile "0:/lib/continue-mission-boot.ks" to "/boot/continue.ksm".
-      set core:bootfilename to "/boot/continue.ksm".
+      copypath("0:/lib/continue-mission-boot.ks", "1:/boot/continue.ks").
+      //compile "0:/lib/continue-mission-boot.ks" to "/boot/continue.ksm".
+      set core:bootfilename to "/boot/continue.ks".
       return "finished".
    }
 }).

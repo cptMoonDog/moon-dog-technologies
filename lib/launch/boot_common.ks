@@ -9,6 +9,7 @@
    // give the core on the launch vehicle the nameTag: "Spud Atlas, 6, 78".
    // Or, just set the nameTag to "Spud Atlas, Minmus"
 if core:tag {
+   runoncepath("0:/lib/core/kernel.ks").
    runoncepath("0:/lib/launch/launch_ctl.ks").
    local data is core:tag:split(",").
    if not(exists("0:/lv/"+data[0]+".ks")) {

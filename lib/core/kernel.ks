@@ -90,7 +90,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
          set inputbuffer to "".
          set cmd_hist_num to 0.
       } else if c = terminal:input:BACKSPACE {
-         set inputbuffer to inputbuffer:substring(0, inputbuffer:length-1).
+         if inputbuffer:length > 0 set inputbuffer to inputbuffer:substring(0, inputbuffer:length-1).
       } else if c = terminal:input:UPCURSORONE {
          set cmd_hist_num to cmd_hist_num + 1.
          if cmd_hist_num <= display_buffer:length set inputbuffer to display_buffer[display_buffer:length - cmd_hist_num].
