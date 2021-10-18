@@ -51,7 +51,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
             // Runmode
             set_runmode(MISSION_PLAN[runmode]()).
             if kernel_ctl["interactive"] and terminal:input:haschar process_char(terminal:input:getchar()).
-            print kernel_ctl["status"]:padright(terminal:width-kernel_ctl["status"]:length) at(0, 0).
+            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
             print kernel_ctl["countdown"] at(0, 1).
          } else {
             print "end program.".
@@ -131,7 +131,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
             if cmd:trim:tolower:startswith(token) {
                // This triggers the secondary input system
                set cmd_buffer to token.
-               if SYS_CMDS[cmd_buffer](cmd:trim:tolower) = "finished" {
+               if SYS_CMDS[cmd_buffer](cmd:trim) = "finished" {
                   display_buffer:add(kernel_ctl["output"]:tostring).
                   set cmd_buffer to "".
                   set kernel_ctl["prompt"] to ":".

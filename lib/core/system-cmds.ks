@@ -122,3 +122,12 @@ SYS_CMDS:add("stow-program", {
       return "finished".
    }
 }).
+
+SYS_CMDS:add("run-script", {
+   declare parameter cmd.
+   if cmd:startswith("run-script") {
+      local splitCmd is cmd:split(" ").
+      runpath("0:/extra/"+splitCmd[1]+".ks").
+      return "finished".
+   }
+}).

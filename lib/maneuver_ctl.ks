@@ -126,8 +126,7 @@
 
       set start to impulse_time(burn_queue:peek()["ip"]) - burnLengthFirstHalf.
       if start < time:seconds {
-         set burn_queue:peek()["ip"] to burn_queue:peek()["ip"] + ship:orbit:period.
-         reset_for_next_burn().
+         set kernel_ctl["output"] to "Burn Failed!: Burn point exceeded".
          return.
       }
       set end to impulse_time(burn_queue:peek()["ip"]) + burnLengthSecondHalf.
