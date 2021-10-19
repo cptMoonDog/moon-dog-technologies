@@ -33,12 +33,12 @@ SYS_CMDS:add("setup-launch", {
          return "finished".
       }
    // Secondary input items
-   }else if kernel_ctl["prompt"] = "Type(*lko*/coplanar): " {
+   }else if kernel_ctl["prompt"] = "Type(*lko*/coplanar/transfer): " {
       if cmd = "" set cmd to "lko". //Default value
       launch_param:add("orbitType", cmd).
       set kernel_ctl["output"] to "   Type: "+cmd.
-      if cmd = "lko" set kernel_ctl["prompt"] to "Inclination(*0*): ".
-      else if cmd = "coplanar" set kernel_ctl["prompt"] to "Target: ".
+      if cmd = "coplanar" set kernel_ctl["prompt"] to "Target: ".
+      else set kernel_ctl["prompt"] to "Inclination(*0*): ".
    }else if kernel_ctl["prompt"] = "Inclination(*0*): " {
       if cmd = "" set cmd to "0". //Default value
       launch_param:add("inclination", cmd:tonumber(0)).
@@ -70,7 +70,8 @@ SYS_CMDS:add("setup-launch", {
       set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
    } else if kernel_ctl["prompt"] = "Orbit height(*80000*): " {
       if cmd = "" set cmd to "80000". //Default value
-      if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
+      if cmd:trim:endswith("k") launch_param:add("targetApo", cmd:trim:remove(cmd:trim:length-1, 1):tonumber(80)*1000).
+      else if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
       else launch_param:add("targetApo", cmd:tonumber(80000)).    
       set kernel_ctl["output"] to "   Orbit height: "+cmd.
       set kernel_ctl["prompt"] to "Launch Vehicle: ".
@@ -115,17 +116,17 @@ SYS_CMDS:add("stow-program", {
       local stowed is lexicon().
       local params is cmd:remove(0, "stow-program":length+splitCmd[1]:length+1):trim. //parameter list.
       stowed:add(splitCmd[1], params).
-      writejson(stowed, "0:/stowed.json").
-      copypath("0:/lib/continue-mission-boot.ks", "1:/boot/continue.ks").
-      //compile "0:/lib/continue-mission-boot.ks" to "/boot/continue.ksm".
+      writejson(stowed, "1:/stowed.json").
+      //copypath("0:/lib/continue-mission-boot.ks", "1:/boot/continue.ks"). //This is good for debugging.
+      compile "0:/lib/continue-mission-boot.ks" to "/boot/continue.ksm".
       set core:bootfilename to "/boot/continue.ks".
       return "finished".
    }
 }).
 
-SYS_CMDS:add("run-script", {
+SYS_CMDS:add("run-extra", {
    declare parameter cmd.
-   if cmd:startswith("run-script") {
+   if cmd:startswith("run-extra") {
       local splitCmd is cmd:split(" ").
       runpath("0:/extra/"+splitCmd[1]+".ks").
       return "finished".
