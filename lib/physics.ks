@@ -35,7 +35,6 @@
    //Returns the velocity of an object at alt in an orbit with a Semi major axis of sma.
    //For instance: for a ship in a circular 80k orbit wishing to transfer to Minmus 46400k altitude,
    //would require a deltaV increase of: visViva_velocity(body("Kerbin"), 80000, semimajoraxis(body("Kerbin"), 80000, body("Minmus"):orbit:altitude)-ship:orbit:velocity
-   //increase in velocity.
    declare function visViva_velocity {
       parameter bod.
       parameter alt.
@@ -51,7 +50,7 @@
    }
    phys_lib:add("OVatAlt", OVatAlt@).
 
-   /// The SOI of the Mun is unusually large, so this is not accurate for a return from there.
+   /// The SOI of the Mun is proportionally large, so this is not accurate for a return from there.
    declare function ejectionAngle {
       parameter vinf.
       
@@ -137,36 +136,46 @@
       //Assumes orbits are both in the same plane.
       local a1 is source:orbit:lan+source:orbit:argumentofperiapsis+source:orbit:trueanomaly.
       local a2 is tgt:orbit:lan+tgt:orbit:argumentofperiapsis+tgt:orbit:trueanomaly.
-      local diff is a2-a1.
-      set diff to diff-360*floor(diff/360).
+      local diff is abs(a2-a1).
+      set diff to diff-360*floor(diff/360). // 
+      if source:altitude > tgt:altitude set diff to diff-360.
+
       return diff.
    }
 
+   // Returns the time until the next Hohmann transfer window.
    declare function etaPhaseAngle {
       parameter source.
       parameter tgt.
       
       local pa is phaseAngle(source:orbit:semimajoraxis, tgt:orbit:semimajoraxis).
+      print "phase angle: "+pa at(0, 20).
       local current is currentPhaseAngle(source, tgt).
+      print "current angle: "+current at(0, 21).
 
-      // I want some time to burn my engines, so I need to lead a bit to have time
-      // I'm sure there is a better way to do this, but for now...
-      local minDiff is 20.
-      
-      print "current Phase Angle: "+current at(0, 1).
-      print "desired Phase Angle: "+pa at(0, 2).
-      local diff is  0.
-      if pa > current {
-         set diff to 360+current-pa.
-      } else set diff to current-pa.
-
-      if diff < 0 set diff to diff+360.
-      local rateShip is 360/source:orbit:period.
+      local rateSource is 360/source:orbit:period.
       local rateTarget is 360/tgt:orbit:period.
 
-      local t is (diff)/(rateShip-rateTarget).
-      return t.
-
+      local diff is  0.
+      if tgt:altitude > source:altitude { // tgt higher than source.
+         if pa >= current { // tgt ahead, closing.
+            set diff to pa-current.
+         } else { // tgt behind, passing.
+            set diff to 360 - abs(current-pa).
+         }
+         print "diff: "+diff at(0, 22).
+         return diff/(rateSource-rateTarget).
+      } else { // tgt lower than source.
+         //set current to current - 360.
+         if pa >= current { // tgt closing.
+            set diff to abs(pa-current).
+         } else { // tgt passing.
+            set diff to 360 - abs(current-pa).
+         }
+         print "diff: "+diff at(0, 22).
+         return diff/(rateTarget-rateSource).
+      } 
    }
    phys_lib:add("etaPhaseAngle", etaPhaseAngle@).
+
 }

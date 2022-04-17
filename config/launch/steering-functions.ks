@@ -132,14 +132,10 @@
          /// Attempts to compensate for not reaching orbit by the time apoapsis is reached.  ///
          local pitchLimit is min(45, vang(up:forevector, progradeVector)*(ship:altitude/ship:body:atm:height)).
          local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).
+         local criticalSpeed is max(ship:verticalspeed, 50*(1-ship:apoapsis/launch_param["targetApo"])).
          // Pitch up sufficient to have a vertical TWR = 1.
-         local criticalSpeed is 0.
-         if ship:verticalspeed < 0 set criticalSpeed to 0.
-         else set criticalSpeed to ship:verticalspeed.
-         local pitchAngle is -1*min(pitchLimit, arcsin(1/max(1,twr)))*(1-max(0, min(1, (criticalSpeed/20)*(criticalSpeed/20)))).
+         local pitchAngle is -1*min(pitchLimit, max(0, arcsin(1/max(1,twr))*(1-max(0,ship:verticalspeed)/criticalSpeed))).
          set progradeVector to progradeDirection:forevector*angleaxis(pitchAngle, progradeDirection:starvector).
-         print("*ANGLE TOO SHALLOW*") at(5, 0).
-         print(pitchAngle) at(6, 0).
       }
       if ship:orbit:inclination >= launch_param["inclination"]-0.001 {
          return progradeVector.

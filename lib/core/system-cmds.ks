@@ -9,7 +9,14 @@ SYS_CMDS:add("display", {
          else if splitCmd[1] = "pe" set kernel_ctl["output"] to "   "+ship:periapsis.
          else if splitCmd[1] = "mission-elements" set kernel_ctl["output"] to "   "+MISSION_PLAN:length.
          else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
-         else set kernel_ctl["output"] to "   No data".
+         else if splitCmd[1] = "commands" {
+            local temp is "".
+            for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
+            set kernel_ctl["output"] to temp.
+         } else if splitCmd[1] = "eta-duna-window" {
+            if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+            set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
+         } else set kernel_ctl["output"] to "   No data".
          return "finished".
       } else set kernel_ctl["prompt"] to "Display what?:".
    } else if kernel_ctl["prompt"] = "Display what?:" {
@@ -27,7 +34,7 @@ SYS_CMDS:add("setup-launch", {
    if cmd = "setup-launch" { // Primary command entry
       if ship:status = "PRELAUNCH" or ship:status = "LANDED" {
          runoncepath("0:/lib/launch/launch_ctl.ks").
-         set kernel_ctl["prompt"] to "Type(*lko*/coplanar): ".
+         set kernel_ctl["prompt"] to "Type(*lko*/coplanar/transfer): ".
       } else {
          set kernel_ctl["output"] to "   Not on launch pad".
          return "finished".

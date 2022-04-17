@@ -1,7 +1,9 @@
 runpath("0:/lib/physics.ks").
-local targetBody is body("Duna").
-local secondsToWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), targetBody).
-local orbitsToWindow is secondsToWindow/ship:orbit:period.
+declare parameter tgt.
+
+local targetBody is body(tgt).
+local secondsToWindow is phys_lib["etaPhaseAngle"](ship:body, targetBody).
+local orbitsToWindow is 0.
 
 local hohmannTransferVelocity is phys_lib["VatAlt"](body("Sun"),
    ship:body:altitude+body("Sun"):radius,
@@ -11,8 +13,15 @@ local hohmannTransferVelocity is phys_lib["VatAlt"](body("Sun"),
 
 local etaEjectionAngle is phys_lib["etaEjectionAngle"](hohmannTransferVelocity).
 local dV is phys_lib["ejectionVelocity"](hohmannTransferVelocity)-ship:velocity:orbit:mag.
+if ship:status = "PRELAUNCH" {
+   set dV to phys_lib["ejectionVelocity"](hohmannTransferVelocity).
+} else if ship:status = "ORBITING" {
+   set orbitsToWindow to secondsToWindow/ship:orbit:period.
+   add(node(time:seconds+etaEjectionAngle, 0, 0, dV)).
+}
+   
 
-until orbitsToWindow < 1 {
+until FALSE {
    
    print "Time To Launch Window:" at(0, 3).
    print "seconds: " + secondsToWindow at(0, 4).
@@ -24,10 +33,9 @@ until orbitsToWindow < 1 {
    print "etaEjectionAngle: " + etaEjectionAngle at(0, 9).
    print "dV: " + dV at(0, 10).
 
-   set secondsToWindow to phys_lib["etaPhaseAngle"](body("Kerbin"), targetBody).
+   set secondsToWindow to phys_lib["etaPhaseAngle"](ship:body, targetBody).
    set orbitsToWindow to secondsToWindow/ship:orbit:period.
    set etaEjectionAngle to phys_lib["etaEjectionAngle"](hohmannTransferVelocity).
    set dV to phys_lib["ejectionVelocity"](hohmannTransferVelocity)-ship:velocity:orbit:mag.
 }
 
-add(node(time:seconds+etaEjectionAngle, 0, 0, dV)).

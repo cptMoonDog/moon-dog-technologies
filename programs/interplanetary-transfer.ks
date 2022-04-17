@@ -26,8 +26,9 @@ set available_programs[programName] to {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter engineName.
-   declare parameter targetBody.
+   declare parameter argv.
+   local engineName is argv:split(" ")[0].
+   local targetBody is body(argv:split(" ")[1]).
 
 //======== Local Variables =====
 
@@ -66,9 +67,10 @@ set available_programs[programName] to {
          set etaEjectionAngle to phys_lib["etaEjectionAngle"](hohmannTransferVelocity).
          set dV to phys_lib["ejectionVelocity"](hohmannTransferVelocity)-ship:velocity:orbit:mag.
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
-            kuniverse:timewarp:warpto(time:seconds+secondsToWindow-ship:orbit:period).
+            kuniverse:timewarp:warpto(etaEjectionAngle).
          }
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
+
          return OP_CONTINUE.
       } else {
          add(node(time:seconds+etaEjectionAngle, 0, 0, dV)).

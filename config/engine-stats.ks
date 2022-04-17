@@ -22,3 +22,5 @@ maneuver_ctl["defEngine"]("skiff",        330,  300,        0.0).
 maneuver_ctl["defEngine"]("doubleTwitch", 290,  32 ,        0.0).
 maneuver_ctl["defEngine"]("doubleThud",   305,  240,        0.0).
 maneuver_ctl["defEngine"]("dawn",         4200, 2  ,        0.0).
+maneuver_ctl["defEngine"]("mastodon",     305,  1350,       0.0).
+maneuver_ctl["defEngine"]("doubleMastodon",     305,  2700,       0.0).

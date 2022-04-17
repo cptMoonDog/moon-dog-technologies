@@ -132,7 +132,8 @@ kernel_ctl:add("prompt", ":"). //Prompt
                // This triggers the secondary input system
                set cmd_buffer to token.
                if SYS_CMDS[cmd_buffer](cmd:trim) = "finished" {
-                  display_buffer:add(kernel_ctl["output"]:tostring).
+                  if kernel_ctl["output"]:istype("String") for s in kernel_ctl["output"]:split(char(10)) display_buffer:add(s).
+                  else display_buffer:add(kernel_ctl["output"]:tostring).
                   set cmd_buffer to "".
                   set kernel_ctl["prompt"] to ":".
                }
