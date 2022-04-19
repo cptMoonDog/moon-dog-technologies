@@ -10,15 +10,28 @@ SYS_CMDS:add("display", {
          else if splitCmd[1] = "mission-elements" set kernel_ctl["output"] to "   "+MISSION_PLAN:length.
          else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
          else if splitCmd[1] = "commands" {
-            local temp is "".
+            local temp is "Available Commands:"+char(10).
             for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
+            set kernel_ctl["output"] to temp.
+         } else if splitCmd[1] = "programs" {
+            local temp is "Available Programs:"+char(10).
+            //TODO list available programs on command   
+            local avail is open("0:/programs").  
+            for token in avail:lex():keys {
+               if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
+            }
             set kernel_ctl["output"] to temp.
          } else if splitCmd[1] = "eta-duna-window" {
             if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
          } else set kernel_ctl["output"] to "   No data".
          return "finished".
-      } else set kernel_ctl["prompt"] to "Display what?:".
+      } else {
+         set kernel_ctl["prompt"] to "Display what?:".
+         local temp is "Available Commands:"+char(10).
+         for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
+         set kernel_ctl["output"] to temp.
+      }
    } else if kernel_ctl["prompt"] = "Display what?:" {
       if cmd:trim:tolower = "apo" set kernel_ctl["output"] to ship:apoapsis.
       else if cmd:trim:tolower = "pe" set kernel_ctl["output"] to ship:periapsis.
