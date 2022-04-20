@@ -65,7 +65,7 @@ For instance, say you wanted to go to the Mun.  You can write up a mission to th
 
 #### What this does:
  1. You have to load each program into memory to make it available to the system.
- 2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission. *** only accept one string as a parameter***.
+ 2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission. ***Programs only accept one string as a parameter***.
  3. Finally, you call the kernel to start running the mission.
     
 Standalone Operation
