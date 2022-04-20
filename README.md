@@ -45,7 +45,7 @@ Mission Structure
 =================
 You can put anything you want in a mission file.  When they are called, they are simply run as-is.  However...
 
-They *can* be used to create a list of `programs` to be run in order, to achieve a goal.  The distinction between a `mission` and a `program is a little fuzzy to say the least, 
+They *can* be used to create a list of `programs` to be run in order, to achieve a goal.  The distinction between a `mission` and a `program` is a little fuzzy to say the least, 
 but a `program` should be a well defined objective that can be incorporated into a series of objectives, whereas a `mission` should be a sequence of such objectives.
 
 For instance, say you wanted to go to the Mun.  You can write up a mission to the Mun like this:
