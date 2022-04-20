@@ -65,7 +65,7 @@ For instance, say you wanted to go to the Mun.  You can write up a mission to th
 
 #### What this does:
  1. You have to load each program into memory to make it available to the system.
- 2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission. Initializers only accept one string as a parameter.
+ 2. Then, you define the sequence by actually calling the initializers in the `available_programs` lexicon.  As you can see, these programs require information about the target body, and the engine they will be using at that stage of the mission. _Initializers only accept one string as a parameter_.
  3. Finally, you call the kernel to start running the mission.
     
 Standalone Operation
@@ -90,7 +90,7 @@ Commands are still in the process of being implemented, but it is working fairly
     start
 
 `setup-launch` will ask you for launch parameters and will add the launch routines to the MISSION_PLAN.
-Any `add-program` commands will append their routines for that particular program to the end of the MISSION_PLAN, so you can keep adding items to the running plan, if you want, even in flight.  Be sure to invoke the program correctly, however!  The ISH system cannot verify beforehand if you are giving it the correct number of parameters for the program.  If you give it more or less than the program expects, the system will immediately crash.  This is a known problem, but Jebediah said it was worth the risk, although Werner is still looking for a safer failure mode.
+Any `add-program` commands will append their routines for that particular program to the end of the MISSION_PLAN, so you can keep adding items to the running plan, if you want, even in flight.  -Be sure to invoke the program correctly, however!  The ISH system cannot verify beforehand if you are giving it the correct number of parameters for the program.  If you give it more or less than the program expects, the system will immediately crash.  This is a known problem, but Jebediah said it was worth the risk, although Werner is still looking for a safer failure mode.-  As of 11 OCT 2021 programs only accept one string as a parameter, and are responsible for verifying input.
 
 The kernel will not begin running the MISSION_PLAN until you call `start`, but it will remain interactive even while running.  Try running `display altitude` during ascent, for instance.
 
