@@ -126,8 +126,17 @@
       } else if step = 0 {
          return launch_param["throttleProfile"][step+1].
       } else {
-         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] {
-            return 0. 
+         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3]*0.99 {
+            if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] return 0.
+            else return max(0, 0.01+1-getReferenceValue_table()/launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3]).
+            if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] {
+               if ship:orbit:body:atm:exists {
+                  if ship:altitude > ship:orbit:body:atm:height return 0.
+                  else if ship:altitude < ship:orbit:body:atm:height return (0.01*(1-ship:altitude/ship:orbit:body:atm:height)).// Max throttle 1%
+               } else return 0.
+            } else {
+               return 0.01 + (1-ship:apoapsis/launch_param["throttleProfile"][1])+max(0, 1-ship:altitude/ship:orbit:body:atm:height). // Min throttle 1%.
+            }
          } else {
             if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
                //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
@@ -154,8 +163,15 @@
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
    declare function getThrottleSetting_function {
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
-      else if ship:apoapsis > launch_param["throttleProfile"][1]{
-         return 0.
+      else if ship:apoapsis > launch_param["throttleProfile"][1]*0.99 {
+         if ship:apoapsis > launch_param["throttleProfile"][1] {
+            if ship:orbit:body:atm:exists {
+               if ship:altitude > ship:orbit:body:atm:height return 0.
+               else if ship:altitude < ship:orbit:body:atm:height return (0.01*(1-ship:altitude/ship:orbit:body:atm:height)).// Max throttle 1%
+            } else return 0.
+         } else {
+            return 0.01 + (1-ship:apoapsis/launch_param["throttleProfile"][1])+max(0, 1-ship:altitude/ship:orbit:body:atm:height). // Min throttle 1%.
+         }
       } else if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
          //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
@@ -182,7 +198,7 @@
       parameter current.
       parameter outputRange.
 
-      return ((current-bottom)/(top-bottom))*outputRange.
+      return ((max(bottom, min(top, current))-bottom)/(top-bottom))*outputRange.
    }
 
    //Returns the throttle setting
@@ -192,7 +208,7 @@
       //Variable setpoints
       set pid:setpoint to getValue_setpoint().
       if ship:apoapsis > launch_param["throttleProfile"][1] return pid:update(time:seconds, getReferenceValue_setpoint()). 
-      return max(0.10, pid:update(time:seconds, getReferenceValue_setpoint())).
+      return pid:update(time:seconds, getReferenceValue_setpoint()).
    }
    
      
