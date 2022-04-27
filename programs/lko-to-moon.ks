@@ -30,7 +30,9 @@ set available_programs[programName] to {
    local targetBody is "".
    if argv:split(" "):length = 2 {
       set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
       set targetBody to argv:split(" ")[1].
+      if not (bodyexists(targetBody)) return OP_FAIL.
    } else {
       set kernel_ctl["output"] to
          "Sets up a Hohmann transfer to a body in orbit of the same origin body as the current vessel."

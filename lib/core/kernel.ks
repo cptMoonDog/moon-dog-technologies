@@ -40,6 +40,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
    local next_interrupt is 0.
    local inputbuffer is "".
    local cmd_buffer is "".
+   local cmd_history is list().
    local cmd_hist_num is 0.
    local display_buffer is list().
 
@@ -93,14 +94,14 @@ kernel_ctl:add("prompt", ":"). //Prompt
          if inputbuffer:length > 0 set inputbuffer to inputbuffer:substring(0, inputbuffer:length-1).
       } else if c = terminal:input:UPCURSORONE {
          set cmd_hist_num to cmd_hist_num + 1.
-         if cmd_hist_num <= display_buffer:length set inputbuffer to display_buffer[display_buffer:length - cmd_hist_num].
+         if cmd_hist_num <= cmd_history:length set inputbuffer to cmd_history[cmd_history:length - cmd_hist_num].
          else {
             set inputbuffer to "".
             set cmd_hist_num to 0.
          }
       } else if c = terminal:input:DOWNCURSORONE {
          set cmd_hist_num to abs(cmd_hist_num - 1).
-         if cmd_hist_num set inputbuffer to display_buffer[display_buffer:length - cmd_hist_num].
+         if cmd_hist_num set inputbuffer to cmd_history[cmd_history:length - cmd_hist_num].
          else set inputbuffer to "".
       } else {
          set inputbuffer to inputbuffer + c.
@@ -126,9 +127,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
       declare parameter cmd.
       if not(cmd_buffer) {
          display_buffer:add(cmd).
+         cmd_history:add(cmd).
+         if cmd_history:length > 100 cmd_history:remove(0).
          //If not in the middle of a top-level command
          for token in SYS_CMDS:keys {
-            if cmd:trim:tolower:startswith(token) {
+            if cmd:trim:tolower:startswith(token:trim:tolower) {
                // This triggers the secondary input system
                set cmd_buffer to token.
                if SYS_CMDS[cmd_buffer](cmd:trim) = "finished" {

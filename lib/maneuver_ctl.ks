@@ -147,6 +147,13 @@
    }
    maneuver_ctl:add("defEngine", defineEngine@).
 
+   declare function engineDefined {
+      declare parameter name.
+      if eisp:haskey(name) return true.
+      else return false.
+   }
+   maneuver_ctl:add("engineDef", engineDefined@).
+
    declare function engineStat {
       declare parameter name.
       declare parameter stat.

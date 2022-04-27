@@ -58,6 +58,9 @@ set available_programs[programName] to {
             lock throttle to 0.
             return OP_CONTINUE.
          }
+         //Landing point estimate:
+         local spot is latlng(ship:geoposition:lat, ship:geoposition:lng+ship:groundspeed/(2*constant:pi*ship:body:radius)*10).
+
          local ttZeroH is ship:groundspeed/(ship:maxthrust/ship:mass). 
          local vertAccel is -(ship:body:mu/((ship:altitude+ship:body:radius)^2)). //negative is down.
          local ttImpact is (-ship:verticalspeed - sqrt(max(0, ship:verticalspeed^2 - 2*alt:radar*vertAccel)))/(vertAccel).
@@ -74,7 +77,8 @@ set available_programs[programName] to {
                lock throttle to 0.
                wait until vang(ship:facing:forevector, ship:srfretrograde:forevector) < 1.
             }else {
-               if alt:radar > 6 and ship:altitude < 50000 {
+               //if alt:radar > 6 and ship:altitude < 50000 {
+               if ship:altitude-spot:terrainheight > 6 and ship:altitude < 50000 {
                   local pitchLimit is vang(up:forevector, ship:srfretrograde:forevector).
                   local ttZeroV is max(0, ship:verticalspeed/(ship:body:mu/((ship:altitude+ship:body:radius)^2)-ship:maxthrust/ship:mass)). //Assuming full thrust straight up.
                   local ttZeroSrf is ship:velocity:surface:mag/(ship:maxthrust/ship:mass).
@@ -86,6 +90,8 @@ set available_programs[programName] to {
                   print "pitch: "+pitchangle at(0, 14).
                   print "pitchLimit: "+pitchLimit at(0, 15).
                   print "pitchMin: "+pitchMin at(0, 16).
+                  print "terrain height: "+ship:geoposition:terrainheight at(0, 17).
+                  print "spot height: "+spot:terrainheight at(0,18).
 
                   if ship:verticalspeed > -10 and ship:verticalspeed < 0 or ship:verticalspeed > 10 lock steering to ship:srfretrograde.
                   else lock steering to up:forevector*angleaxis(pitchangle, ship:srfretrograde:starvector).//min(pitchLimit, max(0,pitchAngle))
@@ -100,12 +106,13 @@ set available_programs[programName] to {
                   //local throttPV is ship:verticalspeed*ship:velocity:surface:mag/alt:radar.
                   //if ship:velocity:surface:mag < 100 or alt:radar > 8500 lock throttle to -(throttPV/sqrt(1+throttPV^2)).
                   //else lock throttle to 1.
-                  if alt:radar < 25 {
+                  //if alt:radar < 25 {
+                  if ship:altitude-spot:terrainheight < 25 {
                      gear on.
                      if ship:velocity:surface:mag > 100 kuniverse:reverttolaunch().
                   }
                   return OP_CONTINUE.
-               } else if alt:radar < 6 {
+               } else if ship:altitude-spot:terrainheight < 6 {
                   lock throttle to 0.
                   lock steering to up.
                   return OP_FINISHED.
