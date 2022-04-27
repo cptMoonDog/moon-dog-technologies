@@ -2,10 +2,10 @@
 declare parameter name.
 declare parameter p is list().
 
-local allowAlpha is false.
+local allowAlpha is true.
 local allowBeta is true.
 
-print "This system is depreciated.  Please use ISH instead."
+print "This system is depreciated.  Please use ISH instead.".
 if exists("0:/programs/"+name+".ks") 
    runpath("0:/programs/"+name+".ks").
 if allowBeta AND exists("0:/programs/beta/"+name+".ks") 

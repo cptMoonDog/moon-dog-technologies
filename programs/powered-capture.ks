@@ -26,8 +26,17 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local targetBody is argv:split(" ")[1].
+   local engineName is "".
+   local targetBody is "".
+   if argv:split(" "):length = 2 {
+      set engineName to argv:split(" ")[0].
+      set targetBody to argv:split(" ")[1].
+   } else {
+      set kernel_ctl["output"] to
+         "Sets up a powered capture maneuver, waits until vehicle is inside of the target body's SOI."
+         +char(10)+"Usage: add-program powered-capture [ENGINE-NAME] [TARGET]".
+      return.
+   }
 
 //======== Local Variables =====
 

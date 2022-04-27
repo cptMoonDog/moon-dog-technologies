@@ -167,11 +167,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
    if kernel_ctl["interactive"] {
       runoncepath("0:/lib/core/system-cmds.ks").
       clearscreen.
+      display_buffer:add("To get started").
       display_buffer:add("Type:").
       display_buffer:add("   display commands").
       display_buffer:add("         or").
       display_buffer:add("   display programs").
-      display_buffer:add("to get started").
       update_display().
       MISSION_PLAN:add({
          return OP_CONTINUE.

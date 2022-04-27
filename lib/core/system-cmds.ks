@@ -21,6 +21,9 @@ SYS_CMDS:add("display", {
                if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
             }
             set kernel_ctl["output"] to temp.
+         } else if splitCmd[1] = "help" {
+            runoncepath("0:/programs/"+splitCmd[2]+".ks").
+            available_programs[splitCmd[2]]("").
          } else if splitCmd[1] = "eta-duna-window" {
             if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".

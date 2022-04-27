@@ -129,14 +129,6 @@
          if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3]*0.99 {
             if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] return 0.
             else return max(0, 0.01+1-getReferenceValue_table()/launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3]).
-            if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] {
-               if ship:orbit:body:atm:exists {
-                  if ship:altitude > ship:orbit:body:atm:height return 0.
-                  else if ship:altitude < ship:orbit:body:atm:height return (0.01*(1-ship:altitude/ship:orbit:body:atm:height)).// Max throttle 1%
-               } else return 0.
-            } else {
-               return 0.01 + (1-ship:apoapsis/launch_param["throttleProfile"][1])+max(0, 1-ship:altitude/ship:orbit:body:atm:height). // Min throttle 1%.
-            }
          } else {
             if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
                //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
@@ -165,10 +157,7 @@
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1]*0.99 {
          if ship:apoapsis > launch_param["throttleProfile"][1] {
-            if ship:orbit:body:atm:exists {
-               if ship:altitude > ship:orbit:body:atm:height return 0.
-               else if ship:altitude < ship:orbit:body:atm:height return (0.01*(1-ship:altitude/ship:orbit:body:atm:height)).// Max throttle 1%
-            } else return 0.
+            return 0.
          } else {
             return 0.01 + (1-ship:apoapsis/launch_param["throttleProfile"][1])+max(0, 1-ship:altitude/ship:orbit:body:atm:height). // Min throttle 1%.
          }
@@ -184,9 +173,12 @@
             return max(throttFunction(), minThrottSetting).
       } else {
          if launch_param["throttleProfile"]:length = 3
-            return throttFunction(launch_param["throttleProfile"][2]).
+            // Reason for max function is that in some unusual cases the if allowed to throttle very low, 
+            // thrust can balance with drag so well, that orbit is never achieved and as long as the fuel lasts
+            // you effectively have an in atmosphere orbit.
+            return max(0.01, throttFunction(launch_param["throttleProfile"][2])).
          else
-            return throttFunction().
+            return max(0.01, throttFunction()). 
       }
    }
 
