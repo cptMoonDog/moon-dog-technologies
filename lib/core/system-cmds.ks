@@ -120,7 +120,8 @@ SYS_CMDS:add("add-program", {
          return "finished".
       }
       if available_programs:haskey(splitCmd[1]) {
-         available_programs[splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
+         local retVal is available_programs[splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
+         if retVal = "fail" set kernel_ctl["output"] to "Unable initialize, check arguments.".
          return "finished".                                                                                                                                      
       } else {
          set kernel_ctl["output"] to "Program does not exist in the lexicon".
