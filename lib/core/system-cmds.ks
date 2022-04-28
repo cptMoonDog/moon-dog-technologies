@@ -9,7 +9,11 @@ SYS_CMDS:add("display", {
          else if splitCmd[1] = "pe" set kernel_ctl["output"] to "   "+ship:periapsis.
          else if splitCmd[1] = "mission-plan" {
             local temp is "Mission Plan:"+char(10).
-            for token in MISSION_PLAN_ID set temp to temp + char(10) + "   "+ token.
+            local count is 0.
+            for token in MISSION_PLAN_ID {
+               set temp to temp + char(10) + "   "+ count + " " +token.
+               set count to count + 1.
+            }
             set kernel_ctl["output"] to temp.
          } else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
          else if splitCmd[1] = "commands" {
@@ -133,19 +137,49 @@ SYS_CMDS:add("add-program", {
    }                                                                               
 }).
 
+SYS_CMDS:add("remove-program", {
+   declare parameter cmd.
+   if cmd:startswith("remove-program") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 {
+         if splitCmd[1]:tonumber(-1) > -1 {
+            MISSION_PLAN:remove(splitCmd[1]:tonumber).
+            MISSION_PLAN_ID:remove(splitCmd[1]:tonumber).
+         } else if MISSION_PLAN_ID:find(splitCmd[1]) > -1 {
+            MISSION_PLAN:remove(MISSION_PLAN_ID:find(splitCmd[1])).
+            MISSION_PLAN_ID:remove(MISSION_PLAN_ID:find(splitCmd[1])).
+         }
+      }
+      return "finished".
+   }                                                                               
+}).
+
 SYS_CMDS:add("insert-program", {
    declare parameter cmd.
    if cmd:startswith("insert-program") {
       local splitCmd is cmd:split(" ").
-      if splitCmd:length > 1 and exists("0:/programs/"+splitCmd[1]+".ks") {
-         runoncepath("0:/programs/"+splitCmd[1]+".ks").
+      if splitCmd:length > 3 and exists("0:/programs/"+splitCmd[2]+".ks") {
+         runoncepath("0:/programs/"+splitCmd[2]+".ks").
       } else {
          set kernel_ctl["output"] to "Program does not exist".
          return "finished".
       }
-      if available_programs:haskey(splitCmd[1]) {
-         local retVal is available_programs[splitCmd[1]](cmd:remove(0, "insert-program":length+splitCmd[1]:length+1):trim).
+      if available_programs:haskey(splitCmd[2]) {
+         local temp is "".
+         for item in splitCmd:sublist(splitCmd:find("insert-program"), splitCmd:length-splitCmd:find("insert-program")) {
+            set temp to temp + item.
+         }
+         // TODO Wrong call fix this, falling asleep.
+         local retVal is available_programs[splitCmd[2]](temp).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
+         else {
+            if splitcmd[1]:tonumber(-1) > -1 {
+               MISSION_PLAN:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN[MISSION_PLAN:length-1]).
+               MISSION_PLAN_ID:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN_ID[MISSION_PLAN_ID:length-1]).
+               MISSION_PLAN:remove(MISSION_PLAN:length-1).
+               MISSION_PLAN_ID:remove(MISSION_PLAN_ID:length-1).
+            }
+         }
          return "finished".                                                                                                                                      
       } else {
          set kernel_ctl["output"] to "Program does not exist in the lexicon".
