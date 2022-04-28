@@ -10,7 +10,7 @@ if not (defined telemetry_ctl) {
 }
 
 
-kernel_ctl["MissionPlanAdd"]({
+kernel_ctl["MissionPlanAdd"]("deorbit", {
    lock steering to ship:retrograde.
    wait 30.
    lock throttle to 1.
@@ -18,7 +18,7 @@ kernel_ctl["MissionPlanAdd"]({
    lock throttle to 0.
    return OP_FINISHED.
 }).
-kernel_ctl["MissionPlanAdd"]({
+kernel_ctl["MissionPlanAdd"]("decouple service module", {
    lock steering to ship:north.
    wait 10.
    //stage.
@@ -27,7 +27,7 @@ kernel_ctl["MissionPlanAdd"]({
    unlock steering.
    return OP_FINISHED.
 }).
-kernel_ctl["MissionPlanAdd"]({
+kernel_ctl["MissionPlanAdd"]("wait for safe altitude for chute", {
    if ship:altitude < 5000 {
       stage.
       return OP_FINISHED.

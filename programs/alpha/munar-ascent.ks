@@ -41,7 +41,7 @@ set available_programs[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-         kernel_ctl["MissionPlanAdd"]({
+         kernel_ctl["MissionPlanAdd"]("mun ascent", {
             print "WARNING WARNING WARNING".
             print "Work in progress.  Do not expect your pilot to survive if you use this".
             print "WARNING WARNING WARNING".
@@ -71,11 +71,11 @@ set available_programs[programName] to {
                return OP_FINISHED.
             }
          }).
-         kernel_ctl["MissionPlanAdd"]({
+         kernel_ctl["MissionPlanAdd"]("add maneuver", {
             maneuver_ctl["add_burn"]("prograde", "terrier", "ap", "circularize").
             return OP_FINISHED.
          }).
-         kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
+         kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

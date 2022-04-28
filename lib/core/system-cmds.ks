@@ -7,8 +7,11 @@ SYS_CMDS:add("display", {
       if splitCmd:length > 1 {
          if splitCmd[1] = "apo" set kernel_ctl["output"] to "   "+ship:apoapsis.
          else if splitCmd[1] = "pe" set kernel_ctl["output"] to "   "+ship:periapsis.
-         else if splitCmd[1] = "mission-elements" set kernel_ctl["output"] to "   "+MISSION_PLAN:length.
-         else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
+         else if splitCmd[1] = "mission-plan" {
+            local temp is "Mission Plan:"+char(10).
+            for token in MISSION_PLAN_ID set temp to temp + char(10) + "   "+ token.
+            set kernel_ctl["output"] to temp.
+         } else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
          else if splitCmd[1] = "commands" {
             local temp is "Available Commands:"+char(10).
             for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
@@ -121,6 +124,27 @@ SYS_CMDS:add("add-program", {
       }
       if available_programs:haskey(splitCmd[1]) {
          local retVal is available_programs[splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
+         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
+         return "finished".                                                                                                                                      
+      } else {
+         set kernel_ctl["output"] to "Program does not exist in the lexicon".
+         return "finished".
+      }
+   }                                                                               
+}).
+
+SYS_CMDS:add("insert-program", {
+   declare parameter cmd.
+   if cmd:startswith("insert-program") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 and exists("0:/programs/"+splitCmd[1]+".ks") {
+         runoncepath("0:/programs/"+splitCmd[1]+".ks").
+      } else {
+         set kernel_ctl["output"] to "Program does not exist".
+         return "finished".
+      }
+      if available_programs:haskey(splitCmd[1]) {
+         local retVal is available_programs[splitCmd[1]](cmd:remove(0, "insert-program":length+splitCmd[1]:length+1):trim).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
          return "finished".                                                                                                                                      
       } else {

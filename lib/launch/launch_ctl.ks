@@ -27,9 +27,9 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
    launch_ctl:add("init", init_system@).
    
    declare function setupLaunch {   
-      kernel_ctl["MissionPlanAdd"](launch_ctl["countdown"]).
-      kernel_ctl["MissionPlanAdd"](launch_ctl["launch"]).
-      kernel_ctl["MissionPlanAdd"]({
+      kernel_ctl["MissionPlanAdd"]("countdown", launch_ctl["countdown"]).
+      kernel_ctl["MissionPlanAdd"]("launch", launch_ctl["launch"]).
+      kernel_ctl["MissionPlanAdd"]("ascent", {
          set kernel_ctl["status"] to "Ascent".
         //Calls staging check, and throttle defines end of this mode.
         launch_ctl["staging"]().
@@ -40,7 +40,7 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
         return launch_ctl["throttle_monitor"]().
       }).
       if not (launch_param:haskey("orbitType")) or not(launch_param["orbitType"] = "transfer") {
-         kernel_ctl["MissionPlanAdd"]({
+         kernel_ctl["MissionPlanAdd"]("circularize", {
             set kernel_ctl["status"] to "Setup circularization...".
             //If the upperstage is not the active engine...
             if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
@@ -54,7 +54,7 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
             }
             return OP_FINISHED.
          }).
-         kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
+         kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
       }
    }
    launch_ctl:add("addLaunchToMissionPlan", setupLaunch@).

@@ -45,7 +45,7 @@ set available_programs[programName] to {
 
       local t is time:seconds.
    
-      kernel_ctl["MissionPlanAdd"]({
+      kernel_ctl["MissionPlanAdd"]("plan rendezvous", {
          if not hastarget set target to targetName.
          if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED.
          if not hasnode {
@@ -57,8 +57,8 @@ set available_programs[programName] to {
          }
          return OP_FINISHED.
       }).
-      kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
-      kernel_ctl["MissionPlanAdd"]({
+      kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+      kernel_ctl["MissionPlanAdd"]("match velocity", {
 
          local dist is {return (positionat(target, time:seconds)-positionat(ship, time:seconds)).}.
          local relVelocity is {return (ship:velocity:orbit - target:velocity:orbit).}.

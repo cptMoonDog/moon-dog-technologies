@@ -26,14 +26,14 @@ runpath("0:/programs/change-pe.ks").
 
 //Add Pluggable objectives like this:
 available_programs["lko-to-moon"](transferStageEngine:tostring+" "+bod:tostring).
-kernel_ctl["MissionPlanAdd"]({
+kernel_ctl["MissionPlanAdd"]("waiting for soi", {
    set kernel_ctl["status"] to "waiting...".
    if not (ship:orbit:body = body(bod)) return OP_CONTINUE.
    set kernel_ctl["status"] to "finished waiting...".
    return OP_FINISHED.
 }).
 available_programs["powered-capture"](captureStageEngine:tostring+" "+bod:tostring).
-kernel_ctl["MissionPlanAdd"]({
+kernel_ctl["MissionPlanAdd"]("adjust orbit", {
    if ship:periapsis > 250000 {
       available_programs["change-pe"](finalEngine:tostring+" "+sma:tostring).
       available_programs["change-ap"](finalEngine:tostring+" "+sma:tostring).
