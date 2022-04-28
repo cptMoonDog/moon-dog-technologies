@@ -19,6 +19,7 @@ global OP_PREVIOUS is -1.
 global OP_FAIL is "panic".
 
 global MISSION_PLAN is list().
+global MISSION_PLAN_ID is list().
 global INTERRUPTS is list().
 global SYS_CMDS is lexicon().
 
@@ -76,6 +77,33 @@ kernel_ctl:add("prompt", ":"). //Prompt
       set ship:control:pilotmainthrottle to 0.
    }
    set kernel_ctl["start"] to run@.
+
+   declare function MPadd {
+      declare parameter name.
+      declare parameter delegate.
+      
+      MISSION_PLAN:add(delegate). 
+      MISSION_PLAN_ID:add(name).
+   }
+   set kernel_ctl["MissionPlanAdd"] to MPadd@.
+   
+   declare function MPremove {
+      declare parameter id.
+      
+      MISSION_PLAN:remove(id).
+      MISSION_PLAN_ID:remove(id).
+   }
+   set kernel_ctl["MissionPlanRemove"] to MPremove@.
+
+   declare function MPinsert {
+      parameter id.
+      parameter name.
+      parameter delegate.
+ 
+      MISSION_PLAN:insert(id, delegate).
+      MISSION_PLAN_ID:insert(id, name).
+   }
+   set kernel_ctl["MissionPlanInsert"] to MPinsert@.
 
 ///Private functions
    declare function set_runmode {

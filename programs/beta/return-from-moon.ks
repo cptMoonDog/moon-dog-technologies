@@ -33,8 +33,8 @@ set available_programs[programName] to {
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, which the initializer adds to the MISSION_PLAN.
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-         MISSION_PLAN:add({
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
+         kernel_ctl["MissionPlanAdd"]({
             clearscreen.
             local targetPeriapsis is 34000.
             local vinf is (ship:body:velocity:orbit - ship:body:body:velocity:orbit):mag - phys_lib["VatAlt"](ship:body:body, ship:body:altitude, phys_lib["sma"](ship:body:body, ship:body:orbit:apoapsis, targetPeriapsis)). //365. //Should be 373.789, Defines the velocity going into the other SOI, which determines some features of the new patch.
@@ -120,14 +120,14 @@ set available_programs[programName] to {
 //            }
             return OP_FINISHED.
          }).
-   MISSION_PLAN:add({
+   kernel_ctl["MissionPlanAdd"]({
       if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
          stage. 
       }
       maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
-   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
 
 //========== End program sequence ===============================
    

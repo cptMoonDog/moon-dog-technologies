@@ -31,8 +31,8 @@ set available_programs[programName] to {
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, which the initializer adds to the MISSION_PLAN.
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
+   kernel_ctl["MissionPlanAdd"]({
       if ship:orbit:hasnextpatch and ship:orbit:nextpatch:body = body(targetBody) {
          if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() and ship:orbit:nextpatcheta > 180 {
             warpto(ship:orbit:nextpatcheta+time:seconds-180).

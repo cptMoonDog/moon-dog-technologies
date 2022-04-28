@@ -40,8 +40,8 @@ set available_programs[programName] to {
    // In this case, the first part of the program sequence
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
+   kernel_ctl["MissionPlanAdd"]({
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
@@ -65,8 +65,8 @@ set available_programs[programName] to {
       maneuver_ctl["add_burn"](steerDir, engineName, "ap", dv).
       return OP_FINISHED.
    }).
-   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-   MISSION_PLAN:add({
+   kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"]({
       if (steerDir = "prograde" and ship:periapsis < newPe*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newPe*1.01) {
          if steerDir = "prograde" {
             if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5

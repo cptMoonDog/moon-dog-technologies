@@ -10,7 +10,7 @@ if not (defined telemetry_ctl) {
 }
 
 
-MISSION_PLAN:add({
+kernel_ctl["MissionPlanAdd"]({
    lock steering to ship:retrograde.
    wait 30.
    lock throttle to 1.
@@ -18,7 +18,7 @@ MISSION_PLAN:add({
    lock throttle to 0.
    return OP_FINISHED.
 }).
-MISSION_PLAN:add({
+kernel_ctl["MissionPlanAdd"]({
    lock steering to ship:north.
    wait 10.
    //stage.
@@ -27,7 +27,7 @@ MISSION_PLAN:add({
    unlock steering.
    return OP_FINISHED.
 }).
-MISSION_PLAN:add({
+kernel_ctl["MissionPlanAdd"]({
    if ship:altitude < 5000 {
       stage.
       return OP_FINISHED.

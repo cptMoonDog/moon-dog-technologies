@@ -37,8 +37,8 @@ set available_programs[programName] to {
    // In this case, the first part of the program sequence
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
+   kernel_ctl["MissionPlanAdd"]({
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") AND ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          stage. 
          wait 1.
@@ -47,7 +47,7 @@ set available_programs[programName] to {
       maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
-   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

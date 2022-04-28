@@ -13,7 +13,7 @@ if ship:status = "PRELAUNCH" {
          set ship:name to data[0].
          //set core:tag to data[0]. //I know this seems weird, but the lv_boot script needs to be able to identify the payload's processor, and right now, the only way to do that, is if the ship:name and core:tag are the same.
          set mission to data[1]:split(",").  
-         MISSION_PLAN:add({
+         kernel_ctl["MissionPlanAdd"]({
             set kernel_ctl["status"] to "waiting for handoff...".
             if core:messages:empty return OP_CONTINUE.
             if not core:messages:empty {

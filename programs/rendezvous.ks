@@ -41,11 +41,11 @@ set available_programs[programName] to {
    // In this case, the first part of the program sequence
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
 
       local t is time:seconds.
    
-      MISSION_PLAN:add({
+      kernel_ctl["MissionPlanAdd"]({
          if not hastarget set target to targetName.
          if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED.
          if not hasnode {
@@ -57,8 +57,8 @@ set available_programs[programName] to {
          }
          return OP_FINISHED.
       }).
-      MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-      MISSION_PLAN:add({
+      kernel_ctl["MissionPlanAdd"](maneuver_ctl["burn_monitor"]).
+      kernel_ctl["MissionPlanAdd"]({
 
          local dist is {return (positionat(target, time:seconds)-positionat(ship, time:seconds)).}.
          local relVelocity is {return (ship:velocity:orbit - target:velocity:orbit).}.
