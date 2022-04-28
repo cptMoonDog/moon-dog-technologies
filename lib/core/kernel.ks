@@ -35,6 +35,9 @@ kernel_ctl:add("prompt", ":"). //Prompt
 {
    local runmode is 0.
 
+   local regulator is time:seconds.
+   
+   //TODO remove interrupts system
    local time_share is 0.
    local time_count is 0.
 
@@ -48,6 +51,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
+         if time:seconds > regulator + 0.5 set config:ipu to config:ipu + 1.
+         //TODO complete this: else if < reduce ipus
+         set regulator to time:seconds.
+         
          //Runmodes
          if runmode < MISSION_PLAN:length {
             // Runmode
