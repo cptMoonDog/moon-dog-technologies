@@ -18,9 +18,9 @@ global OP_PREVIOUS is -1.
 
 global OP_FAIL is "panic".
 
-global MISSION_PLAN is list().
-global MISSION_PLAN_ID is list().
-global INTERRUPTS is list().
+local MISSION_PLAN is list().
+local MISSION_PLAN_ID is list().
+//global INTERRUPTS is list().
 global SYS_CMDS is lexicon().
 
 // Kernel Registers
@@ -38,10 +38,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
    local regulator is time:seconds.
    
    //TODO remove interrupts system
-   local time_share is 0.
-   local time_count is 0.
+   //local time_share is 0.
+   //local time_count is 0.
 
-   local next_interrupt is 0.
+   //local next_interrupt is 0.
    local inputbuffer is "".
    local cmd_buffer is "".
    local cmd_history is list().
@@ -51,8 +51,8 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
-         if time:seconds > regulator + 0.5 set config:ipu to config:ipu + 1.
-         //TODO complete this: else if < reduce ipus
+         if time:seconds > regulator + 0.5 and config:ipu < 2000 set config:ipu to config:ipu + 1.
+         else if time:seconds < regulator + 0.25 and config:ipu > 150 set config:ipu to config:ipu - 1.
          set regulator to time:seconds.
          
          //Runmodes
@@ -68,18 +68,18 @@ kernel_ctl:add("prompt", ":"). //Prompt
          }
 
          //Interrupts
-         if time_count < time_share {
-            set time_count to time_count +1.
-         } else {
-            set time_count to 0.
-            if next_interrupt < INTERRUPTS:length {
-               INTERRUPTS[next_interrupt]().
-               set next_interrupt to next_interrupt +1.
-            } else if next_interrupt = INTERRUPTS:length and INTERRUPTS:length > 0 {
-               set next_interrupt to 0.
-               INTERRUPTS[next_interrupt]().
-            }
-         }
+         //if time_count < time_share {
+         //   set time_count to time_count +1.
+         //} else {
+         //   set time_count to 0.
+         //   if next_interrupt < INTERRUPTS:length {
+         //      INTERRUPTS[next_interrupt]().
+         //      set next_interrupt to next_interrupt +1.
+         //   } else if next_interrupt = INTERRUPTS:length and INTERRUPTS:length > 0 {
+         //      set next_interrupt to 0.
+         //      INTERRUPTS[next_interrupt]().
+         //   }
+         //}
       }
       set ship:control:pilotmainthrottle to 0.
    }
@@ -111,6 +111,13 @@ kernel_ctl:add("prompt", ":"). //Prompt
       MISSION_PLAN_ID:insert(id, name).
    }
    set kernel_ctl["MissionPlanInsert"] to MPinsert@.
+
+   declare function loadProgram {
+      parameter name.
+      if exists("1:/programs/"+name+".ksm") runoncepath("1:/programs/"+name+".ksm").
+      else if exists("0:/programs/"+name+".ks") runoncepath("0:/programs/"+name+".ks").
+   }
+   set kernel_ctl["loadProgram"] to loadProgram@.
 
 ///Private functions
    declare function set_runmode {

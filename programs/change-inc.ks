@@ -29,8 +29,18 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local newInc is argv:split(" ")[1]:tonumber(ship:orbit:inclination).
+   local engineName is "".
+   local newInc is "".
+   if argv:split(" "):length = 2 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      set newInc to argv:split(" ")[1]:tonumber(ship:orbit:inclination).
+   } else {
+      set kernel_ctl["output"] to
+         "Changes orbit inclination at the next AN or DN."
+         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [NEW-INCLINATION]".
+      return.
+   }
 
 //======== Local Variables =====
 
@@ -52,15 +62,22 @@ set available_programs[programName] to {
          }
          set count to count +1.
       }
-      local ensuredSPV is lookdirup(solarprimevector, north:forevector).
-      local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:topvector):forevector.
-      local angleToAN is vang(ship:position-ship:body:position, lanVec).
-      local angleToDN is vang(ship:position-ship:body:position, -1*lanVec).
+      local ensuredSPV is solarprimevector-ship:body:position. // From SOI origin
+      //local ensuredSPV is lookdirup(solarprimevector, north:forevector).
+      //local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:topvector):forevector.
+      local lanVec is ensuredSPV*angleaxis(ship:orbit:lan, north:forevector-ship:body:position). // From SOI origin
+      local angleToAN is vang(ship:position-ship:body:position, lanVec).         // From SOI origin
+      local angleToDN is vang(ship:position-ship:body:position, -1*lanVec).         // From SOI origin
+      // It does not matter whether it is a prograde or retrograde orbit.
+      // Or if we are closer to AN or DN
+      if ship:geoposition:lat > 0 set angleToAN to 360 - angleToAN.      // Northern hemisphere; Past AN
+      else set angleToDN to 360 - angleToDN.                                  // Southern hemisphere; Past DN
+         
       //Assuming circular orbit:
       local ttAN is (ship:orbit:period/360)*angleToAN.
       local ttDN is (ship:orbit:period/360)*angleToDN.
 
-      local dInc is newInc:tonumber(0) - ship:orbit:inclination.
+      local dInc is newInc - ship:orbit:inclination.
       local dvNormal is ship:velocity:orbit:mag*sin(dInc).
       local dvPrograde is ship:velocity:orbit:mag*cos(dInc)-ship:velocity:orbit:mag.
       if dInc > 0 {
