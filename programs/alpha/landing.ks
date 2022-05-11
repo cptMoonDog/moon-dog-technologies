@@ -12,6 +12,46 @@ declare parameter p1 is "".
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
+declare function compassHeadingVector {
+   declare parameter tgt.
+   local northAngle is vang(vxcl(up:forevector, tgt), north:forevector).
+   local eastAngle is vang(vxcl(up:forevector, tgt), north:starvector).
+   local tgtheading is 0. //North.
+   if northAngle < 90 and eastAngle < 90 { 
+      return northAngle. //Northeast
+   } else if northAngle < 90 and eastAngle > 90 { 
+      return 360-northAngle. //Northwest
+   } else if northAngle > 90 and eastAngle < 90 { 
+      return northAngle. //Southeast
+   } else if northAngle > 90 and eastAngle > 90 { 
+      return 360-northAngle. //Southwest
+   }
+}
+
+declare function compassVectorAdd {
+   declare parameter dir.
+   declare parameter axis.
+   
+   local difference is compassHeadingVector(axis) - compassHeadingVector(dir).
+   set difference to difference/2.
+   if difference < 0 return compassHeadingVector(axis) - difference.
+   else return compassHeadingVector(dir) - difference.
+} 
+
+declare function compassReflectVectorAbout {
+   declare parameter dir.
+   declare parameter axis.
+   
+   local difference is compassHeadingVector(axis) - compassHeadingVector(dir).
+   local reflection is compassHeadingVector(axis) + difference.
+   if reflection >= 360 return reflection - 360.
+   else return reflection.
+} 
+
+declare function RetrogradePitchAngle {
+   if ship:altitude > 10000 return 90-vang(up:forevector, ship:retrograde:forevector).
+   return 90-vang(up:forevector, ship:srfretrograde:forevector).
+}
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
 set available_programs[programName] to {
@@ -32,6 +72,44 @@ set available_programs[programName] to {
 //======== Local Variables =====
       local pitchangle is 90-vang(up:forevector, ship:srfprograde:forevector).
       local thrott is 0.
+local tgt is latlng(10, -70).
+lock tgtHeadingVector to vxcl(up:forevector, tgt:position).
+lock spHeadingVector to vxcl(up:forevector, ship:srfprograde:forevector).
+lock facingHeadingVector to vxcl(up:forevector, ship:facing:forevector).
+lock steerHeadingDirection to angleaxis(vang(tgtHeadingVector, -spHeadingVector), up:forevector)*tgtHeadingVector:direction.
+local tgtHeadingArrow is vecdraw(
+                        v(0, 0, 0), 
+                        {return tgtHeadingVector.},
+                        RGB(1, 0, 0),
+                        "Target Heading",
+                        1,
+                        true,
+                        0.2,
+                        true,
+                        true).
+
+local tgtArrow is vecdraw(
+                        v(0, 0, 0), 
+                        {return tgt:position.},
+                        RGB(1, 1, 0),
+                        "Target",
+                        1,
+                        true,
+                        0.2,
+                        true,
+                        true).
+
+local srfProArrow is vecdraw(
+                        v(0, 0, 0), 
+                        {return spHeadingVector*10.},
+                        RGB(1, 0, 1),
+                        "prograde Heading",
+                        1,
+                        true,
+                        0.2,
+                        true,
+                        true).
+
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
@@ -40,16 +118,39 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
       kernel_ctl["MissionPlanAdd"]("landing", {
-        print "WARNING WARNING WARNING".
-        print "Work in progress.  Do not expect your pilot to survive if you use this".
-        print "WARNING WARNING WARNING".
+         // Orient orbit to target
+         if abs(compassHeadingVector(ship:prograde:forevector) - compassHeadingVector(tgt:position)) > 0.25 and abs(ship:geoposition:lng - tgt:lng) > 100 {
+            lock steering to heading(compassVectorAdd(ship:retrograde:forevector, tgt:position), RetrogradePitchAngle()).
+            wait 5.
+            lock throttle to 0.1.
+
+            print "angle to target: "+abs(ship:geoposition:lng - tgt:lng) at(0, 2).
+            print "heading angle: "+abs(compassHeadingVector(ship:srfprograde:forevector) - compassHeadingVector(tgt:position)) at(0, 3).
+            print "distance: "+tgt:position:mag at(0, 4).
+            return OP_CONTINUE.
+         } else if abs(ship:geoposition:lng - tgt:lng) > 100 {
+            lock throttle to 0. 
+            return OP_CONTINUE.
+         }
          //deorbit
          if ship:periapsis > 8000 {
             if not ship:orbit:hasnextpatch {
-               warpto(time:seconds+eta:apoapsis).
-               lock steering to ship:retrograde.
-               wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 1.
-               until ship:periapsis < -1000 lock throttle to 1.
+               if abs(ship:geoposition:lng - tgt:lng) > 90 and ship:periapsis > 5000 {
+            print "angle to target: "+abs(ship:geoposition:lng - tgt:lng) at(0, 2).
+            print "heading angle: "+abs(compassHeadingVector(ship:srfprograde:forevector) - compassHeadingVector(tgt:position)) at(0, 3).
+            print "distance: "+tgt:position:mag at(0, 4).
+                  //warpto(time:seconds+eta:apoapsis).
+                  lock steering to ship:retrograde.
+                  wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 1.
+                  lock throttle to 1.
+                  return OP_CONTINUE.
+               } else {
+            print "angle to target: "+abs(ship:geoposition:lng - tgt:lng) at(0, 2).
+            print "heading angle: "+abs(compassHeadingVector(ship:srfprograde:forevector) - compassHeadingVector(tgt:position)) at(0, 3).
+            print "distance: "+tgt:position:mag at(0, 4).
+                  lock throttle to 0.
+                  return OP_CONTINUE.
+               }
             } else { 
                lock steering to ship:retrograde.
                wait 10.
@@ -67,15 +168,20 @@ set available_programs[programName] to {
          clearscreen.
          print "ttzh: "+ttZeroH at(0, 10).
          print "tti: "+ttImpact at(0, 11).
+         if vang(spHeadingVector, tgt:position) > 80 and ship:altitude > 10000 and ship:groundspeed > 10 {
+            lock throttle to 1.
+            return OP_CONTINUE.
+         }
          if ttImpact > ttZeroH+30 and ship:altitude > 10000 {
-            set kuniverse:timewarp:warp to min(floor(ship:altitude/15000), kuniverse:timewarp:warp + 1).
+            //set kuniverse:timewarp:warp to min(floor(ship:altitude/15000), kuniverse:timewarp:warp + 1).
             return OP_CONTINUE.
          } else {
+            lock steering to vxcl(vcrs(steerHeadingDirection:forevector, up:forevector), ship:srfretrograde:forevector). //ship:retrograde.
+            lock throttle to 0.
             if not (Kuniverse:timewarp:warp = 0) {
                set kuniverse:timewarp:warp to 0.
-               lock steering to ship:srfretrograde.
-               lock throttle to 0.
-               wait until vang(ship:facing:forevector, ship:srfretrograde:forevector) < 1.
+               //lock steering to ship:srfretrograde.
+               //wait until vang(ship:facing:forevector, ship:srfretrograde:forevector) < 1.
             }else {
                //if alt:radar > 6 and ship:altitude < 50000 {
                if ship:altitude-spot:terrainheight > 6 and ship:altitude < 50000 {
@@ -94,7 +200,8 @@ set available_programs[programName] to {
                   print "spot height: "+spot:terrainheight at(0,18).
 
                   if ship:verticalspeed > -10 and ship:verticalspeed < 0 or ship:verticalspeed > 10 lock steering to ship:srfretrograde.
-                  else lock steering to up:forevector*angleaxis(pitchangle, ship:srfretrograde:starvector).//min(pitchLimit, max(0,pitchAngle))
+                  else lock steering to vxcl(vcrs(steerHeadingDirection:forevector, up:forevector), ship:srfretrograde:forevector). //ship:retrograde.
+                  //else lock steering to up:forevector*angleaxis(pitchangle, ship:srfretrograde:starvector).//min(pitchLimit, max(0,pitchAngle))
 
                   local throttMargin is 0.1.
                   if ship:verticalspeed > -2 set thrott to 0.

@@ -1,7 +1,7 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "change-inc". //<------- put the name of the script here
+local programName is "change-LAN". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
@@ -30,15 +30,15 @@ set available_programs[programName] to {
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
    local engineName is "".
-   local newInc is "".
+   local newLAN is "".
    if argv:split(" "):length = 2 {
       set engineName to argv:split(" ")[0].
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
-      set newInc to argv:split(" ")[1]:tonumber(ship:orbit:inclination).
+      set newLAN to argv:split(" ")[1]:tonumber(ship:orbit:LAN).
    } else {
       set kernel_ctl["output"] to
-         "Changes orbit inclination at the next AN or DN."
-         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [NEW-INCLINATION]".
+         "Changes the Longitude of the Ascending Node (LAN/RAAN)."
+         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [NEW-LONGITUDE]".
       return.
    }
 
@@ -50,7 +50,7 @@ set available_programs[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPlanAdd"]("change-inc", {
+   kernel_ctl["MissionPlanAdd"]("change-LAN", {
       local count is 0.
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
@@ -72,26 +72,36 @@ set available_programs[programName] to {
       // Or if we are closer to AN or DN
       if ship:geoposition:lat > 0 set angleToAN to 360 - angleToAN.      // Northern hemisphere; Past AN
       else set angleToDN to 360 - angleToDN.                                  // Southern hemisphere; Past DN
-         
+
       //Assuming circular orbit:
       local ttAN is (ship:orbit:period/360)*angleToAN.
       local ttDN is (ship:orbit:period/360)*angleToDN.
 
-      local dInc is newInc - ship:orbit:inclination.
-      local dvNormal is ship:velocity:orbit:mag*sin(dInc).
-      local dvPrograde is ship:velocity:orbit:mag*cos(dInc)-ship:velocity:orbit:mag.
-      if dInc > 0 {
-        if ttAN < ttDN {
-           add(node(ttAN+time:seconds, 0, dvNormal, dvPrograde)).
-        } else {
-           add(node(ttDN+time:seconds, 0, -dvNormal, dvPrograde)).
-        }
-      } else if dInc < 0 {
-        if ttAN < ttDN {
-           add(node(ttAN+time:seconds, 0, dvNormal, dvPrograde)).
-        } else {
-           add(node(ttDN+time:seconds, 0, -dvNormal, dvPrograde)).
-        }
+      local ttBPAfter is ttAN + ship:orbit:period/4.
+      if ttBPAfter > ship:orbit:period set ttBPAfter to ttBPAfter - ship:orbit:period.
+      local ttBPBefore is ttDN + ship:orbit:period/4.
+      if ttBPBefore > ship:orbit:period set ttBPBefore to ttBPBefore - ship:orbit:period.
+
+      // As far as I can determine, the angular change of the LAN is the same as the change in the angle between the new and old orbits at the burn point 90 degrees from the AN.
+      local dLAN is newLAN - ship:orbit:LAN.
+      if dLAN > 180 set dLAN to dLAN - 360.
+      else if dLAN < -180 set dLAN to 360 + dLAN.
+      
+      local dvNormal is ship:velocity:orbit:mag*sin(dLAN). // Gives negative for negative dLAN
+      local dvPrograde is ship:velocity:orbit:mag*cos(dLAN)-ship:velocity:orbit:mag.
+      // If ship orbit is prograde, and you burn normal before the AN, the AN will decrease. (Angle is measured counterclockwise from above)
+      // after, the AN will increase.
+      // If ship orbit is retrograde, and you burn normal (South) before the AN, the AN will decrease.
+      // after the AN will increase.
+      // In both cases, Normal before decreases, 
+
+      // if dLAN is positive, that means increase LAN, or anti-normal before, and normal after.
+      // if dLAN is negative, that means decrease LAN, or normal before, and anti-normal after.
+      // dvNormal has the same sign as dLAN.
+      if ttBPBefore < ttBPAfter {
+         add(node(ttBPBefore+time:seconds, 0, -dvNormal, dvPrograde)).
+      } else {
+         add(node(ttBPAfter+time:seconds, 0, dvNormal, dvPrograde)).
       }
 
       maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
