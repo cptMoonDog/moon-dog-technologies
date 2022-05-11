@@ -51,8 +51,9 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
+         // Technically, this will only help if the hold up is calculations or terminal operations.  
          if time:seconds > regulator + 0.5 set config:ipu to config:ipu + 1.
-         //TODO complete this: else if < reduce ipus
+         else if time:seconds = regulator and config:ipu > 300 set config:ipu to 300. //default
          set regulator to time:seconds.
          
          //Runmodes
