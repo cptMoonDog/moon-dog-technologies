@@ -51,8 +51,9 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
+         // Technically this only works for calculations and terminal ops.
          if time:seconds > regulator + 0.5 and config:ipu < 2000 set config:ipu to config:ipu + 1.
-         else if time:seconds < regulator + 0.25 and config:ipu > 150 set config:ipu to config:ipu - 1.
+         else if time:seconds = regulator and config:ipu > 150 set config:ipu to config:ipu - 1.
          set regulator to time:seconds.
          
          //Runmodes
