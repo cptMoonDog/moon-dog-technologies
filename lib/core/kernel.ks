@@ -51,6 +51,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
+         // Technically this only works for calculations and terminal ops.
          if time:seconds > regulator + 0.1 and config:ipu < 2000 {
             set config:ipu to config:ipu + 1.
             set kernel_ctl["status"] to "IPU now: "+config:ipu.
