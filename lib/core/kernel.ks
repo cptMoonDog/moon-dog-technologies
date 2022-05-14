@@ -16,11 +16,10 @@ global OP_FINISHED is 1.
 global OP_CONTINUE is 0.
 global OP_PREVIOUS is -1.
 
-global OP_FAIL is "panic".
+global OP_FAIL is 32767.
 
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
-//global INTERRUPTS is list().
 global SYS_CMDS is lexicon().
 
 // Kernel Registers
@@ -37,11 +36,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
 
    local regulator is time:seconds.
    
-   //TODO remove interrupts system
-   //local time_share is 0.
-   //local time_count is 0.
 
-   //local next_interrupt is 0.
    local inputbuffer is "".
    local cmd_buffer is "".
    local cmd_history is list().
@@ -52,37 +47,27 @@ kernel_ctl:add("prompt", ":"). //Prompt
    declare function run {
       until FALSE {
          // Technically this only works for calculations and terminal ops.
-         if time:seconds > regulator + 0.1 and config:ipu < 2000 {
+         if time:seconds > regulator + 0.05 and config:ipu < 2000 {
             set config:ipu to config:ipu + 1.
             set kernel_ctl["status"] to "IPU now: "+config:ipu.
          } else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
          set regulator to time:seconds.
          
-         //Runmodes
+         // Execute current routine
+         set_runmode(MISSION_PLAN[runmode]()).
          if runmode < MISSION_PLAN:length {
-            // Runmode
-            set_runmode(MISSION_PLAN[runmode]()).
-            if kernel_ctl["interactive"] and terminal:input:haschar process_char(terminal:input:getchar()).
-            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-            print kernel_ctl["countdown"] at(0, 1).
+            // If mission plan is still running...
+            if kernel_ctl["interactive"] {
+               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               print kernel_ctl["countdown"] at(0, 1).
+               if terminal:input:haschar process_char(terminal:input:getchar()).
+            }
          } else {
-            print "end program.".
+            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+            print "Interactive Shell Terminated" at(0, 2).
             break.
          }
 
-         //Interrupts
-         //if time_count < time_share {
-         //   set time_count to time_count +1.
-         //} else {
-         //   set time_count to 0.
-         //   if next_interrupt < INTERRUPTS:length {
-         //      INTERRUPTS[next_interrupt]().
-         //      set next_interrupt to next_interrupt +1.
-         //   } else if next_interrupt = INTERRUPTS:length and INTERRUPTS:length > 0 {
-         //      set next_interrupt to 0.
-         //      INTERRUPTS[next_interrupt]().
-         //   }
-         //}
       }
       set ship:control:pilotmainthrottle to 0.
    }
@@ -115,6 +100,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
    }
    set kernel_ctl["MissionPlanInsert"] to MPinsert@.
 
+   // This is intended to make it easier to work with script loadeds to the core.
    declare function loadProgram {
       parameter name.
       if exists("1:/programs/"+name+".ksm") runoncepath("1:/programs/"+name+".ksm").
@@ -164,6 +150,13 @@ kernel_ctl:add("prompt", ":"). //Prompt
    SYS_CMDS:add("exit", {
       declare parameter cmd.
       set runmode to MISSION_PLAN:length.
+      return "finished".
+   }).
+
+   SYS_CMDS:add("clear", {
+      declare parameter cmd.
+      display_buffer:clear().
+      clearscreen.
       return "finished".
    }).
 

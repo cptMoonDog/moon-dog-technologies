@@ -41,8 +41,8 @@
       local rateTarget is 0.
       local pa is 0.
       if t:istype("Orbitable") {
-         set pa to phaseAngle(ship:orbit:semimajoraxis, target:orbit:semimajoraxis).
-         set rateTarget to 360/target:orbit:period.
+         set pa to phaseAngle(ship:orbit:semimajoraxis, t:orbit:semimajoraxis).
+         set rateTarget to 360/t:orbit:period.
       } else {
          set pa to phaseAngle(ship:orbit:semimajoraxis, t).
          set rateTarget to 0.
@@ -50,18 +50,17 @@
       
       local current is currentPhaseAngle(t).
 
-      // I want some time to burn my engines, so I need to lead a bit to have time
-      // I'm sure there is a better way to do this, but for now...
-      local minDiff is 20.
-      
       local diff is  0.
-      if pa > current-minDiff {
+      if pa > current {
          set diff to 360+current-pa.
       } else set diff to current-pa.
 
       if diff < 0 set diff to diff+360.
 
-      local tm is (diff)/(rateShip-rateTarget).
+      local tm is 0.
+      if rateShip > rateTarget set tm to (diff)/(rateShip-rateTarget).
+      else set tm to (diff)/(rateTarget-rateShip).
+
       return tm.
 
    }

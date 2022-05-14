@@ -62,10 +62,9 @@ set available_programs[programName] to {
          }
          set count to count +1.
       }
-      local ensuredSPV is solarprimevector. // From SOI origin
-      //local ensuredSPV is lookdirup(solarprimevector, north:forevector).
-      //local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:topvector):forevector.
-      local lanVec is solarprimevector*angleaxis(ship:orbit:lan, north:forevector)-ship:body:position. // From SOI origin
+      local LANVector is {
+         return angleaxis(ship:orbit:lan, ship:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      }.
       //clearvecdraws().
 local lanVecArrow is vecdraw(
                         v(0, 0, 0), 
@@ -77,18 +76,18 @@ local lanVecArrow is vecdraw(
                         0.2,
                         true,
                         true).
-      local angleToAN is vang(ship:position-ship:body:position, lanVec).         // From SOI origin
-      local angleToDN is vang(ship:position-ship:body:position, -1*lanVec).         // From SOI origin
+      local angleToAN is vang(ship:position-ship:body:position, LANVector()).         // From SOI origin
+      local angleToDN is vang(ship:position-ship:body:position, -1*LANVector()).         // From SOI origin
       // It does not matter whether it is a prograde or retrograde orbit.
       // Or if we are closer to AN or DN
       local angleToBP is 0.
-      if vang(ship:velocity:orbit, lanVec) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
+      if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
          set angleToBP to angleToAN-90.      
-      } else if vang(ship:velocity:orbit, lanVec) < 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading toward AN, heading North.
+      } else if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading toward AN, heading North.
          set angleToBP to angleToAN+90. 
-      } else if vang(ship:velocity:orbit, lanVec) > 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading away from AN, heading North.
+      } else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading away from AN, heading North.
          set angleToBP to angleToDN-90. 
-      } else if vang(ship:velocity:orbit, lanVec) > 90 and vang(ship:velocity:orbit, north:forevector) > 90 {  // Heading away from AN, heading South.
+      } else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) > 90 {  // Heading away from AN, heading South.
          set angleToBP to angleToDN+90. 
       }
 

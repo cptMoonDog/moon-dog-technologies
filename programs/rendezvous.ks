@@ -38,6 +38,7 @@ set available_programs[programName] to {
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
       if argv:split(char(34)):length > 1 set targetObject to argv:split(char(34))[1]. // Quoted second parameter
       else set targetObject to argv:split(" ")[1].
+      set kernel_ctl["output"] to "target: "+ targetObject.
    } else {
       set kernel_ctl["output"] to
          "Creates a rendezvous with a ship or object in a coplanar orbit."
@@ -54,25 +55,23 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
 
-      local t is time:seconds.
    
       kernel_ctl["MissionPlanAdd"]("plan rendezvous", {
          set target to targetObject.
          if not hastarget return OP_FAIL.
-         set kernel_ctl["output"] to "Targeting: "+target.
-         if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED.
-         if not hasnode {
+         // Originally made with targets in higher orbits in mind.
+         if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED. // 
+         if not (hasnode) {
             local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).
             add(mnvr).
-            set t to mnvr:eta+mnvr:orbit:period/2+time:seconds.
-
             maneuver_ctl["add_burn"]("node", engineName, "node", mnvr:deltav:mag).
+            return OP_FINISHED.
          }
-         return OP_FINISHED.
+         print "Maneuver creation failed.".
+         return OP_FAIL.
       }).
       kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
       kernel_ctl["MissionPlanAdd"]("match velocity", {
-
          local dist is {return (positionat(target, time:seconds)-positionat(ship, time:seconds)).}.
          local relVelocity is {return (ship:velocity:orbit - target:velocity:orbit).}.
          local velToward is {return relVelocity():mag*cos(vang(relVelocity(), dist())).}.  //speed toward target

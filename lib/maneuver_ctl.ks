@@ -52,7 +52,12 @@
       set kernel_ctl["status"] to "Executing maneuver".
       if burn_queue:empty {
          set kernel_ctl["status"] to "No burn loaded!!!".
-         return OP_FINISHED.
+         return OP_FAIL.
+      }
+      // In case the burn is way in the past, something clearly went wrong with the program.
+      if start+(end-start)*10 < time:seconds and nextnode:deltav:mag > 0.1 {
+         set kernel_ctl["status"] to "Maneuver generated as past event.".
+         return OP_FAIL.
       }
       if time:seconds < start set kernel_ctl["countdown"] to "T-"+ceiling(start-time:seconds, 2).
       else set kernel_ctl["countdown"] to "T+"+ceiling(time:seconds-start, 2).
