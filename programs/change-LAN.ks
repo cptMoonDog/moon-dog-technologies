@@ -66,50 +66,39 @@ set available_programs[programName] to {
          return angleaxis(ship:orbit:lan, ship:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
       }.
       //clearvecdraws().
-local lanVecArrow is vecdraw(
-                        v(0, 0, 0), 
-                        {return (north:forevector+ship:orbit:position)*100000.},
-                        RGB(1, 0, 0),
-                        "LAN",
-                        1,
-                        true,
-                        0.2,
-                        true,
-                        true).
       local angleToAN is vang(ship:position-ship:body:position, LANVector()).         // From SOI origin
       local angleToDN is vang(ship:position-ship:body:position, -1*LANVector()).         // From SOI origin
       // It does not matter whether it is a prograde or retrograde orbit.
       // Or if we are closer to AN or DN
-      local angleToBP is 0.
-      if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
-         set angleToBP to angleToAN-90.      
-      } else if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading toward AN, heading North.
-         set angleToBP to angleToAN+90. 
-      } else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading away from AN, heading North.
-         set angleToBP to angleToDN-90. 
-      } else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) > 90 {  // Heading away from AN, heading South.
-         set angleToBP to angleToDN+90. 
-      }
+
+      // Implementing Null change in inclination:
+      local angleOfBP is (newLAN+ship:orbit:LAN)/2 + 90.
+      local vectorOfBP is angleaxis(angleOfBP, ship:body:angularvel:normalized)*solarprimevector.
+      local angleToBP is 360-vang(-ship:body:position, vectorOfBP).
+      local dPlane is arccos((sin(ship:orbit:inclination)^2)*cos(ship:orbit:LAN-newLAN)).
+
+      //if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
+      //   set angleToBP to angleToAN-90.      
+      //} else if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading toward AN, heading North.
+      //   set angleToBP to angleToAN+90. 
+      //} else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading away from AN, heading North.
+      //   set angleToBP to angleToDN-90. 
+      //} else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) > 90 {  // Heading away from AN, heading South.
+      //   set angleToBP to angleToDN+90. 
+      //}
 
       //Assuming circular orbit:
       local ttBP is (ship:orbit:period/360)*angleToBP.
 
-      // As far as I can determine, the angular change of the LAN is the same as the change in the angle between the new and old orbits at the burn point 90 degrees from the AN.
-      local dLAN is newLAN - ship:orbit:LAN.
-      local dPlane is arctan(sin(ship:orbit:inclination)*tan(dLAN)).
-      set kernel_ctl["status"] to dPlane:tostring().
-      //if dLAN > 180 set dLAN to dLAN - 360.
-      //else if dLAN < -180 set dLAN to 360 + dLAN.
-      
       local dvNormal is ship:velocity:orbit:mag*sin(dPlane). // Gives negative for negative dLAN
       local dvPrograde is ship:velocity:orbit:mag*cos(dPlane)-ship:velocity:orbit:mag.
 
       add(node(ttBP+time:seconds, 0, -dvNormal, dvPrograde)).
 
-      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
+      //maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+   //kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
          
 //========== End program sequence ===============================
    

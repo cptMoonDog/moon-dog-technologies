@@ -78,6 +78,7 @@ set available_programs[programName] to {
          print "toward: "+velToward() at(0, 5).
          print "RelVelocity: "+relVelocity():mag at(0, 6).
          lock steering to -1*relVelocity().
+         if dist():mag > 5000 return OP_CONTINUE.
          if dist():mag < 150 { // Within relativistic frame
             if relVelocity():mag < 1 {
                lock throttle to 0.
