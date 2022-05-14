@@ -51,8 +51,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
-         if time:seconds > regulator + 0.5 and config:ipu < 2000 set config:ipu to config:ipu + 1.
-         else if time:seconds < regulator + 0.25 and config:ipu > 150 set config:ipu to config:ipu - 1.
+         if time:seconds > regulator + 0.1 and config:ipu < 2000 {
+            set config:ipu to config:ipu + 1.
+            set kernel_ctl["status"] to "IPU now: "+config:ipu.
+         } else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
          set regulator to time:seconds.
          
          //Runmodes

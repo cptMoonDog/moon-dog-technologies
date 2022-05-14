@@ -214,3 +214,46 @@ SYS_CMDS:add("run-extra", {
       return "finished".
    }
 }).
+
+SYS_CMDS:add("draw-vector", {
+   declare parameter cmd.
+   if cmd:startswith("draw-vector") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 { 
+         local origin is v(0,0,0).
+         //if splitCmd[1] = "body" set origin to {return ship:body:position.}.
+         local directionVector is v(0,0,0).
+         //{return north:forevector.}.
+         //if splitCmd[2] = "UP" {return up:forevector}.
+         
+         local test is vecdraw(
+                                 origin, 
+                                 directionVector,
+                                 RGB(1, 0, 0),
+                                 "North",
+                                 1,
+                                 true,
+                                 0.2,
+                                 true,
+                                 true).
+      } else {
+         set kernel_ctl["output"] to
+            "Draws a vector on the screen."
+            +char(10)+"Usage: draw-vector [ORIGIN] [DIRECTION] [COLOR] [LABEL]"
+            +char(10)+"   where [ORIGIN] is ship or body"
+            +char(10)+"   [DIRECTION] is AN, DN, LAN, UP, DOWN, NORTH, SOUTH, SPV, MAX or MIN"
+            +char(10)+"   [COLOR] is red green or blue"
+            +char(10)+"   [LABEL] is some text".
+
+         return "finished".
+      }
+   }
+}).
+
+SYS_CMDS:add("clear-drawings", {
+   declare parameter cmd.
+   if cmd:startswith("clear-drawings") {
+      clearvecdraws().
+      return "finished".
+   }
+}).

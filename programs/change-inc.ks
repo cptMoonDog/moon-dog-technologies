@@ -62,12 +62,11 @@ set available_programs[programName] to {
          }
          set count to count +1.
       }
-      local ensuredSPV is solarprimevector-ship:body:position. // From SOI origin
-      //local ensuredSPV is lookdirup(solarprimevector, north:forevector).
-      //local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:topvector):forevector.
-      local lanVec is ensuredSPV*angleaxis(ship:orbit:lan, north:forevector-ship:body:position). // From SOI origin
-      local angleToAN is vang(ship:position-ship:body:position, lanVec).         // From SOI origin
-      local angleToDN is vang(ship:position-ship:body:position, -1*lanVec).         // From SOI origin
+      local LANVector is {
+         return angleaxis(ship:orbit:lan, ship:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      }.
+      local angleToAN is vang(ship:position-ship:body:position, LANVector()).         // From SOI origin
+      local angleToDN is vang(ship:position-ship:body:position, -1*LANVector()).         // From SOI origin
       // It does not matter whether it is a prograde or retrograde orbit.
       // Or if we are closer to AN or DN
       if ship:geoposition:lat > 0 set angleToAN to 360 - angleToAN.      // Northern hemisphere; Past AN

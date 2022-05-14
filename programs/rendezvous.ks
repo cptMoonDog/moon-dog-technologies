@@ -31,8 +31,19 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local targetBody is argv:split(" ")[1].
+   local engineName is "".
+   local targetObject is "".
+   if argv:split(" "):length > 1 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      if argv:split(char(34)):length > 1 set targetObject to argv:split(char(34))[1]. // Quoted second parameter
+      else set targetObject to argv:split(" ")[1].
+   } else {
+      set kernel_ctl["output"] to
+         "Creates a rendezvous with a ship or object in a coplanar orbit."
+         +char(10)+"Usage: add-program rendezvous [ENGINE-NAME] [TARGET]".
+      return.
+   }
 
 //======== Local Variables =====
 
@@ -46,7 +57,9 @@ set available_programs[programName] to {
       local t is time:seconds.
    
       kernel_ctl["MissionPlanAdd"]("plan rendezvous", {
-         if not hastarget set target to targetName.
+         set target to targetObject.
+         if not hastarget return OP_FAIL.
+         set kernel_ctl["output"] to "Targeting: "+target.
          if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED.
          if not hasnode {
             local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).

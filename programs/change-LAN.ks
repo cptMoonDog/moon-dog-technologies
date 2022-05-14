@@ -38,7 +38,7 @@ set available_programs[programName] to {
    } else {
       set kernel_ctl["output"] to
          "Changes the Longitude of the Ascending Node (LAN/RAAN)."
-         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [NEW-LONGITUDE]".
+         +char(10)+"Usage: add-program change-LAN [ENGINE-NAME] [NEW-LONGITUDE]".
       return.
    }
 
@@ -62,47 +62,50 @@ set available_programs[programName] to {
          }
          set count to count +1.
       }
-      local ensuredSPV is solarprimevector-ship:body:position. // From SOI origin
+      local ensuredSPV is solarprimevector. // From SOI origin
       //local ensuredSPV is lookdirup(solarprimevector, north:forevector).
       //local lanVec is angleaxis(ship:orbit:lan, ensuredSPV:topvector):forevector.
-      local lanVec is ensuredSPV*angleaxis(ship:orbit:lan, north:forevector-ship:body:position). // From SOI origin
+      local lanVec is solarprimevector*angleaxis(ship:orbit:lan, north:forevector)-ship:body:position. // From SOI origin
+      //clearvecdraws().
+local lanVecArrow is vecdraw(
+                        v(0, 0, 0), 
+                        {return (north:forevector+ship:orbit:position)*100000.},
+                        RGB(1, 0, 0),
+                        "LAN",
+                        1,
+                        true,
+                        0.2,
+                        true,
+                        true).
       local angleToAN is vang(ship:position-ship:body:position, lanVec).         // From SOI origin
       local angleToDN is vang(ship:position-ship:body:position, -1*lanVec).         // From SOI origin
       // It does not matter whether it is a prograde or retrograde orbit.
       // Or if we are closer to AN or DN
-      if ship:geoposition:lat > 0 set angleToAN to 360 - angleToAN.      // Northern hemisphere; Past AN
-      else set angleToDN to 360 - angleToDN.                                  // Southern hemisphere; Past DN
+      local angleToBP is 0.
+      if vang(ship:velocity:orbit, lanVec) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
+         set angleToBP to angleToAN-90.      
+      } else if vang(ship:velocity:orbit, lanVec) < 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading toward AN, heading North.
+         set angleToBP to angleToAN+90. 
+      } else if vang(ship:velocity:orbit, lanVec) > 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading away from AN, heading North.
+         set angleToBP to angleToDN-90. 
+      } else if vang(ship:velocity:orbit, lanVec) > 90 and vang(ship:velocity:orbit, north:forevector) > 90 {  // Heading away from AN, heading South.
+         set angleToBP to angleToDN+90. 
+      }
 
       //Assuming circular orbit:
-      local ttAN is (ship:orbit:period/360)*angleToAN.
-      local ttDN is (ship:orbit:period/360)*angleToDN.
-
-      local ttBPAfter is ttAN + ship:orbit:period/4.
-      if ttBPAfter > ship:orbit:period set ttBPAfter to ttBPAfter - ship:orbit:period.
-      local ttBPBefore is ttDN + ship:orbit:period/4.
-      if ttBPBefore > ship:orbit:period set ttBPBefore to ttBPBefore - ship:orbit:period.
+      local ttBP is (ship:orbit:period/360)*angleToBP.
 
       // As far as I can determine, the angular change of the LAN is the same as the change in the angle between the new and old orbits at the burn point 90 degrees from the AN.
       local dLAN is newLAN - ship:orbit:LAN.
-      if dLAN > 180 set dLAN to dLAN - 360.
-      else if dLAN < -180 set dLAN to 360 + dLAN.
+      local dPlane is arctan(sin(ship:orbit:inclination)*tan(dLAN)).
+      set kernel_ctl["status"] to dPlane:tostring().
+      //if dLAN > 180 set dLAN to dLAN - 360.
+      //else if dLAN < -180 set dLAN to 360 + dLAN.
       
-      local dvNormal is ship:velocity:orbit:mag*sin(dLAN). // Gives negative for negative dLAN
-      local dvPrograde is ship:velocity:orbit:mag*cos(dLAN)-ship:velocity:orbit:mag.
-      // If ship orbit is prograde, and you burn normal before the AN, the AN will decrease. (Angle is measured counterclockwise from above)
-      // after, the AN will increase.
-      // If ship orbit is retrograde, and you burn normal (South) before the AN, the AN will decrease.
-      // after the AN will increase.
-      // In both cases, Normal before decreases, 
+      local dvNormal is ship:velocity:orbit:mag*sin(dPlane). // Gives negative for negative dLAN
+      local dvPrograde is ship:velocity:orbit:mag*cos(dPlane)-ship:velocity:orbit:mag.
 
-      // if dLAN is positive, that means increase LAN, or anti-normal before, and normal after.
-      // if dLAN is negative, that means decrease LAN, or normal before, and anti-normal after.
-      // dvNormal has the same sign as dLAN.
-      if ttBPBefore < ttBPAfter {
-         add(node(ttBPBefore+time:seconds, 0, -dvNormal, dvPrograde)).
-      } else {
-         add(node(ttBPAfter+time:seconds, 0, dvNormal, dvPrograde)).
-      }
+      add(node(ttBP+time:seconds, 0, -dvNormal, dvPrograde)).
 
       maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
