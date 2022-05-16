@@ -72,10 +72,13 @@ set available_programs[programName] to {
       // Or if we are closer to AN or DN
 
       // Implementing Null change in inclination:
-      local angleOfBP is (newLAN+ship:orbit:LAN)/2 + 90.
-      local vectorOfBP is angleaxis(angleOfBP, ship:body:angularvel:normalized)*solarprimevector.
-      local angleToBP is 360-vang(-ship:body:position, vectorOfBP).
-      local dPlane is arccos((sin(ship:orbit:inclination)^2)*cos(ship:orbit:LAN-newLAN)).
+      local angleOfBP is (newLAN+ship:orbit:LAN)/2 - 90.
+      local vectorOfBP is vxcl(ship:angularvel:normalized, angleaxis(angleOfBP, ship:body:angularvel:normalized)*solarprimevector).
+      local angleToBP is vang(-ship:body:position, vectorOfBP).
+      local dPlane is arccos((sin(ship:orbit:inclination)^2)*(cos(ship:orbit:lan-newLAN)-1)+1).
+      //local dPlane is arccos((sin(ship:orbit:inclination)^2)*(cos(ship:orbit:lan)*cos(newLAN)+sin(ship:orbit:lan)*sin(newLAN)-1)+1).
+      //local dPlane is arccos((sin(ship:orbit:inclination)^2)*cos(newLAN-ship:orbit:LAN)).
+      //local dPlane is arccos((sin(ship:orbit:inclination)^2)*cos(ship:orbit:LAN-newLAN)).
 
       //if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
       //   set angleToBP to angleToAN-90.      
@@ -95,10 +98,10 @@ set available_programs[programName] to {
 
       add(node(ttBP+time:seconds, 0, -dvNormal, dvPrograde)).
 
-      //maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
-   //kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
          
 //========== End program sequence ===============================
    
