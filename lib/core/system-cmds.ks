@@ -10,7 +10,7 @@ SYS_CMDS:add("display", {
          else if splitCmd[1] = "mission-plan" {
             local temp is "Mission Plan:"+char(10).
             local count is 0.
-            for token in MISSION_PLAN_ID {
+            for token in kernel_ctl["MissionPlanList"]() {
                set temp to temp + char(10) + "   "+ count + " " +token.
                set count to count + 1.
             }

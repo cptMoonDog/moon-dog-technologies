@@ -100,6 +100,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
    }
    set kernel_ctl["MissionPlanInsert"] to MPinsert@.
 
+   declare function MPids {
+      return MISSION_PLAN_ID.
+   }
+   set kernel_ctl["MissionPlanList"] to MPids@.
+
    // This is intended to make it easier to work with script loadeds to the core.
    declare function loadProgram {
       parameter name.
