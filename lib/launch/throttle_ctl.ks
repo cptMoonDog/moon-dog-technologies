@@ -159,7 +159,7 @@
          if ship:apoapsis > launch_param["throttleProfile"][1] {
             return 0.
          } else {
-            return (1 - min(1, ship:apoapsis/launch_param["throttleProfile"][1]))+(1 - min(1, ship:altitude/ship:body:atm:height)). 
+            return min(0.001, ((1 - min(1, ship:apoapsis/launch_param["throttleProfile"][1]))+(1 - min(1, ship:altitude/ship:body:atm:height)))/2).
          }
       } else if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
          //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
