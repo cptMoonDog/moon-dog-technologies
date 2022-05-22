@@ -4,9 +4,15 @@
 
 @lazyglobal off.
 if ship:status = "PRELAUNCH" {
-   if exists("0:/missions/"+core:tag+".ks") {
-      compile "0:/missions/"+core:tag+".ks" to "1:/boot/"+core:tag+".ksm".
-      set core:bootfilename to "/boot/"+core:tag+".ksm".
+   local mission is "".
+   if core:tag:contains(",") {
+      set mission to core:tag:split(",")[0].
+      set core:tag to core:tag:remove(0, core:tag:split(",")[0]:length+1):trim().
+   } else set mission to core:tag.
+   
+   if exists("0:/missions/"+mission+".ks") {
+      compile "0:/missions/"+mission+".ks" to "1:/boot/"+mission+".ksm".
+      set core:bootfilename to "/boot/"+mission+".ksm".
       reboot.
    }
 }

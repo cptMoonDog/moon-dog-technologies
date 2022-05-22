@@ -27,7 +27,9 @@ if ship:status = "PRELAUNCH" {
    if exists("0:/missions/"+ship:name+".ks") {
       compile "0:/missions/"+ship:name+".ks" to "1:/boot/"+ship:name+".ksm".
       set core:bootfilename to "/boot/"+ship:name+".ksm".
+   } else {
+      print "No Mission specified".
    }
    kernel_ctl["start"]().
    reboot.
-}
+} else shutdown.
