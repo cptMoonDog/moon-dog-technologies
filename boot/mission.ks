@@ -1,12 +1,12 @@
+// This bootfile, will compile the given mission file to the core, and set it as the new bootfile.
+// The idea is, that a "mission" is the firmware for this particular core.
+// The primary reason for doing it this way, is to avoid cluttering up the boot folder with custom boot scripts.
+
 @lazyglobal off.
-if exists("0:/missions/"+core:tag+".ks") {
-   runpath("0:/missions/"+core:tag+".ks").
-   if defined DEPENDENCIES {
-      compile "0:/lib/core/kernel.ks" to "1:/kernel.ksm".
-      for package in DEPENDENCIES {
-         compile "0:/"+package+".ks" to "1:/"+package+".ksm".
-      }
+if ship:status = "PRELAUNCH" {
+   if exists("0:/missions/"+core:tag+".ks") {
+      compile "0:/missions/"+core:tag+".ks" to "1:/boot/"+core:tag+".ksm".
+      set core:bootfilename to "/boot/"+core:tag+".ksm".
+      reboot.
    }
-   compile "0:/missions/"+core:tag+".ks" to "1:/boot/firmware.ksm".
-   set core:bootfilename to "/boot/firmware".
 }

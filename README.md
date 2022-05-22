@@ -11,12 +11,23 @@ Features
    - Linear tangent steering capable
    - Easily target different orbital planes with the same script.
  - Modular, pluggable mission scripting
+ - Interactive mode, for those who would rather make the mission plan up as they go along.
+
+Note: I understand and apologize for the inconsistent naming styles, etc you will find.  I have been more concerned with functionality. Maybe someday I will get around to beautification.
  
-Quickstart
-==========
+Videos of it in action
+======================
+[Launch and deployment of Relays at both moons](https://youtu.be/_q7M74phcO4)
+
 [Example Mission to Minmus Orbit](https://youtu.be/8BtfHxGP5ns)
 
 [Gravity Turn Versus Linear Tangent Steering](https://youtu.be/coE-mWIxKf0)
+
+Quickstart
+==========
+
+Set your kOS core boot file to `ish.ks` to start in interactive mode.  
+The following is for fully automatic mode.
 
 Launch Vehicles
 --------
@@ -70,7 +81,7 @@ For instance, say you wanted to go to the Mun.  You can write up a mission to th
     
 Standalone Operation
 ====================
-The `runprogram.ks` system is being depreciated.  The prefered system should now be to launch the kernel in interactive mode.  I am calling the system ISH, for "Interactive SHell".  Should fit well with the Kerbal ethic.
+The `runprogram.ks` system is being depreciated.  The prefered system should now be to launch the kernel in interactive mode.  I am calling the system ISH, for "Interactive SHell".  Should fit well with the Kerbal mood.
 To launch the system invoke the following command in the kOS window:
 
     runpath("0:/lib/core/kernel.ks", true).
@@ -79,8 +90,20 @@ Or just:
 
     runpath("0:/ish.ks").
 
-Commands are still in the process of being implemented, but it is working fairly well.  For instance, you can run a mission with the following commands:
+Commands are still in the process of being implemented, but it is working fairly well.
+For instance, to travel from the launch pad to orbit of the Mun with a launch vehicle named `Atlas` and a `terrier` upper stage engine, type the following:
 
+    setup-launch<ENTER>
+    <ENTER>
+    <ENTER>
+    <ENTER>
+    <ENTER>
+    add-program lko-to-moon terrier Mun<ENTER>
+    add-program powered-capture terrier Mun<ENTER>
+    start
+
+This gives the default values to the launch system, and then adds two programs.  The program should terminate when the spacecraft is in a 200km orbit of the Mun.
+    
     setup-launch
         Inclination: 45
         LAN: none
@@ -92,7 +115,7 @@ Commands are still in the process of being implemented, but it is working fairly
 `setup-launch` will ask you for launch parameters and will add the launch routines to the MISSION_PLAN.
 Any `add-program` commands will append their routines for that particular program to the end of the MISSION_PLAN, so you can keep adding items to the running plan, if you want, even in flight.  ~~Be sure to invoke the program correctly, however!  The ISH system cannot verify beforehand if you are giving it the correct number of parameters for the program.  If you give it more or less than the program expects, the system will immediately crash.  This is a known problem, but Jebediah said it was worth the risk, although Werner is still looking for a safer failure mode.~~  As of 11 OCT 2021 programs only accept one string as a parameter, and are responsible for verifying input.
 
-The kernel will not begin running the MISSION_PLAN until you call `start`, but it will remain interactive even while running.  Try running `display altitude` during ascent, for instance.
+The kernel will not begin running the MISSION_PLAN until you call `start`, but the command processor will remain interactive even while running.  Try running `display altitude` during ascent, for instance.
 
 Libraries
 ---------
@@ -109,3 +132,5 @@ Updates
 This latest update (4 Oct 2021), has involved some fairly major refactoring.  Everything should function generally the same as it has, but paths may have changed, so watch for that.
 
 (11 Oct 2021) Made a policy where programs only accept one string parameter.  This requires some minimal string processing in program definitions, but increases runtime safety; allowing the system to fail safely in the case of spurious user input.
+
+(20 May 2022) The Spaceman Spiff update includes internal changes, and improvements to the usability of the `ish` system.

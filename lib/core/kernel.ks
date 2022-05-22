@@ -105,13 +105,19 @@ kernel_ctl:add("prompt", ":"). //Prompt
    }
    set kernel_ctl["MissionPlanList"] to MPids@.
 
-   // This is intended to make it easier to work with script loadeds to the core.
-   declare function loadProgram {
+   // This is intended to make it easier to work with scripts loaded to the core.
+   declare function import_lib {
       parameter name.
-      if exists("1:/programs/"+name+".ksm") runoncepath("1:/programs/"+name+".ksm").
-      else if exists("0:/programs/"+name+".ks") runoncepath("0:/programs/"+name+".ks").
+      if exists("1:/"+name+".ksm") runoncepath("1:/"+name+".ksm").
+      else if exists("0:/"+name+".ks") runoncepath("0:/"+name+".ks").
    }
-   set kernel_ctl["loadProgram"] to loadProgram@.
+   set kernel_ctl["import-lib"] to import-lib@.
+
+   declare function load-to-core {
+      parameter name.
+      if exists("0:/"+name+".ks") compile "0:/"+name+".ks" to "1:/"+name+".ksm".
+   }
+   set kernel_ctl["load-to-core"] to @load-to-core.
 
 ///Private functions
    declare function set_runmode {

@@ -4,7 +4,7 @@
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
 {
-   runpath("0:/lib/physics.ks").
+   kernel_ctl["import-lib"]("lib/physics").
    global maneuver_ctl is lexicon().
 
    local burn_queue is queue().
@@ -47,6 +47,12 @@
       reset_for_next_burn().
    }
    maneuver_ctl:add("add_burn", schedule_burn@).
+
+   declare function abort_burn {
+      burn_queue:pop().
+   }
+   maneuver_ctl:add("abort_burn", @abort_burn).
+      
 
    declare function execute {
       set kernel_ctl["status"] to "Executing maneuver".

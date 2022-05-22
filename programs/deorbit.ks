@@ -1,12 +1,14 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "circularize-at-ap". //<------- put the name of the script here
+local programName is "change-LAN". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
+declare parameter p1 is "". 
+declare parameter p2 is "". 
 if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
@@ -21,12 +23,17 @@ set available_programs[programName] to {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined maneuver_ctl) kernel_ctl["import-lib"]("lib/maneuver_ctl").
+   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+   if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
+   if argv:split(" "):length >= 1 {
+      set kernel_ctl["output"] to
+         "Deorbits the craft, assuming a circular orbit, and an atmospheric body.".
+      return.
+   }
 
 //======== Local Variables =====
 
@@ -36,11 +43,31 @@ set available_programs[programName] to {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-         kernel_ctl["MissionPlanAdd"]("circularize-at-ap", {
-            maneuver_ctl["add_burn"]("prograde", engineName, "ap", "circularize").
-            return OP_FINISHED.
-         }).
-         kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"]("deorbit", {
+      lock steering to ship:retrograde.
+      wait 30.
+      lock throttle to 1.
+      wait until ship:periapsis < 45000.
+      lock throttle to 0.
+      return OP_FINISHED.
+   }).
+   kernel_ctl["MissionPlanAdd"]("decouple service module", {
+      lock steering to ship:north.
+      wait 10.
+      //stage.
+      lock steering to ship:retrograde.
+      wait 10.
+      unlock steering.
+      return OP_FINISHED.
+   }).
+   kernel_ctl["MissionPlanAdd"]("wait for safe altitude for chute", {
+      if ship:altitude < 5000 {
+         stage.
+         return OP_FINISHED.
+      } else return OP_CONTINUE.
+   }).
+
+         
 //========== End program sequence ===============================
    
 }. //End of initializer delegate

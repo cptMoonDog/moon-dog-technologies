@@ -12,11 +12,8 @@ if ship:status = "PRELAUNCH" {
    local procs is list().
    list processors in procs.
    for payloadCore in procs {
-      print payloadCore:bootfilename.
-      if payloadCore:bootfilename = "/boot/payload.ks" {
          print "Handing off...".
          payloadCore:connection:sendmessage("handoff").
-      }
-      shutdown.
    }
+   shutdown.
 }

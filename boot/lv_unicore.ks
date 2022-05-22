@@ -16,11 +16,18 @@ if ship:status = "PRELAUNCH" {
          runpath("0:/programs/rendezvous.ks").
          available_programs["rendezvous"](launch_param["upperStage"], target:name).
       } else if target:istype("Body") {
-         runpath("0:/missions/moonTransfer.ks", target:name, launch_param["upperStage"],launch_param["upperStage"],launch_param["upperStage"]).
+         runpath("0:/programs/lko-to-moon.ks").
+         runpath("0:/programs/powered-capture.ks").
+         available_programs["lko-to-moon"](target:name, launch_param["upperStage"]).
+         available_programs["powered-capture"](target:name, launch_param["upperStage"]).
       }
    }
+   // The limitation here, is the you cannot provide the same information as to a seperate payload.
+   // The core:tag data is reserved for the booster launch.  
    if exists("0:/missions/"+ship:name+".ks") {
-      runpath("0:/missions/"+ship:name+".ks").
+      compile "0:/missions/"+ship:name+".ks" to "1:/boot/"+ship:name+".ksm".
+      set core:bootfilename to "/boot/"+ship:name+".ksm".
    }
    kernel_ctl["start"]().
+   reboot.
 }
