@@ -60,8 +60,9 @@ set available_programs[programName] to {
     // Therefore, the vector to point at the sun, is the sum of the negative
     // topvectors of the fixed panels, and any convenient vector parallel to the surface for rotating panels, like facing:forevector.
     for p in panels {
-       set panelTopVector to panelTopVector -p:part:facing:topvector.
-       set panelFacingVector to panelFacingVector +p:part:facing:forevector.
+       if p:part:mass > primary:part:mass set primary to p.
+       set panelTopVector to panelTopVector -p:part:facing:topvector*p:part:mass.
+       set panelFacingVector to panelFacingVector +p:part:facing:forevector*p:part:mass.
     }
     // Fixed panel array
     if primary:part:title = "OX-STAT Photovoltaic Panels" or primary:part:title = "OX-STAT-XL Photovoltaic Panels" { 
@@ -77,7 +78,7 @@ set available_programs[programName] to {
     } 
     
    
-    lock steering to ship:facing:forevector*angleaxis(vang(ship:facing:forevector, panelFacingVector), vcrs(ship:facing:forevector, panelFacingVector))).
+    lock steering to body("Sun"):position*rotatefromto(ship:facing:forevector:normalized, panelFacingVector:normalized).
     
       wait 5.
          
