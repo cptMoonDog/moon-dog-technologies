@@ -34,7 +34,7 @@ Launch Vehicles
 --------
  1. Make a Launch Vehicle, make sure to include a KOS processor on the upper stage.
  2. Make a copy of `template.ks` in the `lv` directory. 
- 3. Edit your new Launch Vehicle definition file, and change any of the the default values to ones appropriate for your launch vehicle.
+ 3. Edit your new Launch Vehicle definition file, and change any of the the default values to ones appropriate for your launch vehicle. (Note: Some may suggest, that this would be an appropriate use for JSON files, but believe it or not Kerboscript is better for human readability.)
  4. In the VAB:
     - Set the bootfile for the processor on your launch vehicle to `lv.ks`
     - Set the nameTag of the KOS processor on your launch vehicle to one of the following:
@@ -52,6 +52,7 @@ Payloads and Missions
     - Set the bootfile for the KOS processor on the spacecraft to `payload.ks`.
     - Set the nameTag of the KOS processor to `[name you want your ship to have]:[name of mission to run], [mission parameter 1], [mission parameter 2], ... [mission parameter n]`.
  3. Mount your payload to your launch vehicle. The payload will wait until the launch vehicle delivers it to circular orbit and then run it's mission.
+ 4. Pro-tip: The upper stage can have two computer cores.  One running the launch, and one running the payload program.  There is no need to build a whole stage for that part, if the upper stage has the range you need.  Just have an extra core that can take over after orbit insertion is complete.
 
 Mission Structure
 =================
@@ -118,5 +119,7 @@ This latest update (4 Oct 2021), has involved some fairly major refactoring.  Ev
 (11 Oct 2021) Made a policy where programs only accept one string parameter.  This requires some minimal string processing in program definitions, but increases runtime safety; allowing the system to fail safely in the case of spurious user input.
 
 (20 May 2022) The Spaceman Spiff update includes internal changes, and improvements to the usability of the `ish` system.
+
+(22 May 2022) We are depreciating the lv_unicore.ks boot script as redundant.  Just add a second core to the upper stage running payload.ks.
 
 Note: I understand and apologize for the inconsistent naming styles, etc you will find.  I have been more concerned with functionality. Maybe someday I will get around to beautification.
