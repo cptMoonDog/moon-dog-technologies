@@ -49,10 +49,17 @@ set available_programs[programName] to {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPlanAdd"]("orient-to-max-solar", {
-      local solarFacingVector is 0.
-      for s in ship:modulesNamed("ModuleDeployableSolarPanel") {
+      local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
+      local panelFacingVector is v(0,0,0).
+      local averageAngleOfIncidence is 0.
+      for p in panels {
+         if p:part:title = "OX-STAT Photovoltaic Panels" or p:part:title = "OX-STAT-XL Photovoltaic Panels" set panelFacingVector to panelFacingVector -p:part:facing:topvector. // 
+         else set panelFacingVector to panelFacingVector +p:part:facing:forevector. // Works for the shielded 1x6
+      }
+      lock steering to panelFacingVector. //TODO steer this vector toward the sun.
+      wait 5.
          
-      return OP_CONTNUE.
+      return OP_FINISHED.
    }).
    
          
