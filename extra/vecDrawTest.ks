@@ -24,12 +24,34 @@ clearvecdraws().
 //       
 //    
     local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
+    local primary is panels[0]. // Ideally, the biggest.
     local panelFacingVector is v(0,0,0).
-    local averageAngleOfIncidence is 0.
+    local panelTopVector isv(0,0,0).
+    // The part:facing:forevector is parallel with the surface the part is attached to.
+    // the topvector is perpendicular to the surface.
+    // The fixed panels face the opposite direction of the topvector, and 
+    // the rotating panels can face any direction parallel with the surface.
+    // Therefore, the vector to point at the sun, is the sum of the negative
+    // topvectors of the fixed panels, and any convenient vector parallel to the surface for rotating panels, like facing:forevector.
     for p in panels {
-       if p:part:title = "OX-STAT Photovoltaic Panels" or p:part:title = "OX-STAT-XL Photovoltaic Panels" set panelFacingVector to panelFacingVector -p:part:facing:topvector. // 
-       else set panelFacingVector to panelFacingVector +p:part:facing:forevector. // Works for the shielded 1x6
+       set panelTopVector to panelTopVector -p:part:facing:topvector.
+       set panelFacingVector to panelFacingVector +p:part:facing:forevector.
     }
+    // Fixed panel array
+    if primary:part:title = "OX-STAT Photovoltaic Panels" or primary:part:title = "OX-STAT-XL Photovoltaic Panels" { 
+       if panelTopVector:mag = 0 { // Symmetrical, panels facing radially outward
+          set panelFacingVector to -primary:part:facing:topvector.
+       } else { 
+          set panelFacingVector to panelTopVector.
+       } 
+    } else { // Rotating panel array, probably
+       // Symmetrical radial array
+       if panelTopVector:mag = 0 set panelFacingVector to vcrs(-primary:part:facing:topvector, panelFacingVector)).
+       else set panelFacingVector to vcrs(panelFacingVector, panelTopVector).
+    } 
+    
+   
+    lock steering to ship:facing:forevector*angleaxis(vang(ship:facing:forevector, panelFacingVector), vcrs(ship:facing:forevector, panelFacingVector))).
     print panels[0]:part:title.
     print panels[0]:allfieldnames.
     local test is vecdraw(
