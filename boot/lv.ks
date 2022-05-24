@@ -8,6 +8,11 @@ if ship:status = "PRELAUNCH" {
    //The following attempts to pass off control of the craft, from the KOS Processor on the Booster, 
    //to the KOS Processor on the payload.
    //For more info, see payload_boot.ks
+   //if Pparameters {
+   // core:connection:sendmessage(Pparameters).
+   //copypath("0:/boot/payload.ks", "1:/boot/payload.ks").
+   //set core:bootfile:name to "/boot/payload.ks".
+   //reboot.} else {
    wait 5.
    local procs is list().
    list processors in procs.
@@ -16,4 +21,5 @@ if ship:status = "PRELAUNCH" {
          payloadCore:connection:sendmessage("launch complete").
    }
    shutdown.
+   //}
 }

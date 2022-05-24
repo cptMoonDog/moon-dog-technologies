@@ -8,7 +8,23 @@
    // For example, to use the "Spud Atlas" launch vehicle and launch into an orbit coplanar with Minmus,
    // give the core on the launch vehicle the nameTag: "Spud Atlas, 6, 78".
    // Or, just set the nameTag to "Spud Atlas, Minmus"
-if core:tag {
+   
+   //local Lparameters is "".
+   //if core:tag set Lparameters to core:tag.
+   //else if exists("0:/launchparameters.txt") {
+   //   local f is open("0:/launchparameters.txt").
+   //   local i is f:itsrator.
+   //   until i:atend {
+   //      if i:value:tostring:trim:tolower:startswith("//launch") {
+   //         i:next.
+   //         set Lparameters to i:value.
+   //      } else if i:value:tostring:trim:tolower:startswith("//payload") {
+   //         i:next.
+   //         set Pparameters to i:value.
+   //      }
+   //   }
+   //}
+if core:tag {  
    runoncepath("0:/lib/core/kernel.ks").
    runoncepath("0:/lib/launch/launch_ctl.ks").
    local data is core:tag:split(",").
@@ -34,9 +50,14 @@ if core:tag {
                }
                runpath("0:/lv/"+data[0]+".ks").
             } else { /// Interplanetary Targets ///
-               runpath("0:/lib/physics.ks").
-               local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
-               print ttWindow.
+               parameters given; runs the launch with default values
+      setLaunchParams(0, "none").
+      launch_param:add("targetApo", 80000).
+      runpath("0:/lv/"+data[0]+".ks").
+      // just launch equatorial
+               //runpath("0:/lib/physics.ks").
+               //local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
+               //print ttWindow.
                //TODO make this work. Update: Not relevant ipt should not be handled by this stage 
                runpath("0:/lv/"+data[0]+".ks").
             }
