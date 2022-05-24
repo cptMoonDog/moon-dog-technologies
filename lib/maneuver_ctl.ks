@@ -51,7 +51,7 @@
    declare function abort_burn {
       burn_queue:pop().
    }
-   maneuver_ctl:add("abort_burn", @abort_burn).
+   maneuver_ctl:add("abort_burn", abort_burn@).
       
 
    declare function execute {

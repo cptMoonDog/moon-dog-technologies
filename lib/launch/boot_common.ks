@@ -50,7 +50,7 @@ if core:tag {
          if data:length > 3 {
             if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
                launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
-               set launch_param["targetApo"] to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we accept them reduced by 1000.
+               set launch_param["targetApo"] to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we require them reduced by 1000.
             } else {
                set launch_param["targetApo"] to data[3]:tonumber(80000).
             }
@@ -63,11 +63,11 @@ if core:tag {
       launch_param:add("targetApo", 80000).
       runpath("0:/lv/"+data[0]+".ks").
    }
-} else if exists("0:/lv/"+ship:name+".ks") {
+}// else if exists("0:/lv/"+ship:name+".ks") {
    //If the nameTag on the core is not used, attempt to find a script with the ship:name instead
-   setLaunchParams(target:orbit:inclination, target:orbit:lan).
-   runpath("0:/lv/"+ship:name+".ks").
-}
+  // setLaunchParams(target:orbit:inclination, target:orbit:lan).
+   //runpath("0:/lv/"+ship:name+".ks").
+//}
 
 declare local function setLaunchParams {
    parameter inclination is 0.

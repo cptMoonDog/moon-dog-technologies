@@ -111,13 +111,13 @@ kernel_ctl:add("prompt", ":"). //Prompt
       if exists("1:/"+name+".ksm") runoncepath("1:/"+name+".ksm").
       else if exists("0:/"+name+".ks") runoncepath("0:/"+name+".ks").
    }
-   set kernel_ctl["import-lib"] to import-lib@.
+   set kernel_ctl["import-lib"] to import_lib@.
 
-   declare function load-to-core {
+   declare function loadToCore {
       parameter name.
       if exists("0:/"+name+".ks") compile "0:/"+name+".ks" to "1:/"+name+".ksm".
    }
-   set kernel_ctl["load-to-core"] to @load-to-core.
+   set kernel_ctl["load-to-core"] to loadToCore@.
 
 ///Private functions
    declare function set_runmode {

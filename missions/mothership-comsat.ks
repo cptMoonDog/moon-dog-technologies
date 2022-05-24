@@ -15,7 +15,8 @@ else if ship:status = "ORBITING" and ship:orbit:eccentricity > 0.1 {
    wait 5.
    local procs is list().
    list processors in procs.
-   if procs:length = 1{ // Deorbit the mothership.
+   if procs:length = 1 or (procs:length = 2 and (procs[0]:bootfilename = "/boot/lv.ks" or procs[1]:bootfilename = "/boot/lv.ks")) { // Mother ship will only have one core, or two if mothership is the upper stage of a launch vehicle.
+      // Deorbit the mothership.
       lock steering to ship:retrograde.
       wait 30.
       lock throttle to 1.
@@ -29,7 +30,6 @@ else if ship:status = "ORBITING" and ship:orbit:eccentricity > 0.1 {
       until procs:length < stages {
          stage.
          wait 1.
-         set ship:name to "Mothership".
          list processors in procs.
       }
       wait 5.

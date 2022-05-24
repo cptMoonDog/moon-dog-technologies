@@ -13,7 +13,7 @@ if ship:status = "PRELAUNCH" {
    list processors in procs.
    for payloadCore in procs {
          print "Handing off...".
-         payloadCore:connection:sendmessage("handoff").
+         payloadCore:connection:sendmessage("launch complete").
    }
    shutdown.
 }

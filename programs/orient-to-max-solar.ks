@@ -7,8 +7,7 @@ local programName is "orient-to-max-solar". //<------- put the name of the scrip
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-declare parameter p1 is "". 
-declare parameter p2 is "". 
+if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 if not (defined available_programs) declare global available_programs is lexicon().
 
 //Add initialzer for this program sequence to the lexicon of available programs
@@ -28,18 +27,6 @@ set available_programs[programName] to {
    declare parameter argv.
 
 //======== Local Variables =====
-   local lastLightMag is -1.
-   local lastVector is ship:facing:forevector.
-   local lastTime is time:seconds.
-   local rotMag is 10.
-   local axis is "roll".
-
-   declare function setSteeringLock {
-      set lastVector to ship:facing:forevector.
-      if axis = "roll" lock steering to lastVector + R(0, 0, rotMag).
-      if axis = "yaw" lock steering to lastVector + R(0, rotMag, 0).
-      if axis = "pitch" lock steering to lastVector + R(rotMag, 0, 0).
-   }
    
 
 //=============== Begin program sequence Definition ===============================
@@ -52,7 +39,7 @@ set available_programs[programName] to {
     local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
     local primary is panels[0]. // Ideally, the biggest.
     local panelFacingVector is v(0,0,0).
-    local panelTopVector isv(0,0,0).
+    local panelTopVector is v(0,0,0).
     // The part:facing:forevector is parallel with the surface the part is attached to.
     // the topvector is perpendicular to the surface.
     // The fixed panels face the opposite direction of the topvector, and 
@@ -73,7 +60,7 @@ set available_programs[programName] to {
        } 
     } else { // Rotating panel array, probably
        // Symmetrical radial array
-       if panelTopVector:mag = 0 set panelFacingVector to vcrs(-primary:part:facing:topvector, panelFacingVector)).
+       if panelTopVector:mag = 0 set panelFacingVector to vcrs(-primary:part:facing:topvector, panelFacingVector).
        else set panelFacingVector to vcrs(panelFacingVector, panelTopVector).
     } 
     

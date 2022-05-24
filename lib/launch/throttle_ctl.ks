@@ -111,7 +111,7 @@
    }
 
    //////// Throttle setters (Functions that throttle can be locked to.)
-   local kickWithin is 1.5.
+   local kickWithin is 2.5.
    //Returns the throttle setting
    // If a table based profile is selected by the lv, the throttle will be locked to this function.
    // Expects a table of throttle values vs a reference variable (altitude, Apoapsis, MET, etc) in launch_param["throttleProfile"]
@@ -174,7 +174,7 @@
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
          //Max function ensures this will not cause throttling down, if already throttled up.
-         return max(defaultSetting, abs(vang(up:forevector, ship:prograde:forevector)-90)/kickWithin).
+         return max(defaultSetting, 1 - abs(vang(up:forevector, ship:prograde:forevector) - 90)/kickWithin).
       } else return defaultSetting.
    }
 

@@ -1,6 +1,8 @@
 @lazyglobal off.
 
 // This is for a deployable communications satellite
+local procs is list().
+list processors in procs.
 if ship:status = "PRELAUNCH" { //and not(exists("1:/lib/core/kernel.ksm")) {
    // Configure core for flight.
    compile "0:/lib/core/kernel.ks" to "1:/lib/core/kernel.ksm".
@@ -12,7 +14,7 @@ if ship:status = "PRELAUNCH" { //and not(exists("1:/lib/core/kernel.ksm")) {
    //kernel_ctl["load-to-core"]("program/station-keep-behind").
    wait until ship:status = "ORBITING".
    reboot.
-} else  if ship:status = "ORBITING" and ship:orbit:eccentricity > 0.1 {
+} else  if ship:status = "ORBITING" and procs:length > 1 {
    // Finalize orbit after seperation.
    local mothership is ship:name.
    local eng is list().
@@ -27,10 +29,10 @@ if ship:status = "PRELAUNCH" { //and not(exists("1:/lib/core/kernel.ksm")) {
    available_programs["circularize-at-ap"](core:tag:split(",")[1]).                   // Define the order of execution.
    kernel_ctl["MissionPlanAdd"]({ // Send player back to mothership.
       set kuniverse:activevessel to vessel(mothership).
-   }
+   }).
 
    kernel_ctl["start"]().                                            // Execute the mission plan.
-} else if ship:status = "ORBITING" { // On station.
+} else if ship:status = "ORBITING" and procs:length = 1{ // On station.
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
    kernel_ctl["import-lib"]("orient-to-max-solar").                    // Make pre-defined programs available
    //kernel_ctl["import-lib"]("station-keep-behind").                    // Make pre-defined programs available

@@ -42,6 +42,8 @@ Launch Vehicles
       - `[LAUNCH SCRIPT], [TARGET]                     ` Launch to: coplanar with target at 80km.
       - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN]        ` Launch to: This plane, at 80km.
       - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN], [SMA] ` Launch to: This plane, circularize at this SMA.
+      - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN], to:[APOAPSIS(km)] ` Launch to: This plane, but do not circularize; Tranfer Orbit to altitude in km.
+
 
 Example: Given a craft with a KOS processor named: `Atlas, 6, 78`, and the bootfile `lv.ks`, on launch this ship will run `0:/lv/Atlas.ks` and attempt to launch to an orbit with inclination 6 degrees and Longitude of Ascending node 78 degrees which just happens to be coplanar with Minmus.
 
@@ -70,7 +72,7 @@ If you have, for instance, another craft you will be deploying from this "mother
 as well, but does not maintain the overhead that the "payload core" needs to.  This allows, for instance, automated satellite constellation deployments, thusly:
 
 If you have a booster, with an `lv.ks` bootfile, it will deliver your payload to orbit.  Then, for instance, your `payload.ks` booted core can be given `mothership-comsat` in the `core:tag` to handle orbit design, and satellite deployment.
-Each satellite, given the `mission.ks` bootfile in the VAB, can then be given `deployable-comsat` in the `core:tag` to handle circularization for themselves and handing the player back off to the "mothership".  If they are ever booted again, they could also be given a section of code intended to orient the solar panels...for instance.
+Each satellite, given the `mission.ks` bootfile in the VAB, can then be given `deployable-comsat, [NAME], [ENGINE]` in the `core:tag` to handle circularization for themselves and handing the player back off to the "mothership".  If they are ever booted again, they could also be given a section of code intended to orient the solar panels...for instance.
 
 Standalone Operation
 ====================
