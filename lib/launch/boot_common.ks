@@ -37,7 +37,7 @@ if core:tag {
                runpath("0:/lib/physics.ks").
                local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
                print ttWindow.
-               //TODO make this work
+               //TODO make this work. Update: Not relevant ipt should not be handled by this stage 
                runpath("0:/lv/"+data[0]+".ks").
             }
          }
