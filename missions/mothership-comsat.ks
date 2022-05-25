@@ -2,8 +2,7 @@
 if ship:status = "PRELAUNCH" {
    wait until ship:status = "ORBITING". // TODO determine that booster sep has occured.
    reboot.
-else if ship:status = "ORBITING" and ship:orbit:eccentricity > 0.1 {
-   
+} else if ship:status = "SUB_ORBITAL" or ship:orbit:eccentricity > 0.1 {
    until eta:apoapsis < 365 and eta:apoapsis > 360 {
       local start is eta:apoapsis.
       if start < 360 set start to start + ship:orbit:period.
@@ -33,6 +32,7 @@ else if ship:status = "ORBITING" and ship:orbit:eccentricity > 0.1 {
          list processors in procs.
       }
       wait 5.
+      //kuniverse:switchto().
    }
 
 }
