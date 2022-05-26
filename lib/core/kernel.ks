@@ -18,6 +18,8 @@ global OP_PREVIOUS is -1.
 
 global OP_FAIL is 32767.
 
+local LOADED_PROGRAMS is lexicon().
+
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
 global SYS_CMDS is lexicon().
@@ -112,6 +114,14 @@ kernel_ctl:add("prompt", ":"). //Prompt
       else if exists("0:/"+name+".ks") runoncepath("0:/"+name+".ks").
    }
    set kernel_ctl["import-lib"] to import_lib@.
+
+   // Runs the initializer for named program, adding as the next item in the MISSION_PLAN
+   declare function add_program {
+      parameter name.
+      parameter parameters.
+      if available_programs:haskey(name) available_programs[name](parameters).
+   }
+   set kernel_ctl["add-program"] to add_program@.
 
    declare function loadToCore {
       parameter name.
