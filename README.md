@@ -39,7 +39,7 @@ Launch Vehicles
     - Set the bootfile for the processor on your launch vehicle to `lv.ks`
     - You can pass arguments to the script one of two ways:
        - Using the nameTag of the KOS processor on your launch vehicle.
-       - Or in the “0:/launchparameters.txt” file under the “//launch” line. This option exists for two reasons, argument strings are often longer than the text box, and it allows the single core to do the accept responsibility for the “payload.ks” routine, if desired.  See Payloads and Missions for more information.
+       - Or in the “0:/launchparameters.txt” file under the “//launch” line. This option exists for two reasons, argument strings are often longer than the text box, and it allows the single core to accept responsibility for the “payload.ks” routine, if desired.  See Payloads and Missions for more information.
     - Wherever you set it, the argument string should be one of the following:
       - `[LAUNCH SCRIPT]                               ` Launch to: equatorial, 80km (default values).
       - `[LAUNCH SCRIPT], [TARGET]                     ` Launch to: coplanar with target at 80km.
@@ -72,7 +72,7 @@ The advantages of this, are that you need not clutter up the `boot` folder with 
 The contrast to the old system is that there was not a very well defined difference between `program` and `mission`.
 That ambiguity is solved with this new paradigm.
 
-The `payload.ks` bootfile is exclusively intended for use by the PRIMARY core on a payload.  That is, the core that will be doing the driving for the whole ship after booster seperation.
+The `payload.ks` bootfile is exclusively intended for use by the PRIMARY core on a payload.  That is, the core that will be doing the driving for the whole ship after booster separation.
 If you have, for instance, another craft you will be deploying from this "mothership", use the `mission.ks` bootfile in the VAB.  The `mission.ks` bootfile compiles the mission file to the core
 as well, but does not maintain the overhead that the "payload core" needs to.  This allows, for instance, automated satellite constellation deployments, thusly:
 
