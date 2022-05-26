@@ -108,7 +108,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
    set kernel_ctl["MissionPlanList"] to MPids@.
 
    // This is intended to make it easier to work with scripts loaded to the core.
-   declare function import_lib {
+   declare function import_lib {// Load the file, without needing to know where it is, search the core first.
       parameter name.
       if exists("1:/"+name+".ksm") runoncepath("1:/"+name+".ksm").
       else if exists("0:/"+name+".ks") runoncepath("0:/"+name+".ks").

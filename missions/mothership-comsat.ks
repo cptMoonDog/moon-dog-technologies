@@ -19,19 +19,16 @@ if nSats = -1 {
 } else if foundLVCore and procs:length > nSats + 1 or not(foundLVCore) and procs:length > nSats {
    // adjust Pe for desired orbit period.
    runpath("0:/lib/core/kernel.ks").
-   runpath("0:/lib/physics.ks").
+   kernel_ctl["import-lib"]("lib/physics").
 
-   kernel_ctl["loadProgram"]("change-pe").// why not have this do both? if already loaded, add to mp.
+   kernel_ctl["import-lib"]("programs/change-pe").   
    local nSats is core:tag:split(",")[1]:tonumber(-1).
-   if nSats = -1 {
-      print "Number of satellites being deployed is void.".
-      shutdown.
-   }
+
    local stationPeriod is phys_lib["period"](ship:body, ship:orbit:apoapsis+ship:body:radius).
    local transferPeriod is ((nSats - 1)/nSats)*stationPeriod.
    local transferSMA is phys_lib["sma-from-period"](transferPeriod).
    local newPe is transferSMA - ship:orbit:apoapsis - ship:body:radius*2.
-   kernel_ctl["add-program"]("change-pe", newPe).  
+   kernel_ctl["add-program"]("change-pe", "ant "+newPe:tostring).  
    kernel_ctl["start"]().
 }
 
