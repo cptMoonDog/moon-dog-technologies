@@ -17,16 +17,15 @@ if ship:status = "PRELAUNCH" { //and not(exists("1:/lib/core/kernel.ksm")) {
 } else  if ship:status = "ORBITING" and procs:length > 1 {
    // Finalize orbit after seperation.
    local mothership is ship:name.
-   local eng is list().
-   until eng:length = 1 {
-      list engines in eng.
+   until procs:length = 1 {
+      list processors in procs.
       wait 0.
    }
    set ship:name to core:tag:split(",")[0].
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
    kernel_ctl["import-lib"]("circularize-at-ap").                    // Make pre-defined programs available
 
-   available_programs["circularize-at-ap"](core:tag:split(",")[1]).                   // Define the order of execution.
+   kernel_ctl["add-program"]("circularize-at-ap", core:tag:split(",")[1]).                   // Define the order of execution, parameter is engine.
    kernel_ctl["MissionPlanAdd"]({ // Send player back to mothership.
       set kuniverse:activevessel to vessel(mothership).
    }).
