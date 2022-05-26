@@ -25,5 +25,13 @@ Programs
 
 Make available programs lexicon part of kernel_ctl
 
+Hibernation
+===========
+Sometimes a mission plan includes a long trip.  How do we handle rebuilding the same state after player absence?  Well, how do we build mission plans in general?  Up till now, they were either built through ISH, or defined in bespoke files during the previous mission paradigm.
+
+How about a mission sequence file, with each line the same as the equivalent ISH command.  But how do I identify which item is the start point on reboot? In hibernatable programs, log name of program at op-continue.
+
+Decision: Make a file called plan.ks that is modified as needed.  If a ship uses the run-plan mission, then copy the plan to the core, and parse the values into the MISSION_PLAN.  Make sure that it is valid kerboscript, so that custom delegates can be defined.
+
 General Todo
 =========

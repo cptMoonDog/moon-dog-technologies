@@ -58,6 +58,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
          // Execute current routine
          set_runmode(MISSION_PLAN[runmode]()).
          if runmode < MISSION_PLAN:length {
+            log MISSION_PLAN_ID to "0:/mission-tracker.txt".
             // If mission plan is still running...
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
