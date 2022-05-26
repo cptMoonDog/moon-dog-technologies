@@ -37,7 +37,10 @@ Launch Vehicles
  3. Edit your new Launch Vehicle definition file, and change any of the the default values to ones appropriate for your launch vehicle. (Note: Some may suggest, that this would be an appropriate use for JSON files, but believe it or not Kerboscript is better for human readability.)
  4. In the VAB:
     - Set the bootfile for the processor on your launch vehicle to `lv.ks`
-    - Set the nameTag of the KOS processor on your launch vehicle to one of the following:
+    - You can pass arguments to the script one of two ways:
+       - Using the nameTag of the KOS processor on your launch vehicle.
+       - Or in the “0:/launchparameters.txt” file under the “//launch” line. This option exists for two reasons, argument strings are often longer than the text box, and it allows the single core to do the accept responsibility for the “payload.ks” routine, if desired.  See Payloads and Missions for more information.
+    - Wherever you set it, the argument string should be one of the following:
       - `[LAUNCH SCRIPT]                               ` Launch to: equatorial, 80km (default values).
       - `[LAUNCH SCRIPT], [TARGET]                     ` Launch to: coplanar with target at 80km.
       - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN]        ` Launch to: This plane, at 80km.
@@ -52,9 +55,11 @@ Payloads and Missions
  1. Make your spacecraft, and make sure to include a KOS processor and a probe core.
  2. In the VAB:
     - Set the bootfile for the KOS processor on the spacecraft to `payload.ks`.
+       - Note: If the upper stage would be a good choice for the duties of the payload, you have two options:
+          - Add a second core to the upper stage and give it the “payload.ks” boot file.
+          - Or, if you only want to use the one core, under the “//payload” line in the “0:/launchparameters.txt” file provide the payload arguments.  This will cause the “lv.ks” boot file to directly run the payload boot file rather than send a message to the core that has that boot file.
     - Set the nameTag of the KOS processor to `[name you want your ship to have]:[name of mission to run], [mission parameter 1], [mission parameter 2], ... [mission parameter n]`.
  3. Mount your payload to your launch vehicle. The payload will wait until the launch vehicle delivers it to circular orbit and then run it's mission.
- 4. Pro-tip: The upper stage can have two computer cores.  One running the launch, and one running the payload program.  There is no need to build a whole stage for that part, if the upper stage has the range you need.  Just have an extra core that can take over after orbit insertion is complete.
 
 Mission Structure
 =================

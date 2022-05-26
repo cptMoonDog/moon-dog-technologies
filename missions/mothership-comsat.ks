@@ -3,7 +3,11 @@ if ship:status = "PRELAUNCH" {
    wait until not(core:messages:empty). 
    reboot.
 }
-local nSats is core:tag:split(",")[1]:tonumber(-1).
+
+local data is core:tag:split(" ").
+local engineName is data[1].
+local nSats is data[2]:tonumber(-1). 
+
 local procs is list().
 list processors in procs.
 local foundLVCore is false.
@@ -21,14 +25,13 @@ if nSats = -1 {
    runpath("0:/lib/core/kernel.ks").
    kernel_ctl["import-lib"]("lib/physics").
 
-   kernel_ctl["import-lib"]("programs/change-pe").   
-   local nSats is core:tag:split(",")[1]:tonumber(-1).
+   kernel_ctl["import-lib"]("programs/change-pe").
 
    local stationPeriod is phys_lib["period"](ship:body, ship:orbit:apoapsis+ship:body:radius).
    local transferPeriod is ((nSats - 1)/nSats)*stationPeriod.
    local transferSMA is phys_lib["sma-from-period"](transferPeriod).
    local newPe is transferSMA - ship:orbit:apoapsis - ship:body:radius*2.
-   kernel_ctl["add-program"]("change-pe", "ant "+newPe:tostring).  
+   kernel_ctl["add-program"]("change-pe", core:tag:split(" ")[1]+" "+terrier+newPe:tostring).  
    kernel_ctl["start"]().
 }
 
