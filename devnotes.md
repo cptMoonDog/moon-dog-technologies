@@ -18,13 +18,12 @@ Decision: Simple.  Have two cores on the upper stage.  One running lv.ks, and th
 Transfer orbits
 ==========
 
-Need to make orbit design for transfer orbits easier.  Make pe change part of the routine
+Need to make orbit design for transfer orbits easier.  Make pe change part of the routine.  In other words add calculation to relate pe and orbit period.
 
 Programs
 ========
 
-Make available programs lexicon part of kernel_
+Make available programs lexicon part of kernel_ctl
 
 General Todo
 =========
-Move boot_common back to lv

@@ -1,8 +1,14 @@
 @lazyglobal off.
 if ship:status = "PRELAUNCH" {
-   wait until ship:status = "ORBITING". // TODO determine that booster sep has occured.
+   wait until not(core:messages:empty). 
    reboot.
 } else if ship:status = "SUB_ORBITAL" or ship:orbit:eccentricity > 0.1 {
+   // adjust Pe for desired orbit period.
+   runpath("0:/lib/core/kernel.ks").
+   kernel_ctl["loadProgram"]("change-pe").// why not have this do both? if already loaded, add to mp.
+   kernel_ctl["addProgram"]("change-pe").  
+   kernel_ctl["start"]().
+} else { 
    until eta:apoapsis < 365 and eta:apoapsis > 360 {
       local start is eta:apoapsis.
       if start < 360 set start to start + ship:orbit:period.
