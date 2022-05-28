@@ -18,7 +18,7 @@
       parameter bod.
       parameter sma.
 
-      return 2*pi()*sqrt((sma^3)/bod:mu).
+      return 2*constant:pi*sqrt((sma^3)/bod:mu).
    }
    phys_lib:add("period", periodForSMA@).
 
@@ -26,7 +26,7 @@
       parameter bod.
       parameter t.
 
-      return (((t/(2*pi()))^2)*bod:mu)^(1/3).
+      return (((t/(2*constant:pi))^2)*bod:mu)^(1/3).
    }
    phys_lib:add("sma-from-period", smaForPeriod@).
 

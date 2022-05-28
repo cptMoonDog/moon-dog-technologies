@@ -30,7 +30,7 @@ SYS_CMDS:add("display", {
             set kernel_ctl["output"] to temp.
          } else if splitCmd[1] = "help" {
             runoncepath("0:/programs/"+splitCmd[2]+".ks").
-            available_programs[splitCmd[2]]("").
+            kernel_ctl["availablePrograms"][splitCmd[2]]("").
          } else if splitCmd[1] = "eta-duna-window" {
             if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
@@ -126,8 +126,8 @@ SYS_CMDS:add("add-program", {
          set kernel_ctl["output"] to "Program does not exist".
          return "finished".
       }
-      if available_programs:haskey(splitCmd[1]) {
-         local retVal is available_programs[splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
+      if kernel_ctl["availablePrograms"]:haskey(splitCmd[1]) {
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
          return "finished".                                                                                                                                      
       } else {
@@ -164,13 +164,13 @@ SYS_CMDS:add("insert-program", {
          set kernel_ctl["output"] to "Program does not exist".
          return "finished".
       }
-      if available_programs:haskey(splitCmd[2]) {
+      if kernel_ctl["availablePrograms"]:haskey(splitCmd[2]) {
          local temp is "".
          for item in splitCmd:sublist(splitCmd:find("insert-program"), splitCmd:length-splitCmd:find("insert-program")) {
             set temp to temp + item.
          }
          // TODO Wrong call fix this, falling asleep.
-         local retVal is available_programs[splitCmd[2]](temp).
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[2]](temp).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
          else {
             if splitcmd[1]:tonumber(-1) > -1 {

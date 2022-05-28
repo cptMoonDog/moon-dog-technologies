@@ -18,11 +18,11 @@ global OP_PREVIOUS is -1.
 
 global OP_FAIL is 32767.
 
-local LOADED_PROGRAMS is lexicon().
-
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
 global SYS_CMDS is lexicon().
+
+kernel_ctl:add("availablePrograms", lexicon()).
 
 // Kernel Registers
 kernel_ctl:add("interactive", interactive).
@@ -57,8 +57,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
          
          // Execute current routine
          set_runmode(MISSION_PLAN[runmode]()).
-         if runmode < MISSION_PLAN:length {
-            log MISSION_PLAN_ID to "0:/mission-tracker.txt".
+         if runmode < MISSION_PLAN:length and runmode > -1 {
+            if exists("0:/mission-tracker.txt") {
+               deletepath("0:/mission-tracker.txt").
+               log MISSION_PLAN_ID[runmode] to "0:/mission-tracker.txt".
+            }
             // If mission plan is still running...
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
@@ -111,8 +114,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
    // This is intended to make it easier to work with scripts loaded to the core.
    declare function import_lib {// Load the file, without needing to know where it is, search the core first.
       parameter name.
-      if exists("1:/"+name+".ksm") runoncepath("1:/"+name+".ksm").
-      else if exists("0:/"+name+".ks") runoncepath("0:/"+name+".ks").
+      if exists("1:/"+name+".ksm") {
+         runoncepath("1:/"+name+".ksm").
+      } else if exists("0:/"+name+".ks") {
+         runoncepath("0:/"+name+".ks").
+      }
    }
    set kernel_ctl["import-lib"] to import_lib@.
 
@@ -120,7 +126,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
    declare function add_program {
       parameter name.
       parameter parameters.
-      if available_programs:haskey(name) available_programs[name](parameters).
+      print "program added with param: "+name+parameters.
+      if kernel_ctl["availablePrograms"]:haskey(name) {
+         kernel_ctl["availablePrograms"][name](parameters).
+      } else print "Program: "+name+" does not exist".
    }
    set kernel_ctl["add-program"] to add_program@.
 
@@ -133,8 +142,15 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Private functions
    declare function set_runmode {
       parameter n.
-      if n = OP_FAIL set runmode to MISSION_PLAN:length+100.
+      if n = OP_FAIL {
+         print MISSION_PLAN_ID[runmode] + " returned fail flag.".
+         set runmode to MISSION_PLAN:length+100.
+      }
       if n >= -1 and n <= 1 set runmode to runmode+n.
+      if runmode >= MISSION_PLAN:length or runmode < 0 {
+         print "MISSION_PLAN index out of range: "+runmode.
+         print "n: "+n.
+      }
    }
 
    declare function process_char {

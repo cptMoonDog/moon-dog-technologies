@@ -76,6 +76,7 @@
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 1 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-60 AND time:seconds < start-30 { 
+         print "lock steering" at(1, 0).
          set kernel_ctl["status"] to "Executing Man.: Lock Steering".
          lock steering to burn_queue:peek()["steeringProgram"]().
       //Less than 30 sec out and more than 25 sec, recalculate burn timing.
@@ -130,9 +131,9 @@
    
    declare function reset_for_next_burn {
       //Better non-impulsive burn timing: apply half the dV before and half the dV after the impulse point.
-      local m2 is ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
+      local m2 is ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*constant:g0)))).
       local burnLengthFirstHalf is ((ship:mass*1000-m2)/(burn_queue:peek()["ff"])).
-      local m3 is m2/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*g0))).
+      local m3 is m2/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*constant:g0))).
       local burnLengthSecondHalf is ((m2-m3)/(burn_queue:peek()["ff"])).
 
       set start to impulse_time(burn_queue:peek()["ip"]) - burnLengthFirstHalf.

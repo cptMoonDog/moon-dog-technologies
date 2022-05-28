@@ -7,14 +7,11 @@ local programName is "transfer-to-orbit". //<------- put the name of the script 
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
-declare parameter p1 is "". 
-declare parameter p2 is "". 
-if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
-set available_programs[programName] to {
+kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
    //   Answer: It seems that the memory area for parameters passed to scripts is always the same.  So, when 
@@ -89,4 +86,4 @@ set available_programs[programName] to {
          
 //========== End program sequence ===============================
    
-}. //End of initializer delegate
+}). //End of initializer delegate
