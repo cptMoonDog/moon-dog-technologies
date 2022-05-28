@@ -1,7 +1,7 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "change-inc". //<------- put the name of the script here
+local programName is "change-LAN". //<------- put the name of the script here
 
 // Header allowing for standalone operation.
 //   If this program is to be used as part of a complete mission, run this script without parameters, and
@@ -27,15 +27,15 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
    local engineName is "".
-   local newInc is "".
+   local newLAN is "".
    if argv:split(" "):length = 2 {
       set engineName to argv:split(" ")[0].
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
-      set newInc to argv:split(" ")[1]:tonumber(ship:orbit:inclination).
+      set newLAN to argv:split(" ")[1]:tonumber(ship:orbit:LAN).
    } else {
       set kernel_ctl["output"] to
-         "Changes orbit inclination at the next AN or DN."
-         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [NEW-INCLINATION]".
+         "Changes the Longitude of the Ascending Node (LAN/RAAN)."
+         +char(10)+"Usage: add-program change-LAN [ENGINE-NAME] [NEW-LONGITUDE]".
       return.
    }
 
@@ -47,7 +47,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPlanAdd"]("change-inc", {
+   kernel_ctl["MissionPlanAdd"]("change-LAN", {
       local count is 0.
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
@@ -62,33 +62,38 @@ kernel_ctl["availablePrograms"]:add(programName, {
       local LANVector is {
          return angleaxis(ship:orbit:lan, ship:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
       }.
+      //clearvecdraws().
       local angleToAN is vang(ship:position-ship:body:position, LANVector()).         // From SOI origin
       local angleToDN is vang(ship:position-ship:body:position, -1*LANVector()).         // From SOI origin
       // It does not matter whether it is a prograde or retrograde orbit.
       // Or if we are closer to AN or DN
-      if ship:geoposition:lat > 0 set angleToAN to 360 - angleToAN.      // Northern hemisphere; Past AN
-      else set angleToDN to 360 - angleToDN.                                  // Southern hemisphere; Past DN
-         
-      //Assuming circular orbit:
-      local ttAN is (ship:orbit:period/360)*angleToAN.
-      local ttDN is (ship:orbit:period/360)*angleToDN.
 
-      local dInc is newInc - ship:orbit:inclination.
-      local dvNormal is ship:velocity:orbit:mag*sin(dInc).
-      local dvPrograde is ship:velocity:orbit:mag*cos(dInc)-ship:velocity:orbit:mag.
-      if dInc > 0 {
-        if ttAN < ttDN {
-           add(node(ttAN+time:seconds, 0, dvNormal, dvPrograde)).
-        } else {
-           add(node(ttDN+time:seconds, 0, -dvNormal, dvPrograde)).
-        }
-      } else if dInc < 0 {
-        if ttAN < ttDN {
-           add(node(ttAN+time:seconds, 0, dvNormal, dvPrograde)).
-        } else {
-           add(node(ttDN+time:seconds, 0, -dvNormal, dvPrograde)).
-        }
-      }
+      // Implementing Null change in inclination:
+      local angleOfBP is (newLAN+ship:orbit:LAN)/2 - 90.
+      local vectorOfBP is vxcl(ship:angularvel:normalized, angleaxis(angleOfBP, ship:body:angularvel:normalized)*solarprimevector).
+      local angleToBP is vang(-ship:body:position, vectorOfBP).
+      local dPlane is arccos((sin(ship:orbit:inclination)^2)*(cos(ship:orbit:lan-newLAN)-1)+1).
+      //local dPlane is arccos((sin(ship:orbit:inclination)^2)*(cos(ship:orbit:lan)*cos(newLAN)+sin(ship:orbit:lan)*sin(newLAN)-1)+1).
+      //local dPlane is arccos((sin(ship:orbit:inclination)^2)*cos(newLAN-ship:orbit:LAN)).
+      //local dPlane is arccos((sin(ship:orbit:inclination)^2)*cos(ship:orbit:LAN-newLAN)).
+
+      //if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) > 90 { // Heading toward AN, heading South
+      //   set angleToBP to angleToAN-90.      
+      //} else if vang(ship:velocity:orbit, LANVector()) < 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading toward AN, heading North.
+      //   set angleToBP to angleToAN+90. 
+      //} else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) < 90 {  // Heading away from AN, heading North.
+      //   set angleToBP to angleToDN-90. 
+      //} else if vang(ship:velocity:orbit, LANVector()) > 90 and vang(ship:velocity:orbit, north:forevector) > 90 {  // Heading away from AN, heading South.
+      //   set angleToBP to angleToDN+90. 
+      //}
+
+      //Assuming circular orbit:
+      local ttBP is (ship:orbit:period/360)*angleToBP.
+
+      local dvNormal is ship:velocity:orbit:mag*sin(dPlane). // Gives negative for negative dLAN
+      local dvPrograde is ship:velocity:orbit:mag*cos(dPlane)-ship:velocity:orbit:mag.
+
+      add(node(ttBP+time:seconds, 0, -dvNormal, dvPrograde)).
 
       maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.

@@ -9,12 +9,11 @@ local programName is "change-pe". //<------- put the name of the script here
 //   to build the MISSION_PLAN.
 declare parameter p1 is "". 
 declare parameter p2 is "". 
-if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
-set available_programs[programName] to {
+kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
    //   Answer: It seems that the memory area for parameters passed to scripts is always the same.  So, when 
@@ -40,8 +39,8 @@ set available_programs[programName] to {
    // In this case, the first part of the program sequence
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
+   kernel_ctl["MissionPlanAdd"]("change-pe", {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust: "+ship:maxthrust.
          stage. 
@@ -52,6 +51,7 @@ set available_programs[programName] to {
          }
       }
       print "pe requested: " + newPe.
+      if ship:orbit:periapsis > newPe*0.99 and ship:orbit:periapsis < newPe*1.01 return OP_FINISHED.
       if ship:orbit:periapsis < newPe set steerDir to "prograde". 
       local newSMA is phys_lib["sma"](ship:orbit:body, ship:orbit:apoapsis, newPe).
       print "sma: "+ship:orbit:semimajoraxis.
@@ -65,8 +65,8 @@ set available_programs[programName] to {
       maneuver_ctl["add_burn"](steerDir, engineName, "ap", dv).
       return OP_FINISHED.
    }).
-   MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-   MISSION_PLAN:add({
+   kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"]("fining", {
       if (steerDir = "prograde" and ship:periapsis < newPe*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newPe*1.01) {
          if steerDir = "prograde" {
             if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
@@ -93,4 +93,4 @@ set available_programs[programName] to {
          
 //========== End program sequence ===============================
    
-}. //End of initializer delegate
+}). //End of initializer delegate

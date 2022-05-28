@@ -19,17 +19,17 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
       launch_ctl["init_staging"]().
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
-      if launch_param:haskey("show telemetry") and launch_param["show telemetry"] = "true" {
-         runpath("0:/lib/core/telemetry.ks").
-         INTERRUPTS:add(telemetry_ctl["display"]).
-      }
+      //if launch_param:haskey("show telemetry") and launch_param["show telemetry"] = "true" {
+      //   runpath("0:/lib/core/telemetry.ks").
+      //   INTERRUPTS:add(telemetry_ctl["display"]).
+      //}
    }
    launch_ctl:add("init", init_system@).
    
    declare function setupLaunch {   
-      MISSION_PLAN:add(launch_ctl["countdown"]).
-      MISSION_PLAN:add(launch_ctl["launch"]).
-      MISSION_PLAN:add({
+      kernel_ctl["MissionPlanAdd"]("countdown", launch_ctl["countdown"]).
+      kernel_ctl["MissionPlanAdd"]("launch", launch_ctl["launch"]).
+      kernel_ctl["MissionPlanAdd"]("ascent", {
          set kernel_ctl["status"] to "Ascent".
         //Calls staging check, and throttle defines end of this mode.
         launch_ctl["staging"]().
@@ -40,21 +40,25 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
         return launch_ctl["throttle_monitor"]().
       }).
       if not (launch_param:haskey("orbitType")) or not(launch_param["orbitType"] = "transfer") {
-         MISSION_PLAN:add({
+         kernel_ctl["MissionPlanAdd"]("circularize", {
             set kernel_ctl["status"] to "Setup circularization...".
             //If the upperstage is not the active engine...
             if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
                stage. 
             }
             maneuver_ctl["add_burn"]("prograde", launch_param["upperstage"], "ap", "circularize").
-            if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height lock throttle to 1.
-            else {
+            if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height {
+               maneuver_ctl["abort_burn"]().
+               lock steering to ship:prograde.
+               lock throttle to 1. // Try to recover 
+               return OP_CONTINUE.
+            } else {
                lock steering to ship:prograde.
                lock throttle to 0.
             }
             return OP_FINISHED.
          }).
-         MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
+         kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
       }
    }
    launch_ctl:add("addLaunchToMissionPlan", setupLaunch@).

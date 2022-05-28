@@ -111,7 +111,7 @@
    }
 
    //////// Throttle setters (Functions that throttle can be locked to.)
-   local kickWithin is 1.5.
+   local kickWithin is 2.5.
    //Returns the throttle setting
    // If a table based profile is selected by the lv, the throttle will be locked to this function.
    // Expects a table of throttle values vs a reference variable (altitude, Apoapsis, MET, etc) in launch_param["throttleProfile"]
@@ -154,32 +154,32 @@
    //Apoapsis value beyond which the function will apply.  Full throttle prior.
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
    declare function getThrottleSetting_function {
+      local defaultSetting is 1.
+         if launch_param["throttleProfile"]:length = 3 // If a setpoint, or parameter for the function is provided, pass it.
+            // Reason for max function is that in some unusual cases the if allowed to throttle very low, 
+            // thrust can balance with drag so well, that orbit is never achieved and as long as the fuel lasts
+            // you effectively have an in atmosphere orbit.
+            set defaultSetting to max(0.01, throttFunction(launch_param["throttleProfile"][2])).
+         else
+            set defaultSetting to max(0.01, throttFunction()). 
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1]*0.99 {
          if ship:apoapsis > launch_param["throttleProfile"][1] {
             return 0.
          } else {
-            return 0.01 + (1-ship:apoapsis/launch_param["throttleProfile"][1])+max(0, 1-ship:altitude/ship:orbit:body:atm:height). // Min throttle 1%.
+            return max(0.01, ((1 - min(1, ship:apoapsis/launch_param["throttleProfile"][1]))+(1 - min(1, ship:altitude/ship:body:atm:height)))/2).
          }
       } else if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
          //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
          //Max function ensures this will not cause throttling down, if already throttled up.
-         local minThrottSetting is abs(vang(up:forevector, ship:prograde:forevector)-90)/kickWithin.
-         if launch_param["throttleProfile"]:length = 3 // If a setpoint, or parameter for the function is provided, pass it.
-            return max(throttFunction(launch_param["throttleProfile"][2]), minThrottSetting).
-         else
-            return max(throttFunction(), minThrottSetting).
-      } else {
-         if launch_param["throttleProfile"]:length = 3
-            // Reason for max function is that in some unusual cases the if allowed to throttle very low, 
-            // thrust can balance with drag so well, that orbit is never achieved and as long as the fuel lasts
-            // you effectively have an in atmosphere orbit.
-            return max(0.01, throttFunction(launch_param["throttleProfile"][2])).
-         else
-            return max(0.01, throttFunction()). 
-      }
+         set throttFunction to {// final push to apoapsis; use that oberth
+            parameter throwaway is 0.
+            return 1-(ship:apoapsis/launch_param["throttleProfile"][1]).
+         }. 
+         return max(defaultSetting, 1 - abs(vang(up:forevector, ship:prograde:forevector) - 90)/kickWithin).
+      } else return defaultSetting.
    }
 
    ///////// Misc

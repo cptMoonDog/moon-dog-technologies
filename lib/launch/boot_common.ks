@@ -8,7 +8,23 @@
    // For example, to use the "Spud Atlas" launch vehicle and launch into an orbit coplanar with Minmus,
    // give the core on the launch vehicle the nameTag: "Spud Atlas, 6, 78".
    // Or, just set the nameTag to "Spud Atlas, Minmus"
-if core:tag {
+   
+   //local Lparameters is "".
+   //if core:tag set Lparameters to core:tag.
+   //else if exists("0:/launchparameters.txt") {
+   //   local f is open("0:/launchparameters.txt").
+   //   local i is f:itsrator.
+   //   until i:atend {
+   //      if i:value:tostring:trim:tolower:startswith("//launch") {
+   //         i:next.
+   //         set Lparameters to i:value.
+   //      } else if i:value:tostring:trim:tolower:startswith("//payload") {
+   //         i:next.
+   //         set Pparameters to i:value.
+   //      }
+   //   }
+   //}
+if core:tag {  
    runoncepath("0:/lib/core/kernel.ks").
    runoncepath("0:/lib/launch/launch_ctl.ks").
    local data is core:tag:split(",").
@@ -34,10 +50,15 @@ if core:tag {
                }
                runpath("0:/lv/"+data[0]+".ks").
             } else { /// Interplanetary Targets ///
-               runpath("0:/lib/physics.ks").
-               local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
-               print ttWindow.
-               //TODO make this work
+               parameters given; runs the launch with default values
+      setLaunchParams(0, "none").
+      launch_param:add("targetApo", 80000).
+      runpath("0:/lv/"+data[0]+".ks").
+      // just launch equatorial
+               //runpath("0:/lib/physics.ks").
+               //local ttWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), target).
+               //print ttWindow.
+               //TODO make this work. Update: Not relevant ipt should not be handled by this stage 
                runpath("0:/lv/"+data[0]+".ks").
             }
          }
@@ -50,7 +71,7 @@ if core:tag {
          if data:length > 3 {
             if data[3]:contains("to:") { //Transfer Orbit, altitude of apoapsis of the transfer orbit.
                launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
-               set launch_param["targetApo"] to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we accept them reduced by 1000.
+               set launch_param["targetApo"] to data[3]:split(":")[1]:tonumber(80)*1000. //Transfer orbits are so high, we require them reduced by 1000.
             } else {
                set launch_param["targetApo"] to data[3]:tonumber(80000).
             }
@@ -63,11 +84,11 @@ if core:tag {
       launch_param:add("targetApo", 80000).
       runpath("0:/lv/"+data[0]+".ks").
    }
-} else if exists("0:/lv/"+ship:name+".ks") {
+}// else if exists("0:/lv/"+ship:name+".ks") {
    //If the nameTag on the core is not used, attempt to find a script with the ship:name instead
-   setLaunchParams(target:orbit:inclination, target:orbit:lan).
-   runpath("0:/lv/"+ship:name+".ks").
-}
+  // setLaunchParams(target:orbit:inclination, target:orbit:lan).
+   //runpath("0:/lv/"+ship:name+".ks").
+//}
 
 declare local function setLaunchParams {
    parameter inclination is 0.

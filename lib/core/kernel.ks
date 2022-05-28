@@ -16,11 +16,13 @@ global OP_FINISHED is 1.
 global OP_CONTINUE is 0.
 global OP_PREVIOUS is -1.
 
-global OP_FAIL is "panic".
+global OP_FAIL is 32767.
 
-global MISSION_PLAN is list().
-global INTERRUPTS is list().
+local MISSION_PLAN is list().
+local MISSION_PLAN_ID is list().
 global SYS_CMDS is lexicon().
+
+kernel_ctl:add("availablePrograms", lexicon()).
 
 // Kernel Registers
 kernel_ctl:add("interactive", interactive).
@@ -34,10 +36,9 @@ kernel_ctl:add("prompt", ":"). //Prompt
 {
    local runmode is 0.
 
-   local time_share is 0.
-   local time_count is 0.
+   local regulator is time:seconds.
+   
 
-   local next_interrupt is 0.
    local inputbuffer is "".
    local cmd_buffer is "".
    local cmd_history is list().
@@ -47,41 +48,109 @@ kernel_ctl:add("prompt", ":"). //Prompt
 ///Public functions
    declare function run {
       until FALSE {
-         //Runmodes
-         if runmode < MISSION_PLAN:length {
-            // Runmode
-            set_runmode(MISSION_PLAN[runmode]()).
-            if kernel_ctl["interactive"] and terminal:input:haschar process_char(terminal:input:getchar()).
-            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-            print kernel_ctl["countdown"] at(0, 1).
+         // Technically this only works for calculations and terminal ops.
+         if time:seconds > regulator + 0.05 and config:ipu < 2000 {
+            set config:ipu to config:ipu + 1.
+            set kernel_ctl["status"] to "IPU now: "+config:ipu.
+         } else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
+         set regulator to time:seconds.
+         
+         // Execute current routine
+         set_runmode(MISSION_PLAN[runmode]()).
+         if runmode < MISSION_PLAN:length and runmode > -1 {
+            if exists("0:/mission-tracker.txt") {
+               deletepath("0:/mission-tracker.txt").
+               log MISSION_PLAN_ID[runmode] to "0:/mission-tracker.txt".
+            }
+            // If mission plan is still running...
+            if kernel_ctl["interactive"] {
+               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               print kernel_ctl["countdown"] at(0, 1).
+               if terminal:input:haschar process_char(terminal:input:getchar()).
+            }
          } else {
-            print "end program.".
+            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+            print "Interactive Shell Terminated" at(0, 2).
             break.
          }
 
-         //Interrupts
-         if time_count < time_share {
-            set time_count to time_count +1.
-         } else {
-            set time_count to 0.
-            if next_interrupt < INTERRUPTS:length {
-               INTERRUPTS[next_interrupt]().
-               set next_interrupt to next_interrupt +1.
-            } else if next_interrupt = INTERRUPTS:length and INTERRUPTS:length > 0 {
-               set next_interrupt to 0.
-               INTERRUPTS[next_interrupt]().
-            }
-         }
       }
       set ship:control:pilotmainthrottle to 0.
    }
    set kernel_ctl["start"] to run@.
 
+   declare function MPadd {
+      declare parameter name.
+      declare parameter delegate.
+      
+      MISSION_PLAN:add(delegate). 
+      MISSION_PLAN_ID:add(name).
+   }
+   set kernel_ctl["MissionPlanAdd"] to MPadd@.
+   
+   declare function MPremove {
+      declare parameter id.
+      
+      MISSION_PLAN:remove(id).
+      MISSION_PLAN_ID:remove(id).
+   }
+   set kernel_ctl["MissionPlanRemove"] to MPremove@.
+
+   declare function MPinsert {
+      parameter id.
+      parameter name.
+      parameter delegate.
+ 
+      MISSION_PLAN:insert(id, delegate).
+      MISSION_PLAN_ID:insert(id, name).
+   }
+   set kernel_ctl["MissionPlanInsert"] to MPinsert@.
+
+   declare function MPids {
+      return MISSION_PLAN_ID.
+   }
+   set kernel_ctl["MissionPlanList"] to MPids@.
+
+   // This is intended to make it easier to work with scripts loaded to the core.
+   declare function import_lib {// Load the file, without needing to know where it is, search the core first.
+      parameter name.
+      if exists("1:/"+name+".ksm") {
+         runoncepath("1:/"+name+".ksm").
+      } else if exists("0:/"+name+".ks") {
+         runoncepath("0:/"+name+".ks").
+      }
+   }
+   set kernel_ctl["import-lib"] to import_lib@.
+
+   // Runs the initializer for named program, adding as the next item in the MISSION_PLAN
+   declare function add_program {
+      parameter name.
+      parameter parameters.
+      print "program added with param: "+name+parameters.
+      if kernel_ctl["availablePrograms"]:haskey(name) {
+         kernel_ctl["availablePrograms"][name](parameters).
+      } else print "Program: "+name+" does not exist".
+   }
+   set kernel_ctl["add-program"] to add_program@.
+
+   declare function loadToCore {
+      parameter name.
+      if exists("0:/"+name+".ks") compile "0:/"+name+".ks" to "1:/"+name+".ksm".
+   }
+   set kernel_ctl["load-to-core"] to loadToCore@.
+
 ///Private functions
    declare function set_runmode {
       parameter n.
-      if n = OP_FAIL set runmode to MISSION_PLAN:length+100.
+      if n = OP_FAIL {
+         print MISSION_PLAN_ID[runmode] + " returned fail flag.".
+         set runmode to MISSION_PLAN:length+100.
+      }
       if n >= -1 and n <= 1 set runmode to runmode+n.
+      if runmode >= MISSION_PLAN:length or runmode < 0 {
+         print "MISSION_PLAN index out of range: "+runmode.
+         print "n: "+n.
+      }
    }
 
    declare function process_char {
@@ -119,6 +188,13 @@ kernel_ctl:add("prompt", ":"). //Prompt
    SYS_CMDS:add("exit", {
       declare parameter cmd.
       set runmode to MISSION_PLAN:length.
+      return "finished".
+   }).
+
+   SYS_CMDS:add("clear", {
+      declare parameter cmd.
+      display_buffer:clear().
+      clearscreen.
       return "finished".
    }).
 

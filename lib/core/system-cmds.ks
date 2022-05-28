@@ -7,8 +7,15 @@ SYS_CMDS:add("display", {
       if splitCmd:length > 1 {
          if splitCmd[1] = "apo" set kernel_ctl["output"] to "   "+ship:apoapsis.
          else if splitCmd[1] = "pe" set kernel_ctl["output"] to "   "+ship:periapsis.
-         else if splitCmd[1] = "mission-elements" set kernel_ctl["output"] to "   "+MISSION_PLAN:length.
-         else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
+         else if splitCmd[1] = "mission-plan" {
+            local temp is "Mission Plan:"+char(10).
+            local count is 0.
+            for token in kernel_ctl["MissionPlanList"]() {
+               set temp to temp + char(10) + "   "+ count + " " +token.
+               set count to count + 1.
+            }
+            set kernel_ctl["output"] to temp.
+         } else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
          else if splitCmd[1] = "commands" {
             local temp is "Available Commands:"+char(10).
             for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
@@ -23,7 +30,7 @@ SYS_CMDS:add("display", {
             set kernel_ctl["output"] to temp.
          } else if splitCmd[1] = "help" {
             runoncepath("0:/programs/"+splitCmd[2]+".ks").
-            available_programs[splitCmd[2]]("").
+            kernel_ctl["availablePrograms"][splitCmd[2]]("").
          } else if splitCmd[1] = "eta-duna-window" {
             if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
@@ -119,9 +126,60 @@ SYS_CMDS:add("add-program", {
          set kernel_ctl["output"] to "Program does not exist".
          return "finished".
       }
-      if available_programs:haskey(splitCmd[1]) {
-         local retVal is available_programs[splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
+      if kernel_ctl["availablePrograms"]:haskey(splitCmd[1]) {
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
+         return "finished".                                                                                                                                      
+      } else {
+         set kernel_ctl["output"] to "Program does not exist in the lexicon".
+         return "finished".
+      }
+   }                                                                               
+}).
+
+SYS_CMDS:add("remove-program", {
+   declare parameter cmd.
+   if cmd:startswith("remove-program") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 {
+         if splitCmd[1]:tonumber(-1) > -1 {
+            MISSION_PLAN:remove(splitCmd[1]:tonumber).
+            MISSION_PLAN_ID:remove(splitCmd[1]:tonumber).
+         } else if MISSION_PLAN_ID:find(splitCmd[1]) > -1 {
+            MISSION_PLAN:remove(MISSION_PLAN_ID:find(splitCmd[1])).
+            MISSION_PLAN_ID:remove(MISSION_PLAN_ID:find(splitCmd[1])).
+         }
+      }
+      return "finished".
+   }                                                                               
+}).
+
+SYS_CMDS:add("insert-program", {
+   declare parameter cmd.
+   if cmd:startswith("insert-program") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 3 and exists("0:/programs/"+splitCmd[2]+".ks") {
+         runoncepath("0:/programs/"+splitCmd[2]+".ks").
+      } else {
+         set kernel_ctl["output"] to "Program does not exist".
+         return "finished".
+      }
+      if kernel_ctl["availablePrograms"]:haskey(splitCmd[2]) {
+         local temp is "".
+         for item in splitCmd:sublist(splitCmd:find("insert-program"), splitCmd:length-splitCmd:find("insert-program")) {
+            set temp to temp + item.
+         }
+         // TODO Wrong call fix this, falling asleep.
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[2]](temp).
+         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
+         else {
+            if splitcmd[1]:tonumber(-1) > -1 {
+               MISSION_PLAN:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN[MISSION_PLAN:length-1]).
+               MISSION_PLAN_ID:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN_ID[MISSION_PLAN_ID:length-1]).
+               MISSION_PLAN:remove(MISSION_PLAN:length-1).
+               MISSION_PLAN_ID:remove(MISSION_PLAN_ID:length-1).
+            }
+         }
          return "finished".                                                                                                                                      
       } else {
          set kernel_ctl["output"] to "Program does not exist in the lexicon".
@@ -153,6 +211,49 @@ SYS_CMDS:add("run-extra", {
    if cmd:startswith("run-extra") {
       local splitCmd is cmd:split(" ").
       runpath("0:/extra/"+splitCmd[1]+".ks").
+      return "finished".
+   }
+}).
+
+SYS_CMDS:add("draw-vector", {
+   declare parameter cmd.
+   if cmd:startswith("draw-vector") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 { 
+         local origin is v(0,0,0).
+         //if splitCmd[1] = "body" set origin to {return ship:body:position.}.
+         local directionVector is v(0,0,0).
+         //{return north:forevector.}.
+         //if splitCmd[2] = "UP" {return up:forevector}.
+         
+         local test is vecdraw(
+                                 origin, 
+                                 directionVector,
+                                 RGB(1, 0, 0),
+                                 "North",
+                                 1,
+                                 true,
+                                 0.2,
+                                 true,
+                                 true).
+      } else {
+         set kernel_ctl["output"] to
+            "Draws a vector on the screen."
+            +char(10)+"Usage: draw-vector [ORIGIN] [DIRECTION] [COLOR] [LABEL]"
+            +char(10)+"   where [ORIGIN] is ship or body"
+            +char(10)+"   [DIRECTION] is AN, DN, LAN, UP, DOWN, NORTH, SOUTH, SPV, MAX or MIN"
+            +char(10)+"   [COLOR] is red green or blue"
+            +char(10)+"   [LABEL] is some text".
+
+         return "finished".
+      }
+   }
+}).
+
+SYS_CMDS:add("clear-drawings", {
+   declare parameter cmd.
+   if cmd:startswith("clear-drawings") {
+      clearvecdraws().
       return "finished".
    }
 }).

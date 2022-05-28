@@ -8,15 +8,12 @@ local programName is "rendezvous". //<------- put the name of the script here
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
     // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-declare parameter p1 is "". 
-declare parameter p2 is "". 
 
-if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
-set available_programs[programName] to {
+kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
    //   Answer: It seems that the memory area for parameters passed to scripts is always the same.  So, when 
@@ -31,8 +28,20 @@ set available_programs[programName] to {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local targetBody is argv:split(" ")[1].
+   local engineName is "".
+   local targetObject is "".
+   if argv:split(" "):length > 1 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      if argv:split(char(34)):length > 1 set targetObject to argv:split(char(34))[1]. // Quoted second parameter
+      else set targetObject to argv:split(" ")[1].
+      set kernel_ctl["output"] to "target: "+ targetObject.
+   } else {
+      set kernel_ctl["output"] to
+         "Creates a rendezvous with a ship or object in a coplanar orbit."
+         +char(10)+"Usage: add-program rendezvous [ENGINE-NAME] [TARGET]".
+      return.
+   }
 
 //======== Local Variables =====
 
@@ -41,31 +50,32 @@ set available_programs[programName] to {
    // In this case, the first part of the program sequence
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
 
-      local t is time:seconds.
    
-      MISSION_PLAN:add({
-         if not hastarget set target to targetName.
-         if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED.
-         if not hasnode {
+      kernel_ctl["MissionPlanAdd"]("plan rendezvous", {
+         set target to targetObject.
+         if not hastarget return OP_FAIL.
+         // Originally made with targets in higher orbits in mind.
+         if target:orbit:apoapsis < 1.01*ship:orbit:apoapsis and target:orbit:apoapsis > 0.99*ship:orbit:apoapsis return OP_FINISHED. // 
+         if not (hasnode) {
             local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).
             add(mnvr).
-            set t to mnvr:eta+mnvr:orbit:period/2+time:seconds.
-
             maneuver_ctl["add_burn"]("node", engineName, "node", mnvr:deltav:mag).
+            return OP_FINISHED.
          }
-         return OP_FINISHED.
+         print "Maneuver creation failed.".
+         return OP_FAIL.
       }).
-      MISSION_PLAN:add(maneuver_ctl["burn_monitor"]).
-      MISSION_PLAN:add({
-
+      kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+      kernel_ctl["MissionPlanAdd"]("match velocity", {
          local dist is {return (positionat(target, time:seconds)-positionat(ship, time:seconds)).}.
          local relVelocity is {return (ship:velocity:orbit - target:velocity:orbit).}.
          local velToward is {return relVelocity():mag*cos(vang(relVelocity(), dist())).}.  //speed toward target
          print "toward: "+velToward() at(0, 5).
          print "RelVelocity: "+relVelocity():mag at(0, 6).
          lock steering to -1*relVelocity().
+         if dist():mag > 5000 return OP_CONTINUE.
          if dist():mag < 150 { // Within relativistic frame
             if relVelocity():mag < 1 {
                lock throttle to 0.
@@ -98,4 +108,4 @@ set available_programs[programName] to {
          
 //========== End program sequence ===============================
    
-}. //End of initializer delegate
+}). //End of initializer delegate

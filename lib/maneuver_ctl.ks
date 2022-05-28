@@ -4,7 +4,7 @@
 //Tue Jun 20 21:18:31 PDT 2017
 @LAZYGLOBAL off.
 {
-   runpath("0:/lib/physics.ks").
+   kernel_ctl["import-lib"]("lib/physics").
    global maneuver_ctl is lexicon().
 
    local burn_queue is queue().
@@ -48,11 +48,22 @@
    }
    maneuver_ctl:add("add_burn", schedule_burn@).
 
+   declare function abort_burn {
+      burn_queue:pop().
+   }
+   maneuver_ctl:add("abort_burn", abort_burn@).
+      
+
    declare function execute {
       set kernel_ctl["status"] to "Executing maneuver".
       if burn_queue:empty {
          set kernel_ctl["status"] to "No burn loaded!!!".
-         return OP_FINISHED.
+         return OP_FAIL.
+      }
+      // In case the burn is way in the past, something clearly went wrong with the program.
+      if start+(end-start)*10 < time:seconds and nextnode:deltav:mag > 0.1 {
+         set kernel_ctl["status"] to "Maneuver generated as past event.".
+         return OP_FAIL.
       }
       if time:seconds < start set kernel_ctl["countdown"] to "T-"+ceiling(start-time:seconds, 2).
       else set kernel_ctl["countdown"] to "T+"+ceiling(time:seconds-start, 2).
@@ -65,6 +76,7 @@
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 1 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-60 AND time:seconds < start-30 { 
+         print "lock steering" at(1, 0).
          set kernel_ctl["status"] to "Executing Man.: Lock Steering".
          lock steering to burn_queue:peek()["steeringProgram"]().
       //Less than 30 sec out and more than 25 sec, recalculate burn timing.
@@ -119,9 +131,9 @@
    
    declare function reset_for_next_burn {
       //Better non-impulsive burn timing: apply half the dV before and half the dV after the impulse point.
-      local m2 is ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*g0)))).
+      local m2 is ship:mass*1000*(constant:e^(-((get_dV()/2)/(burn_queue:peek()["isp"]*constant:g0)))).
       local burnLengthFirstHalf is ((ship:mass*1000-m2)/(burn_queue:peek()["ff"])).
-      local m3 is m2/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*g0))).
+      local m3 is m2/(constant:e^((get_dV()/2)/(burn_queue:peek()["isp"]*constant:g0))).
       local burnLengthSecondHalf is ((m2-m3)/(burn_queue:peek()["ff"])).
 
       set start to impulse_time(burn_queue:peek()["ip"]) - burnLengthFirstHalf.

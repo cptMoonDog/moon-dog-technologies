@@ -8,15 +8,12 @@ local programName is "docking". //<------- put the name of the script here
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
     // If you modify the number of parameters, be sure to fix the function call at the bottom of this file.
-declare parameter p1 is "". 
-//declare parameter p2 is "". 
 
-if not (defined available_programs) declare global available_programs is lexicon().
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
-set available_programs[programName] to {
+kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
    //   Answer: It seems that the memory area for parameters passed to scripts is always the same.  So, when 
@@ -37,8 +34,8 @@ set available_programs[programName] to {
    // In this case, the first part of the program sequence
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
-   // to it to the MISSION_PLAN instead, like so: MISSION_PLAN:add(named_function@).
-   MISSION_PLAN:add({
+   // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
+   kernel_ctl["MissionPlanAdd"]("docking", {
       // Some inspiration from: https://www.reddit.com/r/Kos/comments/2n78zf/i_finally_did_it_automated_rendezvous_and_docking/
       if hastarget and not(target:istype("DockingPort")) {
          print "Select docking port." at(0, 3).
@@ -136,4 +133,4 @@ set available_programs[programName] to {
    }).
 //========== End program sequence ===============================
    
-}. //End of initializer delegate
+}). //End of initializer delegate

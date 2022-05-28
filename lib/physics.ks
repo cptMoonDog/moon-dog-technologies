@@ -14,6 +14,22 @@
    }
    phys_lib:add("linearTan", linearTangent@).
 
+   declare function periodForSMA {
+      parameter bod.
+      parameter sma.
+
+      return 2*constant:pi*sqrt((sma^3)/bod:mu).
+   }
+   phys_lib:add("period", periodForSMA@).
+
+   declare function smaForPeriod {
+      parameter bod.
+      parameter t.
+
+      return (((t/(2*constant:pi))^2)*bod:mu)^(1/3).
+   }
+   phys_lib:add("sma-from-period", smaForPeriod@).
+
    declare function visViva_altitude {
       parameter bod.
       parameter vel.
@@ -22,7 +38,7 @@
       return 2/(((vel^2)/bod:mu)+1/sma)-bod:radius.
    }
 
-   global g0 is constant:g0.
+   //global g0 is constant:g0.
    
    declare function semimajoraxis {
       parameter bod.

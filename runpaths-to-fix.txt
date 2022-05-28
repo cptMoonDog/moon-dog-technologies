@@ -1,0 +1,127 @@
+-*- mode: grep; default-directory: "~/projects/kos-missions/" -*-
+Grep started at Sun May 22 13:04:32
+
+grep -n -r runpath
+ish.ks:2:runpath("0:/lib/core/kernel.ks", true).
+extra/timeToDunaWindow.ks:1:runpath("0:/lib/physics.ks").
+extra/testunit.ks:22:   runpath("0:/extra/tiny_boosterlanding.ks", landedAltitude).
+programs/#change-LAN.ks#:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/#change-LAN.ks#:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/#change-LAN.ks#:27:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/orient-to-max-solar.ks:25:   //if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/change-pe.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/change-pe.ks:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/change-pe.ks:27:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/run-maneuver.ks:14:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/run-maneuver.ks:27:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/change-ap.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/change-ap.ks:24:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/change-ap.ks:25:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/circularize-at-ap.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/circularize-at-ap.ks:24:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/template.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/template.ks:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/template.ks:27:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/lko-to-moon.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/lko-to-moon.ks:24:   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
+programs/lko-to-moon.ks:25:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/hohmann.ks:11:runpath("0:/programs/std/change-ap.ks").
+programs/hohmann.ks:12:runpath("0:/programs/std/circularize-at-ap.ks").
+programs/rendezvous.ks:15:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/rendezvous.ks:28:   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
+programs/rendezvous.ks:29:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/beta/docking.ks:15:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/beta/return-from-moon.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/beta/return-from-moon.ks:12:if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+programs/beta/return-from-moon.ks:13:if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/alpha/munar-ascent.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/alpha/munar-ascent.ks:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/alpha/interplanetary-transfer.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/alpha/interplanetary-transfer.ks:12:if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+programs/alpha/interplanetary-transfer.ks:13:if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/alpha/landing.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/alpha/landing.ks:66:   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
+programs/alpha/landing.ks:67:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/change-inc.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/change-inc.ks:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/change-inc.ks:27:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/powered-capture.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/powered-capture.ks:24:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/warp-to-soi.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/docking.ks:15:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/interplanetary-transfer.ks:11:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/interplanetary-transfer.ks:12:if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+programs/interplanetary-transfer.ks:13:if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/transfer-to-orbit.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/transfer-to-orbit.ks:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/transfer-to-orbit.ks:27:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+programs/change-LAN.ks:13:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+programs/change-LAN.ks:26:   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+programs/change-LAN.ks:27:   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+boot/ish.ks:2:runpath("0:/lib/core/kernel.ks", true).
+boot/lv.ks:5:   runpath("0:/lib/launch/boot_common.ks").
+boot/payload.ks:11:      runpath("0:/lib/core/kernel.ks").
+boot/payload.ks:29:            if mission:length = 6 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim, mission[5]:trim).
+boot/payload.ks:30:            else if mission:length = 5 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim, mission[4]:trim).
+boot/payload.ks:31:            else if mission:length = 4 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim, mission[3]:trim).
+boot/payload.ks:32:            else if mission:length = 3 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim, mission[2]:trim).
+boot/payload.ks:33:            else if mission:length = 2 runpath("0:/missions/"+mission[0]:trim+".ks", mission[1]:trim).
+boot/payload.ks:34:            else if mission:length = 1 runpath("0:/missions/"+mission[0]:trim+".ks").
+boot/payload.ks:37:         runpath("0:/missions/payload_default.ks").
+boot/comsat.ks:22:      runpath("0:/runprogram.ks", "circularize-at-ap", list("ant")).
+boot/comsat.ks:36:         runpath("0:/runprogram.ks", "circularize-at-ap", list("ant")).
+boot/comsat.ks:40:   runpath("1:/kernel.ksm").
+boot/comsat.ks:41:   runpath("1:/orient.ksm").
+boot/comsat.ks:43:   if exists("1:/mission.ksm") runpath("1:/mission.ksm").
+boot/lv_unicore.ks:13:   runpath("0:/lib/launch/boot_common.ks").
+boot/lv_unicore.ks:16:         runpath("0:/programs/rendezvous.ks").
+boot/lv_unicore.ks:19:         runpath("0:/missions/moonTransfer.ks", target:name, launch_param["upperStage"],launch_param["upperStage"],launch_param["upperStage"]).
+boot/lv_unicore.ks:23:      runpath("0:/missions/"+ship:name+".ks").
+missions/template.ks:35://runpath("0:/programs/change-ap.ks").
+missions/template.ks:36://runpath("0:/programs/rendezvous.ks").
+missions/template.ks:37://runpath("0:/programs/lko-to-mun.ks").
+missions/template.ks:38://runpath("0:/programs/warp-to-soi.ks").
+missions/template.ks:39://runpath("0:/programs/powered-capture.ks").
+missions/template.ks:40://runpath("0:/programs/landing.ks").
+missions/alpha/return.ks:6:runpath("0:/lib/core/kernel.ks").
+missions/alpha/return.ks:8:   runpath("0:/lib/core/telemetry.ks").
+missions/moonTransfer.ks:15:if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
+missions/moonTransfer.ks:21:runpath("0:/programs/lko-to-moon.ks").
+missions/moonTransfer.ks:22:runpath("0:/programs/warp-to-soi.ks").
+missions/moonTransfer.ks:23:runpath("0:/programs/powered-capture.ks").
+missions/moonTransfer.ks:24:runpath("0:/programs/change-ap.ks").
+missions/moonTransfer.ks:25:runpath("0:/programs/change-pe.ks").
+missions/deployable-comsat.ks:13:   runpath("1:/kernel.ksm").
+missions/deployable-comsat.ks:14:   runpath("1:/circularize-at-ap.ksm").
+missions/deployable-comsat.ks:22:   runpath("1:/kernel.ksm").
+missions/deployable-comsat.ks:23:   //runpath("1:/station-keep-behind.ksm").
+missions/deployable-comsat.ks:24:   runpath("1:/orient-to-max-solar.ksm").
+lib/maneuver_ctl.ks:187:   runpath("0:/config/engine-stats.ks").
+lib/transfer_ctl.ks:3:   if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+lib/launch/#throttle_ctl.ks#:31:               runpath("0:/config/launch/throttle-functions.ks").
+lib/launch/steering_ctl.ks:27:         runpath("0:/config/launch/steering-functions.ks").
+lib/launch/launch_ctl.ks:23:      //   runpath("0:/lib/core/telemetry.ks").
+lib/launch/boot_common.ks:25:            runpath("0:/lv/"+data[0]+".ks").
+lib/launch/boot_common.ks:35:               runpath("0:/lv/"+data[0]+".ks").
+lib/launch/boot_common.ks:37:               runpath("0:/lib/physics.ks").
+lib/launch/boot_common.ks:41:               runpath("0:/lv/"+data[0]+".ks").
+lib/launch/boot_common.ks:58:         runpath("0:/lv/"+data[0]+".ks").
+lib/launch/boot_common.ks:64:      runpath("0:/lv/"+data[0]+".ks").
+lib/launch/boot_common.ks:69:   runpath("0:/lv/"+ship:name+".ks").
+lib/launch/throttle_ctl.ks:31:               runpath("0:/config/launch/throttle-functions.ks").
+lib/core/system-cmds.ks:35:            if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+lib/core/system-cmds.ks:213:      runpath("0:/extra/"+splitCmd[1]+".ks").
+Binary file lib/core/.system-cmds.ks.swp matches
+lib/continue-mission-boot.ks:2:runpath("0:/lib/core/kernel.ks").
+lib/continue-mission-boot.ks:6:      runpath("0:/programs/"+k+".ks").
+README.md:65:    runpath("0:/programs/lko-to-moon.ks").
+README.md:66:    runpath("0:/programs/warp-to-soi.ks").
+README.md:67:    runpath("0:/programs/powered-capture.ks").
+README.md:87:    runpath("0:/lib/core/kernel.ks", true).
+README.md:91:    runpath("0:/ish.ks").
+config/tel_conf.ks:2:         //runpath("0:/lib/core/telemetry.ks").
+runprogram.ks:10:   runpath("0:/programs/"+name+".ks").
+runprogram.ks:12:   runpath("0:/programs/beta/"+name+".ks").
+runprogram.ks:14:   runpath("0:/programs/alpha/"+name+".ks").
+
+Grep finished with matches found at Sun May 22 13:04:32
