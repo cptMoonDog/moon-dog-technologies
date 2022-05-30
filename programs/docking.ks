@@ -136,6 +136,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          return OP_FAIL.
       } else if ship:dockingports:length = 1 {
          set port to ship:dockingports[0].
+         port:controlfrom().
       } else {
          for p in ship:dockingports {
             if p:tag = "forward" {
@@ -144,6 +145,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
             }
          }
          if not(port) set port to ship:dockingports[0].
+         port:controlfrom().
       }
       if not(hastarget) {
          set target to tgtPort:split(":")[0].
