@@ -127,7 +127,10 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // Maneuvering
    kernel_ctl["MissionPlanAdd"]("docking", {
       // If target disappears that means docking was successful.
-      if not(hastarget) return OP_FINISHED.
+      if not(hastarget) {
+         RCS off.
+         return OP_FINISHED.
+      }
 
       // If aligned with target port, and standoff distance is not negative (occupying same space as target) move closer.
       if (offsetVert    > -nullZone and offsetVert    < nullZone) and // Vertically aligned
