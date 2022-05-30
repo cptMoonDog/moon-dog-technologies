@@ -52,7 +52,11 @@ kernel_ctl["availablePrograms"]:add(programName, {
          return OP_FINISHED.
       }
       local port is ship:partsdubbed("dockingPort2")[0].
-      lock steering to target:portfacing:vector:normalized*-1.
+      declare function steeringFunction {
+         if hastarget return target:portfacing:vector:normalized*-1.
+         else return ship:facing.
+      }
+      lock steering to steeringFunction().
       wait until vang(port:portfacing:forevector, target:portfacing:vector:normalized*-1) < 0.5.
       local startTime is time:seconds.
       RCS on.
@@ -60,7 +64,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       local standOffVert is 0.
       local standOffLateral is 0.
       local nullzone is 0.5.
-      until false {
+      until not(hastarget) {
          local dist is (target:position - port:position).
          local offsetVert is dist*port:portfacing:topvector.
          local offsetLateral is dist*port:portfacing:starvector.

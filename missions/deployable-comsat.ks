@@ -55,3 +55,5 @@ if ship:status = "PRELAUNCH" { //and not(exists("1:/lib/core/kernel.ksm")) {
    kernel_ctl["start"]().
 }
    
+wait until kuniverse:activevessel = ship.
+reboot.
