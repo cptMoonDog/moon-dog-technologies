@@ -35,7 +35,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // The actual instructions implementing the program are in delegates, which the initializer adds to the MISSION_PLAN.
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPlanAdd"]("interplanetary-transfer", {
+   kernel_ctl["MissionPLanAdd"](programName, {
      /// Hohmann transfer.  Assumes target orbit is coplanar, and circular.
       local secondsToWindow is phys_lib["etaPhaseAngle"](body("Kerbin"), targetBody).
       local orbitsToWindow is secondsToWindow/ship:orbit:period.
@@ -76,14 +76,14 @@ kernel_ctl["availablePrograms"]:add(programName, {
          return OP_FINISHED.
       }
    }).
-   kernel_ctl["MissionPlanAdd"]("add maneuver", {
+   kernel_ctl["MissionPLanAdd"](programName, {
       if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") {
          stage. 
       }
       maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
 
 //========== End program sequence ===============================
    
