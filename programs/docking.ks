@@ -49,11 +49,11 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
    local ports is 0.
    local port is 0.
-   local startTime is time:seconds.
    local standOffFore is 100. // Don't approach closer than 100m until aligned.
    local standOffVert is 0.
    local standOffLateral is 0.
    local nullZone is 0.5.
+   local approachSpeed is 10.
 
    local dist is (target:position - port:position).
 
@@ -90,15 +90,17 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPlanAdd"]("docking", {
-      // Some inspiration from: https://www.reddit.com/r/Kos/comments/2n78zf/i_finally_did_it_automated_rendezvous_and_docking/
 
+   // Got some inspiration from: https://www.reddit.com/r/Kos/comments/2n78zf/i_finally_did_it_automated_rendezvous_and_docking/
+
+   // Setup
+   kernel_ctl["MissionPlanAdd"]("docking", {
       // Collect info about this vessel
       if not(ports) {
          list DockingPorts in ports.
          if ports:length = 0 {
             print "No Docking ports on this vessel.".
-            return OP_FINISHED.
+            return OP_FAIL.
          }
          port is ports[0].
          lock steering to steeringVector.
@@ -112,28 +114,29 @@ kernel_ctl["availablePrograms"]:add(programName, {
       // Wait until port is aligned with target port.
       if vang(port:portfacing:forevector, target:portfacing:vector:normalized*-1) > 0.5 return OP_CONTINUE.
       else if not RCS {
-         set startTime to time:seconds.
          RCS on.
          lock ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
          lock ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
          lock ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone).
+         return OP_FINISHED.
       }
+      wait 0.
+      return OP_CONTINUE.
+   }).
 
-      print "speedFore: "+speedFore at(0, 5).
-      print "offsetFore: "+offsetFore at(0, 6).
+   // Maneuvering
+   kernel_ctl["MissionPlanAdd"]("docking", {
+      // If target disappears that means docking was successful.
+      if not(hastarget) return OP_FINISHED.
 
-      print "speedLateral: "+speedLateral at(0, 8).
-      print "offsetLateral: "+offsetLateral at(0, 9).
-
-      print "speedVert: "+speedVert at(0, 11).
-      print "offsetVert: "+offsetVert at(0, 12).
-      
-      print "dist: "+dist:mag at(0, 14).
       // If aligned with target port, and standoff distance is not negative (occupying same space as target) move closer.
-      if (offsetVert > -nullZone and offsetVert < nullZone) and
-         (offsetLateral > -nullZone and offsetLateral < nullZone) and
+      if (offsetVert    > -nullZone and offsetVert    < nullZone) and // Vertically aligned
+         (offsetLateral > -nullZone and offsetLateral < nullZone) and // Horizontally aligned
          standOffFore > 1 and standOffFore > max(0, offsetFore - 1) {
-         set standOffFore to standOffFore -1.
+
+         if speedFore < (offsetFore/safeDistance)*approachSpeed {
+            set standOffFore to standOffFore - 1. // Reduce standoff distance.
+         } 
       } else { 
          // Parallel to target port, but target port is behind us.  Navigate in box shape around target vessel.
          if offsetFore < 0 { // 
@@ -143,14 +146,16 @@ kernel_ctl["availablePrograms"]:add(programName, {
             set standOffFore to (offsetFore/abs(offsetFore))*safeDistance.
             set nullZone to 5. // Relax nullZone, because do not need precision when far from target.
          }
-         // We are at a "safedistance" in at least one direction normal to the port.  Reset forward standoff
+         // We are at a "safedistance" in at least one direction normal to the port.  Reset forward standoff to positive number.
          if abs(offsetVert) > safeDistance-5 or abs(offsetLateral) > safeDistance-5 {
             set standOffFore to safeDistance.
+            set nullZone to 0.5.
          }
          // We are at a "safedistance" in the forward direction.  Move into alignment with target port.
          if offsetFore > safeDistance-5 {
             set standOffVert to 0.
             set standOffLateral to 0.
+            set nullZone to 0.5.
          }
       }
       
@@ -158,5 +163,5 @@ kernel_ctl["availablePrograms"]:add(programName, {
       return OP_CONTINUE.
    }).
 //========== End program sequence ===============================
-   
+
 }). //End of initializer delegate
