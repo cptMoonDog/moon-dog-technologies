@@ -53,7 +53,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
 
    
-      kernel_ctl["MissionPlanAdd"]("plan rendezvous", {
+      kernel_ctl["MissionPLanAdd"](programName, {
          set target to targetObject.
          if not hastarget return OP_FAIL.
          // Originally made with targets in higher orbits in mind.
@@ -67,8 +67,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
          print "Maneuver creation failed.".
          return OP_FAIL.
       }).
-      kernel_ctl["MissionPlanAdd"]("execute maneuver", maneuver_ctl["burn_monitor"]).
-      kernel_ctl["MissionPlanAdd"]("match velocity", {
+      kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
+      kernel_ctl["MissionPLanAdd"](programName, {
          local dist is {return (positionat(target, time:seconds)-positionat(ship, time:seconds)).}.
          local relVelocity is {return (ship:velocity:orbit - target:velocity:orbit).}.
          local velToward is {return relVelocity():mag*cos(vang(relVelocity(), dist())).}.  //speed toward target
