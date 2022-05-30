@@ -86,15 +86,16 @@ SYS_CMDS:add("setup-launch", {
       set kernel_ctl["output"] to "   LAN: "+cmd.
       set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
    } else if kernel_ctl["prompt"] = "Target: " {
-      // TODO support dummy targets like: Polar
       set target to cmd.
-      launch_param:add("inclination", target:orbit:inclination).
-      if cmd:tonumber(-1) = -1 or launch_param["inclination"] = 0 {
-         launch_param:add("lan", "none").
-         launch_param:add("launchTime", "now").
-      } else {
+      if hastarget { 
          launch_param:add("lan", target:orbit:LAN).
-         launch_param:add("launchTime", "window").
+         launch_param:add("inclination", target:orbit:inclination).
+         if launch_param["inclination"] = 0
+            launch_param:add("launchTime", "now").
+         else launch_param:add("launchTime", "window").
+      } else {
+         set kernel_ctl["output"] to "   Target does not exist.".
+         return "finished".
       }
       set kernel_ctl["output"] to "   Target: "+cmd.
       set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
@@ -142,51 +143,49 @@ SYS_CMDS:add("remove-program", {
    if cmd:startswith("remove-program") {
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 {
-         if splitCmd[1]:tonumber(-1) > -1 {
-            MISSION_PLAN:remove(splitCmd[1]:tonumber).
-            MISSION_PLAN_ID:remove(splitCmd[1]:tonumber).
-         } else if MISSION_PLAN_ID:find(splitCmd[1]) > -1 {
-            MISSION_PLAN:remove(MISSION_PLAN_ID:find(splitCmd[1])).
-            MISSION_PLAN_ID:remove(MISSION_PLAN_ID:find(splitCmd[1])).
+         if splitCmd[1]:tonumber(-1) > -1 { // index number
+            kernel_ctl["MissionPlanRemove"](splitCmd[1]:tonumber+1).
+         } else if MISSION_PLAN_ID:find(splitCmd[1]) > -1 { // ID 
+            kernel_ctl["MissionPlanRemove"](kernel_ctl["MissionPlanList"]:find(splitCmd[1])).
          }
       }
       return "finished".
    }                                                                               
 }).
 
-SYS_CMDS:add("insert-program", {
-   declare parameter cmd.
-   if cmd:startswith("insert-program") {
-      local splitCmd is cmd:split(" ").
-      if splitCmd:length > 3 and exists("0:/programs/"+splitCmd[2]+".ks") {
-         runoncepath("0:/programs/"+splitCmd[2]+".ks").
-      } else {
-         set kernel_ctl["output"] to "Program does not exist".
-         return "finished".
-      }
-      if kernel_ctl["availablePrograms"]:haskey(splitCmd[2]) {
-         local temp is "".
-         for item in splitCmd:sublist(splitCmd:find("insert-program"), splitCmd:length-splitCmd:find("insert-program")) {
-            set temp to temp + item.
-         }
-         // TODO Wrong call fix this, falling asleep.
-         local retVal is kernel_ctl["availablePrograms"][splitCmd[2]](temp).
-         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
-         else {
-            if splitcmd[1]:tonumber(-1) > -1 {
-               MISSION_PLAN:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN[MISSION_PLAN:length-1]).
-               MISSION_PLAN_ID:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN_ID[MISSION_PLAN_ID:length-1]).
-               MISSION_PLAN:remove(MISSION_PLAN:length-1).
-               MISSION_PLAN_ID:remove(MISSION_PLAN_ID:length-1).
-            }
-         }
-         return "finished".                                                                                                                                      
-      } else {
-         set kernel_ctl["output"] to "Program does not exist in the lexicon".
-         return "finished".
-      }
-   }                                                                               
-}).
+//SYS_CMDS:add("insert-program", {
+//   declare parameter cmd.
+//   if cmd:startswith("insert-program") {
+//      local splitCmd is cmd:split(" ").
+//      if splitCmd:length > 3 and exists("0:/programs/"+splitCmd[2]+".ks") {
+//         runoncepath("0:/programs/"+splitCmd[2]+".ks").
+//      } else {
+//         set kernel_ctl["output"] to "Program does not exist".
+//         return "finished".
+//      }
+//      if kernel_ctl["availablePrograms"]:haskey(splitCmd[2]) {
+//         local temp is "".
+//         for item in splitCmd:sublist(splitCmd:find("insert-program"), splitCmd:length-splitCmd:find("insert-program")) {
+//            set temp to temp + item.
+//         }
+//         // TODO Wrong call to try and fix this, falling asleep.
+//         local retVal is kernel_ctl["availablePrograms"][splitCmd[2]](temp).
+//         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
+//         else {
+//            if splitcmd[1]:tonumber(-1) > -1 {
+//               MISSION_PLAN:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN[MISSION_PLAN:length-1]).
+//               MISSION_PLAN_ID:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN_ID[MISSION_PLAN_ID:length-1]).
+//               MISSION_PLAN:remove(MISSION_PLAN:length-1).
+//               MISSION_PLAN_ID:remove(MISSION_PLAN_ID:length-1).
+//            }
+//         }
+//         return "finished".                                                                                                                                      
+//      } else {
+//         set kernel_ctl["output"] to "Program does not exist in the lexicon".
+//         return "finished".
+//      }
+//   }                                                                               
+//}).
          
       
 SYS_CMDS:add("stow-program", {

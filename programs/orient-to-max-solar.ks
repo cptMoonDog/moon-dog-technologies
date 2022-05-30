@@ -26,7 +26,11 @@ kernel_ctl["availablePrograms"]:add(programName, {
    declare parameter argv.
 
 //======== Local Variables =====
-   
+      local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
+      local primary is panels[0]. // Ideally, the biggest.
+      local panelFacingVector is v(0,0,0).
+      local panelTopVector is v(0,0,0).
+      local steeringVector is body("Sun"):position:normalized.
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
@@ -34,11 +38,12 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPlanAdd"]("orient-to-max-solar", {
-      local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
-      local primary is panels[0]. // Ideally, the biggest.
-      local panelFacingVector is v(0,0,0).
-      local panelTopVector is v(0,0,0).
+   kernel_ctl["MissionPLanAdd"](programName, {
+      set panels            to ship:modulesnamed("ModuleDeployableSolarPanel").
+      set primary           to panels[0]. // Ideally, the biggest.
+      set panelFacingVector to v(0,0,0).
+      set panelTopVector    to v(0,0,0).
+      set steeringVector    to body("Sun"):position:normalized.
       // The part:facing:forevector is parallel with the surface the part is attached to.
       // the topvector is perpendicular to the surface.
       // The fixed panels face the opposite direction of the topvector, and 
@@ -63,10 +68,32 @@ kernel_ctl["availablePrograms"]:add(programName, {
          else set panelFacingVector to vcrs(panelFacingVector, panelTopVector).
       } 
 
-      lock steering to body("Sun"):position*rotatefromto(ship:facing:forevector:normalized, panelFacingVector:normalized).
+
+      //TODO ************** Needs more testing, particularly the sign adjustments
+      // The trick here, is to turn a local difference into a global difference.
+      local pitchDiff is vang(ship:facing:forevector, vxcl(ship:facing:starvector, panelFacingVector)). // unsigned pitch
+      if vang(vxcl(ship:facing:starvector, panelFacingVector), ship:facing:topvector) > 90 set pitchDiff to 90-pitchDiff.
+
+      local yawDiff is vang(ship:facing:forevector, vxcl(ship:facing:topvector, panelFacingVector)). // unsigned Yaw
+      if vang(vxcl(ship:facing:topvector, panelFacingVector), ship:facing:forevector) > 91 set yawDiff to -yawDiff.
+
+      local rollDiff is vang(ship:facing:topvector, vxcl(ship:facing:forevector, panelTopVector)). // unsigned roll
+      if vang(vxcl(ship:facing:forevector, panelTopVector), ship:facing:topvector) > 90 set rollDiff to 180-rollDiff.
+      
+      //local steeringVector is body("Sun"):position:normalized*rotatefromto(ship:facing:forevector:normalized, panelFacingVector:normalized).
+      //local steeringVector is body("Sun"):position:normalized*rotatefromto(ship:facing:forevector:normalized, panelFacingVector:normalized).
+      local steeringVector is body("Sun"):position:normalized*R(pitchDiff, yawDiff, rollDiff).
+      //local steeringVector is body("Sun"):position:normalized*angleaxis(yawDiff, vcrs(body("Sun"):position, solarprimevector))*angleaxis(rollDiff, body("Sun"):position).
+      
+      print vang(body("Sun"):position, panelFacingVector) at(0, 5).
+      print vang(body("Sun"):position, panelTopVector) at(0, 6).
+      print yawDiff at(0, 7).
+      print rollDiff at(0, 8).
+      print pitchDiff at(0, 9).
+      
+      lock steering to steeringVector.
       return OP_CONTINUE.
    }).
-   
          
 //========== End program sequence ===============================
    

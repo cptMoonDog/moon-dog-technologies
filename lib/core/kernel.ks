@@ -256,6 +256,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
          return OP_CONTINUE.
       }).
 
+      if exists("0:/mission-tracker.txt"){
+         print "Hibernation state detected.".
+      }
+
       kernel_ctl["start"]().
    }
    
