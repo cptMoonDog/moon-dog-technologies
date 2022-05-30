@@ -75,7 +75,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
          print "toward: "+velToward() at(0, 5).
          print "RelVelocity: "+relVelocity():mag at(0, 6).
          lock steering to -1*relVelocity().
-         if dist():mag > 5000 return OP_CONTINUE.
+         if dist():mag > 20000 and velToward() > 0 return OP_CONTINUE.
+
          if dist():mag < 150 { // Within relativistic frame
             if relVelocity():mag < 1 {
                lock throttle to 0.
@@ -89,13 +90,20 @@ kernel_ctl["availablePrograms"]:add(programName, {
             }
          } else { // Not close enough
             if velToward() < -0.5 { // drifting away
-               if vang(-1*relVelocity(), ship:facing:forevector) > 1 {return OP_CONTINUE.}
+               if vang(-1*relVelocity(), ship:facing:forevector) > 1 {
+                  lock steering to -1*relVelocity().
+                  lock throttle to 0.
+                  return OP_CONTINUE.
+               } 
                lock throttle to abs(relVelocity():mag)/100.
                if abs(relVelocity():mag) > 1 {return OP_CONTINUE.}
                lock throttle to 0.
             } else if abs(velToward()) < 5 and relVelocity():mag < 6 { // Need to move a little faster
-               lock steering to dist().  // Point at target
-               if vang(dist(), ship:facing:forevector) > 1 {return OP_CONTINUE.}
+               if vang(relVelocity(), ship:facing:forevector) > 1 {
+                  lock steering to dist().  // Point at target
+                  lock throttle to 0.
+                  return OP_CONTINUE.
+               }
                lock throttle to 0.1.
                if abs((ship:velocity:orbit - target:velocity:orbit):mag) < dist():mag/180 {return OP_CONTINUE.}
                lock throttle to 0.

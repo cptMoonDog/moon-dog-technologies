@@ -17,7 +17,21 @@ kernel_ctl["availablePrograms"]:add(programName, {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter notneeded is "".
+   declare parameter argv.
+   local tgtPort is "".
+   local localPort is "".
+
+   if argv:split(" "):length = 2 {
+      set tgtPort to argv:split(" ")[0].
+      set localPort to argv:split(" ")[1].
+   } else if argv:split(" ")[0] {
+      set tgtPort to argv:split(" ")[0].
+   } else {
+      set kernel_ctl["output"] to
+         "Docks with the given target port"
+         +char(10)+"Usage: add-program docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
+      return.
+   }
 
 //======== Local Variables =====
    declare function getControlInputForAxis {
@@ -42,26 +56,26 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
    }
    declare function steeringVector {
-      if not(hastarget) or (hastarget and not(target:istype("DockingPort"))) {
-         return ship:prograde.
-      } else target:portfacing:vector:normalized*-1.
+      if not(hastarget) return ship:prograde.
+      else if (hastarget and not(target:istype("DockingPort"))) {
+         return target:position.
+      } else return target:portfacing:vector:normalized*-1.
    }
 
-   local ports is 0.
-   local port is 0.
+   local port is ship:dockingports[0].
    local standOffFore is 100. // Don't approach closer than 100m until aligned.
    local standOffVert is 0.
    local standOffLateral is 0.
    local nullZone is 0.5.
    local approachSpeed is 10.
 
-   local dist is (target:position - port:position).
+   local dist is (port:position).
 
    local offsetVert is dist*port:portfacing:topvector.
    local offsetLateral is dist*port:portfacing:starvector.
    local offsetFore is dist*port:portfacing:forevector.
 
-   local vel is (target:ship:velocity:orbit - ship:velocity:orbit).
+   local vel is ship:velocity:orbit. //(target:ship:velocity:orbit - ship:velocity:orbit).
 
    local speedVert is vel*port:portfacing:topvector.
    local speedLateral is vel*port:portfacing:starvector.
@@ -76,11 +90,31 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set offsetLateral to dist*port:portfacing:starvector.
       set offsetFore    to dist*port:portfacing:forevector.
 
-      set vel           to (target:ship:velocity:orbit - ship:velocity:orbit).
+      if target:istype("Vessel") {
+         set vel to (target:velocity:orbit - ship:velocity:orbit).
+         if dist:mag < 200 {
+            for p in target:dockingports {
+               if p:tag = tgtPort:split(":")[1] {
+                  set target to p.
+                  wait 0.
+                  break.
+               }
+            }
+            wait 0.
+            set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
+         }
+      } else {
+         set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
+      }
 
       set speedVert     to vel*port:portfacing:topvector.
       set speedLateral  to vel*port:portfacing:starvector.
       set speedFore     to vel*port:portfacing:forevector.
+   }
+   declare function actuateControls {
+      set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
+      set ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
+      set ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone).
    }
 
 
@@ -95,33 +129,47 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
    // Setup
    kernel_ctl["MissionPlanAdd"]("docking", {
+      lock steering to steeringVector.
       // Collect info about this vessel
-      if not(ports) {
-         list DockingPorts in ports.
-         if ports:length = 0 {
-            print "No Docking ports on this vessel.".
-            return OP_FAIL.
+      if ship:dockingports:length = 0 {
+         print "No Docking ports on this vessel.".
+         return OP_FAIL.
+      } else if ship:dockingports:length = 1 {
+         set port to ship:dockingports[0].
+      } else {
+         for p in ship:dockingports {
+            if p:tag = "forward" {
+               set port to p.
+               break.
+            }
          }
-         port is ports[0].
-         lock steering to steeringVector.
-      } 
-      // Verify that we have a valid target.
-      if not(hastarget) or (hastarget and not(target:istype("DockingPort"))) {
-         print "Select docking port." at(0, 3).
-         return OP_CONTINUE.
-      } 
-      updateVectors().
-      // Wait until port is aligned with target port.
-      if vang(port:portfacing:forevector, target:portfacing:vector:normalized*-1) > 0.5 return OP_CONTINUE.
-      else if not RCS {
-         RCS on.
-         lock ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
-         lock ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
-         lock ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone).
-         return OP_FINISHED.
+         if not(port) set port to ship:dockingports[0].
       }
-      wait 0.
-      return OP_CONTINUE.
+      if not(hastarget) {
+         set target to tgtPort:split(":")[0].
+         wait 0.
+         updateVectors().
+      } else updateVectors().
+         //local vess is vessel(tgtPort:split(":")[0]).
+         //for p in vess:dockingports {
+            //if p:tag = tgtPort:split(":")[1] {
+               //set target to p.
+               //wait 0.
+               //break.
+            //}
+         //}
+         //if not(hastarget) or (hastarget and not(target:istype("DockingPort"))) {
+            //print "Select docking port." at(0, 3).
+            //return OP_CONTINUE.
+         //}
+      //} 
+      // Wait until port is aligned with target port.
+      //if vang(port:portfacing:forevector, target:portfacing:vector:normalized*-1) > 0.5 return OP_CONTINUE.
+     // else
+      if not RCS {
+         RCS on.
+         return OP_FINISHED.
+      } else return OP_FINISHED.
    }).
 
    // Maneuvering
@@ -132,6 +180,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          return OP_FINISHED.
       }
 
+      updateVectors().
       // If aligned with target port, and standoff distance is not negative (occupying same space as target) move closer.
       if (offsetVert    > -nullZone and offsetVert    < nullZone) and // Vertically aligned
          (offsetLateral > -nullZone and offsetLateral < nullZone) and // Horizontally aligned
@@ -162,6 +211,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          }
       }
       
+      actuateControls().
       wait 0.
       return OP_CONTINUE.
    }).
