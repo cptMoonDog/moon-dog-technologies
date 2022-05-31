@@ -88,7 +88,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
                lock throttle to abs(relVelocity:mag)/100.
             }
          } else { // Not close enough
-            if velToward < relVelocity:mag/2 or velToward < 5 { // drifting away
+            if velToward < relVelocity:mag/2 or velToward < dist:mag/100 or velToward < 5 { // drifting away
                local victor is -vxcl(target:position, relVelocity)+target:position:normalized*relVelocity:mag.
                lock steering to victor.
                if vang(victor, ship:facing:forevector) > 2.5 {
