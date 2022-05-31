@@ -55,7 +55,7 @@
       
 
    declare function execute {
-      set kernel_ctl["status"] to "Executing maneuver".
+      //set kernel_ctl["status"] to "Executing maneuver".
       if burn_queue:empty {
          set kernel_ctl["status"] to "No burn loaded!!!".
          return OP_FAIL.

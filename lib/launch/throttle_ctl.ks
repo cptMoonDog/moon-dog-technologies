@@ -174,10 +174,11 @@
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 
          //Max function ensures this will not cause throttling down, if already throttled up.
-         set throttFunction to {// final push to apoapsis; use that oberth
+         local driveToOrbit is {// final push to apoapsis; use that oberth
             parameter throwaway is 0.
-            return 1-(ship:apoapsis/launch_param["throttleProfile"][1]).
+            return max(1-(ship:apoapsis/launch_param["throttleProfile"][1]), launch_param["throttleProfile"][1]/eta:apoapsis).
          }. 
+         if driveToOrbit() > defaultSetting set throttFunction to driveToOrbit.
          return max(defaultSetting, 1 - abs(vang(up:forevector, ship:prograde:forevector) - 90)/kickWithin).
       } else return defaultSetting.
    }

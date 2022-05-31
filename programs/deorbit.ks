@@ -40,7 +40,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPlanAdd"]("deorbit", {
+   kernel_ctl["MissionPLanAdd"](programName, {
       lock steering to ship:retrograde.
       wait 30.
       lock throttle to 1.
@@ -48,7 +48,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       lock throttle to 0.
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPlanAdd"]("decouple service module", {
+   kernel_ctl["MissionPLanAdd"](programName, {
       lock steering to ship:north.
       wait 10.
       //stage.
@@ -57,7 +57,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       unlock steering.
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPlanAdd"]("wait for safe altitude for chute", {
+   kernel_ctl["MissionPLanAdd"](programName, {
       if ship:altitude < 5000 {
          stage.
          return OP_FINISHED.
