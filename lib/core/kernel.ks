@@ -69,9 +69,14 @@ kernel_ctl:add("prompt", ":"). //Prompt
                if terminal:input:haschar process_char(terminal:input:getchar()).
             }
          } else {
-            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-            print "Interactive Shell Terminated" at(0, 2).
-            break.
+            if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
+               set runmode to 0.
+               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               set kernel_ctl["output"] to "Mission completed".
+            } else {
+               print "System Terminated" at(0, 2).
+               break.
+            }
          }
 
       }
