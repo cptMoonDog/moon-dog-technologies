@@ -74,7 +74,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
                set runmode to 0.
                until MISSION_PLAN:length = 1 {
                   MISSION_PLAN:remove(1).
-                  MISSION_PLAN_ID:remove(1).
+                  MISSION_PLAN_ID:remove(0).
                }
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
                set kernel_ctl["output"] to "Mission completed".
