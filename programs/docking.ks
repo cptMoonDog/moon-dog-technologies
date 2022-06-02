@@ -128,7 +128,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // Got some inspiration from: https://www.reddit.com/r/Kos/comments/2n78zf/i_finally_did_it_automated_rendezvous_and_docking/
 
    // Setup
-   kernel_ctl["MissionPlanAdd"]("docking", {
+   kernel_ctl["MissionPlanAdd"](programName, {
       lock steering to steeringVector.
       // Collect info about this vessel
       if ship:dockingports:length = 0 {
@@ -175,7 +175,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    }).
 
    // Maneuvering
-   kernel_ctl["MissionPlanAdd"]("docking", {
+   kernel_ctl["MissionPlanAdd"](programName, {
       // If target disappears that means docking was successful.
       if not(hastarget) {
          RCS off.

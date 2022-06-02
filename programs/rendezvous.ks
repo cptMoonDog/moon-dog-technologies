@@ -69,12 +69,17 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }).
       kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
       kernel_ctl["MissionPLanAdd"](programName, {
-         local dist is (positionat(target, time:seconds)-positionat(ship, time:seconds)).
+         //local dist is (positionat(target, time:seconds)-positionat(ship, time:seconds)).
+         local dist is target:position.
          local relVelocity is (ship:velocity:orbit - target:velocity:orbit).
          local velToward is relVelocity:mag*cos(vang(relVelocity, dist)).  //speed toward target
          print "toward: "+velToward at(0, 5).
          print "RelVelocity: "+relVelocity:mag at(0, 6).
-         if dist:mag > 20000 and velToward > 0 return OP_CONTINUE.
+
+         if dist:mag > 20000 and velToward > 0 {
+            wait 0.
+            return OP_CONTINUE.
+         }
 
          if dist:mag < 150 { // Within relativistic frame
             if relVelocity:mag < 1 {
