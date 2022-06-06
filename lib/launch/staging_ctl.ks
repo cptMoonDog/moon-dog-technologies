@@ -79,9 +79,11 @@
         launch_param:remove("AG10").
       }
       
+      //TODO not staging the first set on asparagus
       if engList:length > 0 {
          if time:seconds > lastTime  {
             list Engines in engList.
+            //print engList:length at(0, 5).
             local thrst is 0.
             for eng in engList 
                set thrst to thrst + eng:thrust.

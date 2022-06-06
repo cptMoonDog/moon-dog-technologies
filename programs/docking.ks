@@ -21,11 +21,13 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local tgtPort is "".
    local localPort is "".
 
-   if argv:split(" "):length = 2 {
-      set tgtPort to argv:split(" ")[0].
-      set localPort to argv:split(" ")[1].
-   } else if argv:split(" ")[0] {
-      set tgtPort to argv:split(" ")[0].
+   if argv:split(" "):length > 1 {
+      if argv:split(char(34)):length > 1 {
+         set tgtPort to argv:split(char(34))[1]. // Quoted first parameter
+         set tgtPort to tgtPort + ":"+argv:split(":")[1]:split(" ")[0].
+      } else set tgtPort to argv:split(" ")[0].
+      set localPort to argv:split(" ")[argv:split(" "):length-1].
+      set kernel_ctl["output"] to "target: "+ tgtPort.
    } else {
       set kernel_ctl["output"] to
          "Docks with the given target port"
@@ -136,6 +138,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          return OP_FAIL.
       } else if ship:dockingports:length = 1 {
          set port to ship:dockingports[0].
+         if port:state:contains("Docked") return OP_FAIL.
          port:controlfrom().
       } else {
          for p in ship:dockingports {
@@ -144,7 +147,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
                break.
             }
          }
-         if not(port) set port to ship:dockingports[0].
+         if not(port:istype("DockingPort")) set port to ship:dockingports[0].
+         if port:state:contains("Docked") return OP_FAIL.
          port:controlfrom().
       }
       if not(hastarget) {
