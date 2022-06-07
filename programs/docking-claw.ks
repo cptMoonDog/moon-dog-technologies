@@ -1,7 +1,7 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "docking". //<------- put the name of the script here
+local programName is "docking-claw". //<------- put the name of the script here
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
@@ -18,20 +18,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local tgtPort is "".
-   local localPort is "".
+   local tgtPart is "".
+   local localClaw is "".
 
-   if argv:split(" "):length > 1 {
-      if argv:split(char(34)):length > 1 {
-         set tgtPort to argv:split(char(34))[1]. // Quoted first parameter
-         set tgtPort to tgtPort + ":"+argv:split(":")[1]:split(" ")[0].
-      } else set tgtPort to argv:split(" ")[0].
-      set localPort to argv:split(" ")[argv:split(" "):length-1].
-      set kernel_ctl["output"] to "target: "+ tgtPort.
+   if argv:split(" "):length = 2 {
+      set tgtPart to argv:split(" ")[0].
+      set localClaw to argv:split(" ")[1].
+   } else if argv:split(" ")[0] {
+      set tgtPart to argv:split(" ")[0].
    } else {
       set kernel_ctl["output"] to
-         "Docks with the given target port"
-         +char(10)+"Usage: add-program docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
+         "Attempts to capture with the claw, the part on the target vessel that has the given tag."
+         +char(10)+"Usage: add-program docking [TARGET]:[TAG] [LOCAL CLAW (Optional)]".
       return.
    }
 
@@ -57,62 +55,59 @@ kernel_ctl["availablePrograms"]:add(programName, {
          else return 0.
       }
    }
+
    declare function steeringVector {
       if not(hastarget) return ship:prograde.
-      else if (hastarget and not(target:istype("DockingPort"))) {
-         return target:position.
-      } else return target:portfacing:vector:normalized*-1.
+      if not(targetPart:istype("Part")) return target:position.
+      return targetPart:facing:vector:normalized*-1.
    }
 
-   local port is ship:dockingports[0].
+   local targetPart is 0.
+   
+   local claw is ship:partsnamed("smallClaw")[0].
    local standOffFore is 100. // Don't approach closer than 100m until aligned.
    local standOffVert is 0.
    local standOffLateral is 0.
    local nullZone is 0.5.
    local approachSpeed is 10.
 
-   local dist is (port:position).
+   local dist is (claw:position).
 
-   local offsetVert is dist*port:portfacing:topvector.
-   local offsetLateral is dist*port:portfacing:starvector.
-   local offsetFore is dist*port:portfacing:forevector.
+   local offsetVert is dist*claw:facing:topvector.
+   local offsetLateral is dist*claw:facing:starvector.
+   local offsetFore is dist*claw:facing:forevector.
 
    local vel is ship:velocity:orbit. //(target:ship:velocity:orbit - ship:velocity:orbit).
 
-   local speedVert is vel*port:portfacing:topvector.
-   local speedLateral is vel*port:portfacing:starvector.
-   local speedFore is vel*port:portfacing:forevector.
+   local speedVert is vel*claw:facing:topvector.
+   local speedLateral is vel*claw:facing:starvector.
+   local speedFore is vel*claw:facing:forevector.
 
    local safeDistance is 25.
    
    declare function updateVectors {
-      set dist          to (target:position - port:position).
+      set dist          to (targetPart:position - claw:position).
 
-      set offsetVert    to dist*port:portfacing:topvector.
-      set offsetLateral to dist*port:portfacing:starvector.
-      set offsetFore    to dist*port:portfacing:forevector.
+      set offsetVert    to dist*claw:facing:topvector.
+      set offsetLateral to dist*claw:facing:starvector.
+      set offsetFore    to dist*claw:facing:forevector.
 
       if target:istype("Vessel") {
          set vel to (target:velocity:orbit - ship:velocity:orbit).
-         if dist:mag < 200 {
-            for p in target:dockingports {
-               if p:tag = tgtPort:split(":")[1] {
-                  set target to p.
-                  wait 0.
-                  break.
-               }
-            }
+         if dist:mag < 200 and not(targetPart:istype("Part")) { // targetPart is still target vessel.
+            local p is target:partstagged(tgtPart:split(":")[1])[0].
+            set targetPart to p.
             wait 0.
-            set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
          }
       } else {
          set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
       }
 
-      set speedVert     to vel*port:portfacing:topvector.
-      set speedLateral  to vel*port:portfacing:starvector.
-      set speedFore     to vel*port:portfacing:forevector.
+      set speedVert     to vel*claw:facing:topvector.
+      set speedLateral  to vel*claw:facing:starvector.
+      set speedFore     to vel*claw:facing:forevector.
    }
+
    declare function actuateControls {
       set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
       set ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
@@ -131,34 +126,36 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
    // Setup
    kernel_ctl["MissionPlanAdd"](programName, {
-      lock steering to steeringVector.
+      if not(hastarget) {
+         set target to tgtPart:split(":")[0].
+         set targetPart to target:partstagged(tgtPart:split(":")[1])[0].
+      }
+      lock steering to steeringVector().
       // Collect info about this vessel
-      if ship:dockingports:length = 0 {
-         print "No Docking ports on this vessel.".
+      if ship:partsnamed("smallClaw"):length = 0 {
+         print "No Claw on this vessel.".
          return OP_FAIL.
-      } else if ship:dockingports:length = 1 {
-         set port to ship:dockingports[0].
-         if port:state:contains("Docked") return OP_FAIL.
-         port:controlfrom().
+      } else if ship:partsnamed("smallClaw"):length = 1 {
+         set claw to ship:partsnamed("smallClaw")[0].
+         claw:getmodule("ModuleGrappleNode"):doevent("control from here").
       } else {
-         for p in ship:dockingports {
-            if p:tag = "forward" {
-               set port to p.
+         for p in ship:partsnamed("smallClaw") {
+            if p:tag = localClaw {
+               set claw to p.
                break.
             }
          }
-         if not(port:istype("DockingPort")) set port to ship:dockingports[0].
-         if port:state:contains("Docked") return OP_FAIL.
-         port:controlfrom().
+         if not(claw) set claw to ship:partsnamed("smallClaw")[0].
+         claw:getmodule("ModuleGrappleNode"):doevent("control from here").
       }
       if not(hastarget) {
-         set target to tgtPort:split(":")[0].
+         set target to tgtPart:split(":")[0].
          wait 0.
          updateVectors().
       } else updateVectors().
-         //local vess is vessel(tgtPort:split(":")[0]).
+         //local vess is vessel(tgtPart:split(":")[0]).
          //for p in vess:dockingports {
-            //if p:tag = tgtPort:split(":")[1] {
+            //if p:tag = tgtPart:split(":")[1] {
                //set target to p.
                //wait 0.
                //break.
@@ -187,16 +184,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
 
       updateVectors().
-      // If aligned with target port, and standoff distance is not negative (occupying same space as target) move closer.
+      // If aligned with target claw, and standoff distance is not negative (occupying same space as target) move closer.
       if (offsetVert    > -nullZone and offsetVert    < nullZone) and // Vertically aligned
-         (offsetLateral > -nullZone and offsetLateral < nullZone) and // Horizontally aligned
-         standOffFore > 1 and standOffFore > max(0, offsetFore - 1) {
-
-         if speedFore < (offsetFore/safeDistance)*approachSpeed {
-            set standOffFore to standOffFore - 1. // Reduce standoff distance.
-         } 
+         (offsetLateral > -nullZone and offsetLateral < nullZone) { // Horizontally aligned
+         if standOffFore > 1 and standOffFore > max(0, offsetFore - 1) { // Hold 1 meter in front of target, 
+            if speedFore < (offsetFore/safeDistance)*approachSpeed {
+               set standOffFore to standOffFore - 1. // Reduce standoff distance.
+            } 
+         } else if speedFore < 0.6 and offsetFore <= 1 { // Final push
+            set standOffFore to 0.
+         }
       } else { 
-         // Parallel to target port, but target port is behind us.  Navigate in box shape around target vessel.
+         // Parallel to target part, but target part is behind us.  Navigate in box shape around target vessel.
          if offsetFore < 0 { // 
             // Move off to a safe distance, in the same direction as all current offsets (away).
             set standOffVert to (offsetVert/abs(offsetVert))*safeDistance.
@@ -204,12 +203,12 @@ kernel_ctl["availablePrograms"]:add(programName, {
             set standOffFore to (offsetFore/abs(offsetFore))*safeDistance.
             set nullZone to 5. // Relax nullZone, because do not need precision when far from target.
          }
-         // We are at a "safedistance" in at least one direction normal to the port.  Reset forward standoff to positive number.
+         // We are at a "safedistance" in at least one direction normal to the part.  Reset forward standoff to positive number.
          if abs(offsetVert) > safeDistance-5 or abs(offsetLateral) > safeDistance-5 {
             set standOffFore to safeDistance.
             set nullZone to 0.5.
          }
-         // We are at a "safedistance" in the forward direction.  Move into alignment with target port.
+         // We are at a "safedistance" in the forward direction.  Move into alignment with target part.
          if offsetFore > safeDistance-5 {
             set standOffVert to 0.
             set standOffLateral to 0.

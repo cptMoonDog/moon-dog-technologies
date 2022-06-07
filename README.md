@@ -14,14 +14,17 @@ Features
  - Yet, easily customize firmware for any craft!
  - Interactive mode, for those who would rather make the mission plan up as they go along.
 
- 
 Videos of it in action
 ======================
+
 [Launch and deployment of Relays at both moons](https://youtu.be/_q7M74phcO4)
 
 [Example Mission to Minmus Orbit](https://youtu.be/8BtfHxGP5ns)
 
 [Gravity Turn Versus Linear Tangent Steering](https://youtu.be/coE-mWIxKf0)
+
+[Automated Satellite Constellation Deployment](https://youtu.be/qGqwPPf2U3M)
+[Constellation designer](https://docs.google.com/spreadsheets/d/1LfuaOlbYhqdkZ5u4zmiUqkcERuGFl3m6GwSdb_gjIsI/edit?usp=sharing)
 
 Quickstart
 ==========
@@ -44,7 +47,7 @@ Launch Vehicles
       - `[LAUNCH SCRIPT]                               ` Launch to: equatorial, 80km (default values).
       - `[LAUNCH SCRIPT], [TARGET]                     ` Launch to: coplanar with target at 80km.
       - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN]        ` Launch to: This plane, at 80km.
-      - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN], [SMA] ` Launch to: This plane, circularize at this SMA.
+      - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN], [ALTITUDE] ` Launch to: This plane, circularize at this Altitude.
       - `[LAUNCH SCRIPT], [INCLINATION], [LAN/RAAN], to:[APOAPSIS(km)] ` Launch to: This plane, but do not circularize; Tranfer Orbit to altitude in km.
 
 

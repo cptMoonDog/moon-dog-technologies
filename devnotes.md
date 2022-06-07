@@ -29,9 +29,26 @@ Hibernation
 ===========
 Sometimes a mission plan includes a long trip.  How do we handle rebuilding the same state after player absence?  Well, how do we build mission plans in general?  Up till now, they were either built through ISH, or defined in bespoke files during the previous mission paradigm.
 
-How about a mission sequence file, with each line the same as the equivalent ISH command.  But how do I identify which item is the start point on reboot? In hibernatable programs, log name of program at op-continue.
+Decsion: Currently working on this.  The current plan, is to have a file on the core save the name of the current program, and mission plans defined by another file.  Then on reboot, the mission plan can be reloaded, and advanced to the current program.  May have the bones, but has not been fleshed out yet.  
 
-Decision: Make a file called plan.ks that is modified as needed.  If a ship uses the run-plan mission, then copy the plan to the core, and parse the values into the MISSION_PLAN.  Make sure that it is valid kerboscript, so that custom delegates can be defined.
 
 General Todo
 =========
+
+Need to add better error reporting to OP_FAIL codes
+
+Work on docking continues.  Quoted parametes works well.  Docking is extremely difficult without a well designed RCS system.  Need to detect wobble in ship so that we can fail without stranding the crew.
+
+Rendezvous is currently garbage.  It works, but it's sort of a spiral in approach which wastes fuel.  
+
+Not sure I ever got the change-LAN working reliably.
+
+Deorbit: Consider when you drop everything except the capsule, there is no core left to finish the final reentry sequence.  How do we handle that?
+
+Landing, ugh.  May someday get this.
+
+Booster landings.  Need to learn how to navigate.
+
+Runpaths: Moving away from explicit calls to runpath to loading files via a kernel function.  Allows for running from the core more easily.
+
+Another thing, there is a bug, where if you add an additional program to the mission plan before launch, the countdown does not occur.

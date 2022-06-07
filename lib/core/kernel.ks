@@ -1,5 +1,6 @@
 // "Kernel" for KOS:
 //  A system for managing runmodes
+
 //  Run mode (e.g. Current state of ship)
 //     Major mission events, reaction to.
 //     Runmodes defined as scoped sections exposing a subroutine that does the work.
@@ -69,9 +70,18 @@ kernel_ctl:add("prompt", ":"). //Prompt
                if terminal:input:haschar process_char(terminal:input:getchar()).
             }
          } else {
-            print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-            print "Interactive Shell Terminated" at(0, 2).
-            break.
+            if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
+               set runmode to 0.
+               until MISSION_PLAN:length = 1 {
+                  MISSION_PLAN:remove(1).
+                  MISSION_PLAN_ID:remove(0).
+               }
+               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               set kernel_ctl["output"] to "Mission completed".
+            } else {
+               print "System Terminated" at(0, 2).
+               break.
+            }
          }
 
       }
@@ -91,8 +101,22 @@ kernel_ctl:add("prompt", ":"). //Prompt
    declare function MPremove {
       declare parameter id.
       
-      MISSION_PLAN:remove(id).
-      MISSION_PLAN_ID:remove(id).
+      if MISSION_PLAN_ID:length {
+         if MISSION_PLAN:length > MISSION_PLAN_ID:length { // Interactive mode
+            // In interactive mode, item 0 just keeps the system alive.
+            // The remove command in ISH will give a number one less than the program to terminate.
+            if id:istype("Scalar") and id < MISSION_PLAN_ID:length {
+               MISSION_PLAN:remove(id+1).
+               MISSION_PLAN_ID:remove(id).
+            } else {
+               MISSION_PLAN:remove(MISSION_PLAN_ID:find(id)+1).
+               MISSION_PLAN_ID:remove(id).
+            }
+         } else {
+            MISSION_PLAN:remove(id).
+            MISSION_PLAN_ID:remove(id).
+         }
+      }
    }
    set kernel_ctl["MissionPlanRemove"] to MPremove@.
 
@@ -143,6 +167,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
    declare function set_runmode {
       parameter n.
       if n = OP_FAIL {
+         print "runmode: "+runmode.
          print MISSION_PLAN_ID[runmode] + " returned fail flag.".
          set runmode to MISSION_PLAN:length+100.
       }

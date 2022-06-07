@@ -76,7 +76,6 @@
          if kuniverse:timewarp:mode = "PHYSICS" kuniverse:timewarp:cancelwarp.
       //Less than 1 minutes out and more than 30 sec, attempt to lock steering
       } else if time:seconds > start-60 AND time:seconds < start-30 { 
-         print "lock steering" at(1, 0).
          set kernel_ctl["status"] to "Executing Man.: Lock Steering".
          lock steering to burn_queue:peek()["steeringProgram"]().
       //Less than 30 sec out and more than 25 sec, recalculate burn timing.
