@@ -17,7 +17,7 @@
 
       if launch_param:haskey("countdownLength") set countdown to launch_param["countdownLength"].
 
-      launch_ctl:add("countdown", countdown_launchWindow@).
+      set launch_ctl["countdown"] to countdown_launchWindow@.
       if launch_param["launchTime"] = "window" {              //Will warp to (window time - countdown), then countdown and launch.
          set timeOfWindow to getUT_window(launch_param["lan"], 
                                           launch_param["inclination"], 

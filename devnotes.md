@@ -51,3 +51,4 @@ Booster landings.  Need to learn how to navigate.
 
 Runpaths: Moving away from explicit calls to runpath to loading files via a kernel function.  Allows for running from the core more easily.
 
+Another thing, there is a bug, where if you add an additional program to the mission plan before launch, the countdown does not occur.
