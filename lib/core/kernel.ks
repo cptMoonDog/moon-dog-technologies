@@ -21,6 +21,7 @@ global OP_FAIL is 32767.
 
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
+//local hiberfile is open("1:/hiberfile").
 global SYS_CMDS is lexicon().
 
 kernel_ctl:add("availablePrograms", lexicon()).
@@ -171,7 +172,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
          print MISSION_PLAN_ID[runmode] + " returned fail flag.".
          set runmode to MISSION_PLAN:length+100.
       }
-      if n >= -1 and n <= 1 set runmode to runmode+n.
+      if n >= -1 and n <= 1 set runmode to runmode+n. // n is 1 or 0
+      //if n {
+      //   hiberfile:clear.
+      //   hiberfile:writeln(runmode).
+      //}
       if runmode >= MISSION_PLAN:length or runmode < 0 {
          print "MISSION_PLAN index out of range: "+runmode.
          print "n: "+n.
