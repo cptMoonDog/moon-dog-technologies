@@ -27,6 +27,10 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
    launch_ctl:add("init", init_system@).
    
    declare function setupLaunch {   
+      kernel_ctl["MissionPlanAdd"]("init", {
+         launch_ctl["init_range"](). // ISH delays launch, and was preventing countdown, so run this again.
+         return OP_FINISHED.
+      }).
       kernel_ctl["MissionPlanAdd"]("countdown", launch_ctl["countdown"]).
       kernel_ctl["MissionPlanAdd"]("launch", launch_ctl["launch"]).
       kernel_ctl["MissionPlanAdd"]("ascent", {
