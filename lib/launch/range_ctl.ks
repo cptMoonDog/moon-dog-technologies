@@ -38,11 +38,21 @@
       
    declare function countdown_launchWindow {
       set kernel_ctl["status"] to "Countdown".
+      if timeOfWindow - time:seconds < 0 { // Missed the window.  Most likely because within time of flight window.
+         set kernel_ctl["status"] to "Time to window is negative.  Range control failure.".
+         return OP_FAIL.
+      }
       if timeOfWindow-time:seconds > countdown+1 {
-         if kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled() {
+         print timeOfWindow - time:seconds.
+         if (kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled()) {
             kuniverse:timewarp:warpto(timeOfWindow - countdown).
+            wait timeOfWindow - time:seconds - countdown.
          }
          return OP_CONTINUE.
+      }
+      if timeOfWindow-time:seconds < 0.01 {
+         V0:play(note("C5", 1)).
+         return OP_FINISHED.
       }
       if time:seconds-lastTime > 1 {
          set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second.
@@ -53,11 +63,11 @@
             } 
          }
          set lastTime to time:seconds.
-      } 
-      if timeOfWindow-time:seconds < 0.01 {
-         V0:play(note("C5", 1)).
-         return OP_FINISHED.
-      } else return OP_CONTINUE.
+         return OP_CONTINUE.
+      } else {
+         return OP_CONTINUE.
+      }
+      print "never returned".
    }
 
    declare function normalizeAngle {
@@ -79,19 +89,35 @@
       local degToDN is normalizeAngle((180-degFromAN)-lonOffset).
       local degToAN is normalizeAngle((360-degFromAN)+lonOffset).
 
-      if allowableTrajectories = "all" or allowableTrajectories = "any" {  /////////////Arithmetic on TIME below functions as a defacto cast to object of type TIME.
+      local departureTime is time:seconds+30.
+      if allowableTrajectories = "all" or allowableTrajectories = "any" {  /////////////Arithmetic on TIME below, functions as a defacto cast to object of type TIME.
          if degToDN < degToAN {
             set launch_param["azimuthHemisphere"] to "south".
-            return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+            set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+            if departureTime - time:seconds < 0 { // Time of Flight is greater than time to window
+               set launch_param["azimuthHemisphere"] to "north".
+               set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+            }
          } else {
             set launch_param["azimuthHemisphere"] to "north".
-            return time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+            set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+            if departureTime - time:seconds < 0 { // Time of Flight is greater than time to window
+               set launch_param["azimuthHemisphere"] to "south".
+               set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+            }
          }
       } else if allowableTrajectories = "north" {
-         return time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+         set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*degToAN-tof.
+         if departureTime - time:seconds < 0 { // Time of Flight is greater than time to window
+            set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*(360+degToAN)-tof.
+         }
       } else {
-         return time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+         set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*degToDN-tof.
+         if departureTime - time:seconds < 0 { // Time of Flight is greater than time to window
+            set departureTime to time:seconds+(ship:orbit:body:rotationperiod/360)*(360+degToDN)-tof.
+         }
       }
+      return departureTime.
    }  
    
    declare function launchAzimuth {
