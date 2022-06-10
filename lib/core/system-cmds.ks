@@ -1,13 +1,17 @@
 @lazyglobal off.
 
+// Add a new command to the SYS_CMDS lexicon
 SYS_CMDS:add("display", {
    declare parameter cmd.
-   if cmd:startswith("display") {
+   if cmd:startswith("display") { // Check to see what was actually passed.  This allows for subcommand behaviour
       local splitCmd is cmd:split(" ").
-      if splitCmd:length > 1 {
-         if splitCmd[1] = "apo" set kernel_ctl["output"] to "   "+ship:apoapsis.
-         else if splitCmd[1] = "pe" set kernel_ctl["output"] to "   "+ship:periapsis.
-         else if splitCmd[1] = "mission-plan" {
+      if splitCmd:length > 1 {    // These are the things that we can display
+
+         if      splitCmd[1] = "apo"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
+         else if splitCmd[1] = "pe"       set kernel_ctl["output"] to "   "+ship:periapsis.                              //pe
+         else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
+
+         else if splitCmd[1] = "mission-plan" {                                                                          //mission-plan
             local temp is "Mission Plan:"+char(10).
             local count is 0.
             for token in kernel_ctl["MissionPlanList"]() {
@@ -15,12 +19,15 @@ SYS_CMDS:add("display", {
                set count to count + 1.
             }
             set kernel_ctl["output"] to temp.
-         } else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.
-         else if splitCmd[1] = "commands" {
+         }
+
+         else if splitCmd[1] = "commands" {                                                                              //commands
             local temp is "Available Commands:"+char(10).
             for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
             set kernel_ctl["output"] to temp.
-         } else if splitCmd[1] = "programs" {
+         }
+
+         else if splitCmd[1] = "programs" {                                                                              //programs
             local temp is "Available Programs:"+char(10).
             //TODO list available programs on command   
             local avail is open("0:/programs").  
@@ -28,21 +35,26 @@ SYS_CMDS:add("display", {
                if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
             }
             set kernel_ctl["output"] to temp.
-         } else if splitCmd[1] = "help" {
+         }
+
+         else if splitCmd[1] = "help" {                                                                                  //help
             runoncepath("0:/programs/"+splitCmd[2]+".ks").
             kernel_ctl["availablePrograms"][splitCmd[2]]("").
-         } else if splitCmd[1] = "eta-duna-window" {
+         }
+
+         else if splitCmd[1] = "eta-duna-window" {                                                                       //eta-duna-window
             if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
          } else set kernel_ctl["output"] to "   No data".
          return "finished".
-      } else {
+
+      } else { // No displayable given, initiate subcommand interface.
          set kernel_ctl["prompt"] to "Display what?:".
          local temp is "Available Commands:"+char(10).
          for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
          set kernel_ctl["output"] to temp.
       }
-   } else if kernel_ctl["prompt"] = "Display what?:" {
+   } else if kernel_ctl["prompt"] = "Display what?:" { // subcommands
       if cmd:trim:tolower = "apo" set kernel_ctl["output"] to ship:apoapsis.
       else if cmd:trim:tolower = "pe" set kernel_ctl["output"] to ship:periapsis.
       else if cmd:trim:tolower = "mission-elements" set kernel_ctl["output"] to MISSION_PLAN:length.
@@ -101,13 +113,13 @@ SYS_CMDS:add("setup-launch", {
       set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
    } else if kernel_ctl["prompt"] = "Orbit height(*80000*): " {
       if cmd = "" set cmd to "80000". //Default value
-      if cmd:trim:endswith("k") launch_param:add("targetApo", cmd:trim:remove(cmd:trim:length-1, 1):tonumber(80)*1000).
+      if cmd:trim:endswith("k") or cmd:trim:endswith("km") launch_param:add("targetApo", cmd:trim:remove(cmd:trim:length-1, 1):tonumber(80)*1000).
       else if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
       else launch_param:add("targetApo", cmd:tonumber(80000)).    
       set kernel_ctl["output"] to "   Orbit height: "+cmd.
       set kernel_ctl["prompt"] to "Launch Vehicle: ".
    } else if kernel_ctl["prompt"] = "Launch Vehicle: " {
-      if exists("0:/lv/"+cmd:trim+".ks") {
+      if cmd:trim and exists("0:/lv/"+cmd:trim+".ks") {
          runoncepath("0:/lv/"+cmd:trim+".ks"). 
          set kernel_ctl["output"] to "   Launch Vehicle: "+cmd.
       } else set kernel_ctl["output"] to "   Launch Vehicle: "+cmd+" not found".
@@ -129,7 +141,7 @@ SYS_CMDS:add("add-program", {
       }
       if kernel_ctl["availablePrograms"]:haskey(splitCmd[1]) {
          local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
-         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
+         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable to initialize, check arguments.".
          return "finished".                                                                                                                                      
       } else {
          set kernel_ctl["output"] to "Program does not exist in the lexicon".
@@ -188,22 +200,6 @@ SYS_CMDS:add("remove-program", {
 //}).
          
       
-SYS_CMDS:add("stow-program", {
-   declare parameter cmd.
-   if cmd:startswith("stow-program") {
-      local splitCmd is cmd:split(" ").
-      //if exists("0:/stowed.json") local stowed is readjson("0:/stowed.json").
-      //else local stowed is lexicon().
-      local stowed is lexicon().
-      local params is cmd:remove(0, "stow-program":length+splitCmd[1]:length+1):trim. //parameter list.
-      stowed:add(splitCmd[1], params).
-      writejson(stowed, "1:/stowed.json").
-      //copypath("0:/lib/continue-mission-boot.ks", "1:/boot/continue.ks"). //This is good for debugging.
-      compile "0:/lib/continue-mission-boot.ks" to "/boot/continue.ksm".
-      set core:bootfilename to "/boot/continue.ks".
-      return "finished".
-   }
-}).
 
 SYS_CMDS:add("run-extra", {
    declare parameter cmd.

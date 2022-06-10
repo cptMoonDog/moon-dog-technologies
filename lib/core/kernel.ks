@@ -59,10 +59,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
          // Execute current routine
          set_runmode(MISSION_PLAN[runmode]()).
          if runmode < MISSION_PLAN:length and runmode > -1 {
-            if exists("0:/mission-tracker.txt") {
-               deletepath("0:/mission-tracker.txt").
-               log MISSION_PLAN_ID[runmode] to "0:/mission-tracker.txt".
-            }
+            //if exists("0:/mission-tracker.txt") {
+            //   deletepath("0:/mission-tracker.txt").
+            //   log MISSION_PLAN_ID[runmode] to "0:/mission-tracker.txt".
+            //}
             // If mission plan is still running...
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
@@ -78,6 +78,9 @@ kernel_ctl:add("prompt", ":"). //Prompt
                }
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
                set kernel_ctl["output"] to "Mission completed".
+               set ship:control:pilotmainthrottle to 0.
+               unlock throttle.
+               unlock steering.
             } else {
                print "System Terminated" at(0, 2).
                break.
@@ -171,7 +174,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
          print MISSION_PLAN_ID[runmode] + " returned fail flag.".
          set runmode to MISSION_PLAN:length+100.
       }
-      if n >= -1 and n <= 1 set runmode to runmode+n.
+      if n >= -1 and n <= 1 set runmode to runmode+n. // n is 1 or 0
       if runmode >= MISSION_PLAN:length or runmode < 0 {
          print "MISSION_PLAN index out of range: "+runmode.
          print "n: "+n.
@@ -268,6 +271,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
       set kernel_ctl["output"] to "".
    }
 
+   // Starts interactive mode
    if kernel_ctl["interactive"] {
       runoncepath("0:/lib/core/system-cmds.ks").
       clearscreen.
@@ -280,10 +284,6 @@ kernel_ctl:add("prompt", ":"). //Prompt
       MISSION_PLAN:add({
          return OP_CONTINUE.
       }).
-
-      if exists("0:/mission-tracker.txt"){
-         print "Hibernation state detected.".
-      }
 
       kernel_ctl["start"]().
    }

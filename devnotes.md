@@ -23,19 +23,23 @@ Need to make orbit design for transfer orbits easier.  Make pe change part of th
 Programs
 ========
 
-Make available programs lexicon part of kernel_ctl
+Make available programs lexicon part of kernel
 
 Hibernation
 ===========
 Sometimes a mission plan includes a long trip.  How do we handle rebuilding the same state after player absence?  Well, how do we build mission plans in general?  Up till now, they were either built through ISH, or defined in bespoke files during the previous mission paradigm.
 
-Decsion: Currently working on this.  The current plan, is to have a file on the core save the name of the current program, and mission plans defined by another file.  Then on reboot, the mission plan can be reloaded, and advanced to the current program.  May have the bones, but has not been fleshed out yet.  
+Decsion: Will need two systems.  For ISH, it’s fine to build an abbreviated plan file, because we only would be using programs.  
+
+For automatic mode, plan has to be a ks file, to allow for custom runmodes.  Good thing is, we don’t have to build it programmatically, user would have to supply.
+
+Launch can’t be hibernatable.  
 
 
 General Todo
 =========
 
-Need to add better error reporting to OP_FAIL codes
+Need to add better error reporting to OP fail codes
 
 Work on docking continues.  Quoted parametes works well.  Docking is extremely difficult without a well designed RCS system.  Need to detect wobble in ship so that we can fail without stranding the crew.
 
@@ -50,5 +54,3 @@ Landing, ugh.  May someday get this.
 Booster landings.  Need to learn how to navigate.
 
 Runpaths: Moving away from explicit calls to runpath to loading files via a kernel function.  Allows for running from the core more easily.
-
-Another thing, there is a bug, where if you add an additional program to the mission plan before launch, the countdown does not occur.
