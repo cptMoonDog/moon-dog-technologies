@@ -163,6 +163,12 @@ kernel_ctl:add("prompt", ":"). //Prompt
       if exists("0:/"+name+".ks") compile "0:/"+name+".ks" to "1:/"+name+".ksm".
    }
    set kernel_ctl["load-to-core"] to loadToCore@.
+   
+   declare function hibernation_wake {
+      import_lib("plans/"+core:tag).
+      set runmode to open("1:/hiberfile"):readall:string:tonumber(0).
+   }
+   set kernel_ctl["wakeup"] to hibernation_wake@.  
 
 ///Private functions
    declare function set_runmode {
