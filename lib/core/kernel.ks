@@ -59,10 +59,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
          // Execute current routine
          set_runmode(MISSION_PLAN[runmode]()).
          if runmode < MISSION_PLAN:length and runmode > -1 {
-            //if exists("0:/mission-tracker.txt") {
-            //   deletepath("0:/mission-tracker.txt").
-            //   log MISSION_PLAN_ID[runmode] to "0:/mission-tracker.txt".
-            //}
+
             // If mission plan is still running...
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
@@ -71,6 +68,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
             }
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
+               // Resets the mission plan, so we can stay Alive.
                set runmode to 0.
                until MISSION_PLAN:length = 1 {
                   MISSION_PLAN:remove(1).
@@ -174,7 +172,12 @@ kernel_ctl:add("prompt", ":"). //Prompt
          print MISSION_PLAN_ID[runmode] + " returned fail flag.".
          set runmode to MISSION_PLAN:length+100.
       }
-      if n >= -1 and n <= 1 set runmode to runmode+n. // n is 1 or 0
+      if n >= -1 and n <= 1 set runmode to runmode+n.
+      if n and exists("1:/hiberfile") {
+         local hib is open("1:/hiberfile").
+         hib:clear.
+         hib:writeln(runmode).
+      } 
       if runmode >= MISSION_PLAN:length or runmode < 0 {
          print "MISSION_PLAN index out of range: "+runmode.
          print "n: "+n.
