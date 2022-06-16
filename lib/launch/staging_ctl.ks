@@ -28,7 +28,7 @@
    declare function launch {
       set kernel_ctl["status"] to "Launch".
       stage.
-      wait 0.
+      wait 1.
       if ship:airspeed < 0.1 { //Some crafts (Kerbal X) throttles up before releasing clamps.
          stage.
       } 

@@ -35,39 +35,44 @@
    }
    launch_ctl:add("init_range", init@).
 
-      
+   
+   
    declare function countdown_launchWindow {
-      set kernel_ctl["status"] to "Countdown".
-      if timeOfWindow - time:seconds < 0 { // Missed the window.  Most likely because within time of flight window.
+      // Note on design: The KOS-Missions system uses a main loop, and repeatedly calls the current function until told that it is finished.
+      // Functions therefore, should take the form of an if-else block checking against a controlling variable.  Frequently time.
+      // Start from smallest value of timeOfWindow - time:seconds, and work up.
+      local dispCountdown is {
+         if time:seconds-lastTime > 1 {
+            set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second.
+            hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
+            if timeOfWindow-time:seconds < 5 {
+               if timeOfWindow-time:seconds > 1 {
+                  V0:play(note("C4", 0.1)).
+               } 
+            }
+            set lastTime to time:seconds.
+         }
+      }.
+      if not(kernel_ctl["status"] = "Countdown") set kernel_ctl["status"] to "Countdown".
+      if timeOfWindow - time:seconds < -1 { // Missed the window.  Most likely because within time of flight.
+         print "Time to window is negative.  Range control failure.".
          set kernel_ctl["status"] to "Time to window is negative.  Range control failure.".
          return OP_FAIL.
-      }
-      if timeOfWindow-time:seconds > countdown+1 {
+      } else if timeOfWindow-time:seconds < 0.01 {
+         V0:play(note("C5", 1)).
+         dispCountdown().
+         return OP_FINISHED.
+      } else if timeOfWindow-time:seconds > countdown+1 { // Warp to countdown
          print timeOfWindow - time:seconds.
          if (kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled()) {
             kuniverse:timewarp:warpto(timeOfWindow - countdown).
             wait timeOfWindow - time:seconds - countdown.
          }
          return OP_CONTINUE.
-      }
-      if timeOfWindow-time:seconds < 0.01 {
-         V0:play(note("C5", 1)).
-         return OP_FINISHED.
-      }
-      if time:seconds-lastTime > 1 {
-         set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second.
-         hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
-         if timeOfWindow-time:seconds < 5 {
-            if timeOfWindow-time:seconds > 1 {
-               V0:play(note("C4", 0.1)).
-            } 
-         }
-         set lastTime to time:seconds.
-         return OP_CONTINUE.
       } else {
+         dispCountdown().
          return OP_CONTINUE.
       }
-      print "never returned".
    }
 
    declare function normalizeAngle {

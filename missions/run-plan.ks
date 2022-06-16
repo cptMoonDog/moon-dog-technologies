@@ -1,10 +1,15 @@
 @lazyglobal off.
-runpath("0:/lib/core/kernel.ks").
-runpath("0:/plans/kerbin-to-mun.ks").
-if exists("0:/mission-tracker.txt") {
-   local currentProcess is open("0:/mission-tracker.txt"):readall:string:trim.
-   until kernel_ctl["MissionPlanList"]()[0] = currentProcess {
-      kernel_ctl["MissionPlanRemove"](0).
-   }
-}
-kernel_ctl["start"]().
+if ship:status = "PRELAUNCH" {
+   if not(exists("1:/lib/core/kernel.ksm")) compile "0:/lib/core/kernel.ksm" to "1:/lib/core/kernel.ksm".
+   runoncepath("1:/lib/core/kernel.ksm").
+   kernel_ctl["load-to-core"]("plans/"+core:tag).
+   if not(exists("1:/hiberfile")) create("1:/hiberfile").
+   
+   kernel_ctl["import-lib"]("plans/"+core:tag).
+   //wait until handoff.
+   //kernel_ctl["start"]().
+} else {
+   runoncepath("1:/lib/core/kernel.ksm").
+   kernel_ctl["wakeup"]().
+   kernel_ctl["start"]().
+} 
