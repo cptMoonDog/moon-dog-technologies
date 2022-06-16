@@ -175,7 +175,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
       parameter n.
       if n = OP_FAIL {
          print "runmode: "+runmode.
-         print MISSION_PLAN_ID[runmode] + " returned fail flag.".
+         print MISSION_PLAN_ID[runmode-1] + " returned fail flag.".
          set runmode to MISSION_PLAN:length+100.
       }
       if n >= -1 and n <= 1 set runmode to runmode+n.
