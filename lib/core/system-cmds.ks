@@ -102,7 +102,7 @@ SYS_CMDS:add("setup-launch", {
       if hastarget { 
          launch_param:add("lan", target:orbit:LAN).
          launch_param:add("inclination", target:orbit:inclination).
-         if launch_param["inclination"] = 0
+         if abs(launch_param["inclination"]) < 0.5
             launch_param:add("launchTime", "now").
          else launch_param:add("launchTime", "window").
       } else {
@@ -124,6 +124,15 @@ SYS_CMDS:add("setup-launch", {
          set kernel_ctl["output"] to "   Launch Vehicle: "+cmd.
       } else set kernel_ctl["output"] to "   Launch Vehicle: "+cmd+" not found".
       set kernel_ctl["prompt"] to ":".
+      return "finished".
+   }
+}).
+
+SYS_CMDS:add("change-callsign", {
+   declare parameter cmd.
+   if cmd:startswith("change-callsign") {
+      local splitCmd is cmd:split(" ").
+      set ship:name to cmd:remove(0, splitCmd[0]:length):trim.
       return "finished".
    }
 }).
