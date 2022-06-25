@@ -83,7 +83,6 @@
       if engList:length > 0 {
          if time:seconds > lastTime  {
             list Engines in engList.
-            //print engList:length at(0, 5).
             local thrst is 0.
             for eng in engList 
                set thrst to thrst + eng:thrust.
@@ -94,7 +93,7 @@
                launch_param:remove("stageAndAHalf").
                list Engines in engList.
             } else for eng in engList {
-               if eng:ignition and eng:flameout {
+               if eng:flameout {
                   if engList:length > 1 {
                      stage.
                      list Engines in engList.

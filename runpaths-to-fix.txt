@@ -1,3 +1,5 @@
+This was just a grep of all the places where runpath is called.  I want to change them to referenceces to the kernel methods, so that we can eaily run on the core.
+
 -*- mode: grep; default-directory: "~/projects/kos-missions/" -*-
 Grep started at Sun May 22 13:04:32
 
