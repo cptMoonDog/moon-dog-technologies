@@ -19,13 +19,10 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
       launch_ctl["init_staging"]().
       launch_ctl["init_steering"](launch_ctl["launchAzimuth"]()).
       launch_ctl["init_throttle"]().
-      //if launch_param:haskey("show telemetry") and launch_param["show telemetry"] = "true" {
-      //   runpath("0:/lib/core/telemetry.ks").
-      //   INTERRUPTS:add(telemetry_ctl["display"]).
-      //}
    }
    launch_ctl:add("init", init_system@).
    
+   // This function requires that the kernel has already been initialized.
    declare function setupLaunch {   
       kernel_ctl["MissionPlanAdd"]("init", {
          launch_ctl["init_range"](). // ISH delays launch, and was preventing countdown, so run this again.
