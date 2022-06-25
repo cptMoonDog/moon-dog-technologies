@@ -139,9 +139,11 @@ kernel_ctl:add("prompt", ":"). //Prompt
    // This is intended to make it easier to work with scripts loaded to the core.
    declare function import_lib {// Load the file, without needing to know where it is, search the core first.
       parameter name.
-      if exists("1:/"+name+".ksm") {
+      if exists("1:/"+name+".ksm") {        // Prefer compiled to the core
          runoncepath("1:/"+name+".ksm").
-      } else if exists("0:/"+name+".ks") {
+      } else if exists("1:/"+name+".ks") {  // Second choice uncompiled on the core
+         runoncepath("1:/"+name+".ks").
+      } else if exists("0:/"+name+".ks") {  // Third choice on the archive
          runoncepath("0:/"+name+".ks").
       }
    }
