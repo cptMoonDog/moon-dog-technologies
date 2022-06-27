@@ -184,7 +184,7 @@
       }
    }  
    maneuver_ctl:add("engineStat", engineStat@).
-   runpath("0:/config/engine-stats.ks").
+   kernel_ctl["import-lib"]("config/engine-stats").
 }
 
 

@@ -3,14 +3,6 @@
 
 local programName is "change-inc". //<------- put the name of the script here
 
-// Header allowing for standalone operation.
-//   If this program is to be used as part of a complete mission, run this script without parameters, and
-//   then call the functions in the available_programs lexicon in the correct order of events for the mission
-//   to build the MISSION_PLAN.
-if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
-
-//Add initialzer for this program sequence to the lexicon of available programs
-// Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
 kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
@@ -20,8 +12,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
-   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+   if not (defined maneuver_ctl) kernel_ctl["import-lib"]("lib/maneuver_ctl").
+   if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics").
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
@@ -59,11 +51,9 @@ kernel_ctl["availablePrograms"]:add(programName, {
          }
          set count to count +1.
       }
-      local LANVector is {
-         return angleaxis(ship:orbit:lan, ship:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
-      }.
-      local angleToAN is vang(ship:position-ship:body:position, LANVector()).         // From SOI origin
-      local angleToDN is vang(ship:position-ship:body:position, -1*LANVector()).         // From SOI origin
+      local LANVector is phys_lib["lanVector"](ship).
+      local angleToAN is vang(ship:position-ship:body:position, LANVector).         // From SOI origin
+      local angleToDN is vang(ship:position-ship:body:position, -1*LANVector).         // From SOI origin
       // It does not matter whether it is a prograde or retrograde orbit.
       // Or if we are closer to AN or DN
       if ship:geoposition:lat > 0 set angleToAN to 360 - angleToAN.      // Northern hemisphere; Past AN

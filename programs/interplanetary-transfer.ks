@@ -8,8 +8,8 @@ local programName is "interplanetary-transfer". //<------- put the name of the s
 //   then call the functions in the available_programs lexicon in the correct order of events for the mission
 //   to build the MISSION_PLAN.
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
-if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
-if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+if not (defined phys_lib)     kernel_ctl["import-lib"]("lib/physics"). 
+if not (defined maneuver_ctl) kernel_ctl["import-lib"]("lib/maneuver_ctl").
 
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.

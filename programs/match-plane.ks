@@ -1,16 +1,8 @@
 @lazyglobal off.
 // Program Template
 
-local programName is "change-LAN". //<------- put the name of the script here
+local programName is "match-plane". //<------- put the name of the script here
 
-// Header allowing for standalone operation.
-//   If this program is to be used as part of a complete mission, run this script without parameters, and
-//   then call the functions in the available_programs lexicon in the correct order of events for the mission
-//   to build the MISSION_PLAN.
-if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
-
-//Add initialzer for this program sequence to the lexicon of available programs
-// Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
 kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
@@ -26,9 +18,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   if argv:split(" "):length >= 1 {
+   local engineName is "".
+   local targetObject is "".
+   if argv:split(" "):length >= 2 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      if argv:split(char(34)):length > 1 set targetObject to argv:split(char(34))[1]. // Quoted second parameter
+      else set targetObject to argv:split(" ")[1].
+      set kernel_ctl["output"] to "target: "+ targetObject.
+   } else {
       set kernel_ctl["output"] to
-         "Deorbits the craft, assuming a circular orbit, and an atmospheric body.".
+         "Creates and executes a maneuver to match orbital planes with the given target"
+         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [TARGET]".
       return.
    }
 
@@ -41,29 +42,21 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPLanAdd"](programName, {
-      lock steering to ship:retrograde.
-      wait 30.
-      lock throttle to 1.
-      wait until ship:periapsis < 45000.
-      lock throttle to 0.
-      return OP_FINISHED.
-   }).
-   kernel_ctl["MissionPLanAdd"](programName, {
-      lock steering to ship:north.
-      wait 10.
-      //stage.
-      lock steering to ship:retrograde.
-      wait 10.
-      unlock steering.
-      return OP_FINISHED.
-   }).
-   kernel_ctl["MissionPLanAdd"](programName, {
-      if ship:altitude < 5000 {
-         stage.
-         return OP_FINISHED.
-      } else return OP_CONTINUE.
-   }).
+      local myPlane is phys_lib["obtPlaneVector"](ship).
+      local theirPlane is phys_lib["obtPlaneVector"](vessel(targetObject)).
+      local AN_DN is vcrs(myPlane, theirPlane).
+      local dInc is vang(myPlane, theirPlane).
 
+      lock minEtaBP to (vang(up:forevector, AN_DN))*((ship:orbit:period)/360).
+
+      local dvNormal is ship:velocity:orbit:mag*sin(dInc).
+      local dvPrograde is ship:velocity:orbit:mag*cos(dInc)-ship:velocity:orbit:mag.
+      add(node(time:seconds+minEtaBP, 0, dvNormal, dvPrograde)).
+
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
+      return OP_FINISHED.
+   }).
+   kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
          
 //========== End program sequence ===============================
    

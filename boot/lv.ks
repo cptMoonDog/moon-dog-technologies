@@ -2,8 +2,6 @@
 
 //If this ship is on the launch pad... 
 if ship:status = "PRELAUNCH" {
-   //runpath("0:/lib/launch/boot_common.ks").
-
    //// Locate launch parameters
    local data is list().
    local payloadData is "".
@@ -40,7 +38,7 @@ if ship:status = "PRELAUNCH" {
       if lan = -1 set lan to "none".
       launch_param:add("lan", lan).
 
-      if launch_param["lan"]="none" or launch_param["inclination"] = 0 or launch_param["inclination"] = 180 {             
+      if launch_param["lan"]="none" or abs(launch_param["inclination"]) < 1 or launch_param["inclination"] = 180 {             
          launch_param:add("launchTime",        "now"). 
       } else if lan:istype("Scalar") {
          launch_param:add("launchTime",        "window"). 
@@ -60,22 +58,22 @@ if ship:status = "PRELAUNCH" {
             print "target: "+ data[1].
             if data[1]:trim = "Polar" { /// Dummy Targets ///
                setLaunchParams(90, 0).
-               runpath("0:/lv/"+data[0]+".ks").
+               kernel_ctl["import-lib"]("lv/"+data[0]).
             } else {
                set target to data[1]:trim.
                if target:body = ship:body { /// Targets in orbit of Origin Body ///
-                  print target:orbit:inclination at(0, 9).
-                  if target:orbit:inclination >= 1 or abs(ship:latitude) >= 1 setLaunchParams(target:orbit:inclination, target:orbit:lan).
-                  else {
+                  if abs(target:orbit:inclination) < 1 and abs(ship:latitude) < 1 {
+                     print "inc: "+target:orbit:inclination at(0, 9).
+                     print "lat: "+ship:latitude at(0, 8).
                      launch_param:add("orbitType", "rendezvous").
                      setLaunchParams(0, "none").
-                  }
-                  runpath("0:/lv/"+data[0]+".ks").
+                  } else setLaunchParams(target:orbit:inclination, target:orbit:lan).
+                  kernel_ctl["import-lib"]("lv/"+data[0]).
                } else { /// Interplanetary Targets ///
                   // All interplanetary trajectories start from equatorial orbit.
                   setLaunchParams(0, "none").
                   launch_param:add("targetApo", 80000).
-                  runpath("0:/lv/"+data[0]+".ks").
+                  kernel_ctl["import-lib"]("lv/"+data[0]).
                }
             }
          } else { /// Defined orbit, 
@@ -92,7 +90,7 @@ if ship:status = "PRELAUNCH" {
                   set launch_param["targetApo"] to data[3]:tonumber(80000).
                }
             }
-            runpath("0:/lv/"+data[0]+".ks").
+            kernel_ctl["import-lib"]("lv/"+data[0]).
          }
       }
    } else {
@@ -100,7 +98,7 @@ if ship:status = "PRELAUNCH" {
       //If no parameters given; runs the launch with default values
       setLaunchParams(0, "none").
       launch_param:add("targetApo", 80000).
-      runpath("0:/lv/"+data[0]+".ks").
+      kernel_ctl["import-lib"]("lv/"+data[0]).
    }
 
    kernel_ctl["start"]().
@@ -116,7 +114,7 @@ if ship:status = "PRELAUNCH" {
    }
    if payloadData {
       core:connection:sendmessage(payloadData). // Send message to myself
-      runpath("/boot/payload.ks").
+      kernel_ctl["import-lib"]("boot/payload").
    } else {
       shutdown.
    }

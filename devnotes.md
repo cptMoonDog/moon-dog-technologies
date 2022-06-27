@@ -11,9 +11,13 @@ Option1: Break up the launch code.  Non-viable, throttle and steering control ne
 
 Decision: Booster simply has a separate control unit to handle landing in addition to upper stage control unit.  Need to add capability of staging before fuel runs out, though.  Possibly hijack staging on the booster core.
 
+This is the way.  However, we need to define the booster design limitations.  For a land able booster, there needs to be fuel left over.  How high does it lift the payload?  Is it possible to do the boost back in atmosphere?
+
 Option 2: Upper stage dumps launch code after orbit established, and swaps out for a mission.  Problem is, how to pass mission information to the core?  The core:tag is already dedicated to launch parameters.  The question becomes, either continue to use core:tag, or offload parameters to say a dedicated file.  The problem with that, is if you have multiple core with the same boot script, like a comsat, then you can’t address them individually.  Could of course have a parameters file for launch, and use core:tag for mission cores.  Parameters file would of course require a whole different parsing code…not necessarily.
 
 Decision: Simple.  Have two cores on the upper stage.  One running lv.ks, and the other running payload.ks.  The handoff happens, no need to build an entire separate control unit.  
+
+Edit:  While that still is an option, it is also possible to use the external parameters file and reboot into the payload system.
 
 Transfer orbits
 ==========
@@ -23,7 +27,7 @@ Need to make orbit design for transfer orbits easier.  Make pe change part of th
 Programs
 ========
 
-Make available programs lexicon part of kernel
+[x] Make available programs lexicon part of kernel
 
 Hibernation
 ===========
@@ -33,7 +37,7 @@ Decsion: Will need two systems.  For ISH, it’s fine to build an abbreviated pl
 
 For automatic mode, plan has to be a ks file, to allow for custom runmodes.  Good thing is, we don’t have to build it programmatically, user would have to supply.
 
-Launch can’t be hibernatable.  
+Launch can’t be hibernatable until after apoapsis established.
 
 
 General Todo
@@ -43,7 +47,7 @@ Need to add better error reporting to OP fail codes
 
 Work on docking continues.  Quoted parametes works well.  Docking is extremely difficult without a well designed RCS system.  Need to detect wobble in ship so that we can fail without stranding the crew.
 
-Rendezvous is currently garbage.  It works, but it's sort of a spiral in approach which wastes fuel.  
+Rendezvous is currently garbage.  It works, but it's sort of a spiral in approach which wastes fuel.  Try vang(tgt:position, relvelocity).  Should be 90 at closest approach.
 
 Not sure I ever got the change-LAN working reliably.
 

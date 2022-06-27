@@ -48,6 +48,19 @@
    }
    phys_lib:add("sma", semimajoraxis@).
 
+   declare function LANVector {
+      parameter object.
+      return angleaxis(object:orbit:lan, object:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+   }
+   phys_lib:add("lanVector", LANVector@).
+
+   declare function orbitPlaneVector {
+      parameter object.
+      local objLan is angleaxis(object:orbit:lan, object:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      return angleaxis(object:orbit:inclination, objLan:normalized)*object:body:angularvel:normalized.
+   }
+   phys_lib:add("obtPlaneVector", orbitPlaneVector@).
+
    //Returns the velocity of an object at alt in an orbit with a Semi major axis of sma.
    //For instance: for a ship in a circular 80k orbit wishing to transfer to Minmus 46400k altitude,
    //would require a deltaV increase of: visViva_velocity(body("Kerbin"), 80000, semimajoraxis(body("Kerbin"), 80000, body("Minmus"):orbit:altitude)-ship:orbit:velocity
@@ -130,6 +143,7 @@
       if (velPrograde/abs(velPrograde)) < 0 set angleToPrograde to 360 + (velPrograde/abs(velPrograde))*vang(bodyVelocity, up:forevector).
       return angleToPrograde.
    }
+
    declare function angleToBodyRetro {
       local ang is angleToBodyPrograde()+180.
       if ang > 360 set ang to ang-360.

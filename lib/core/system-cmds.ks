@@ -38,12 +38,12 @@ SYS_CMDS:add("display", {
          }
 
          else if splitCmd[1] = "help" {                                                                                  //help
-            runoncepath("0:/programs/"+splitCmd[2]+".ks").
+            kernel_ctl["import-lib"]("programs/"+splitCmd[2]).
             kernel_ctl["availablePrograms"][splitCmd[2]]("").
          }
 
          else if splitCmd[1] = "eta-duna-window" {                                                                       //eta-duna-window
-            if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+            if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
          } else set kernel_ctl["output"] to "   No data".
          return "finished".
@@ -68,7 +68,7 @@ SYS_CMDS:add("setup-launch", {
    declare parameter cmd.
    if cmd = "setup-launch" { // Primary command entry
       if ship:status = "PRELAUNCH" or ship:status = "LANDED" {
-         runoncepath("0:/lib/launch/launch_ctl.ks").
+         kernel_ctl["import-lib"]("lib/launch/launch_ctl").
          set kernel_ctl["prompt"] to "Type(*lko*/coplanar/transfer): ".
       } else {
          set kernel_ctl["output"] to "   Not on launch pad".
@@ -102,7 +102,7 @@ SYS_CMDS:add("setup-launch", {
       if hastarget { 
          launch_param:add("lan", target:orbit:LAN).
          launch_param:add("inclination", target:orbit:inclination).
-         if launch_param["inclination"] = 0
+         if abs(launch_param["inclination"]) < 0.5
             launch_param:add("launchTime", "now").
          else launch_param:add("launchTime", "window").
       } else {
@@ -120,10 +120,19 @@ SYS_CMDS:add("setup-launch", {
       set kernel_ctl["prompt"] to "Launch Vehicle: ".
    } else if kernel_ctl["prompt"] = "Launch Vehicle: " {
       if cmd:trim and exists("0:/lv/"+cmd:trim+".ks") {
-         runoncepath("0:/lv/"+cmd:trim+".ks"). 
+         kernel_ctl["import-lib"]("lv/"+cmd:trim). 
          set kernel_ctl["output"] to "   Launch Vehicle: "+cmd.
       } else set kernel_ctl["output"] to "   Launch Vehicle: "+cmd+" not found".
       set kernel_ctl["prompt"] to ":".
+      return "finished".
+   }
+}).
+
+SYS_CMDS:add("change-callsign", {
+   declare parameter cmd.
+   if cmd:startswith("change-callsign") {
+      local splitCmd is cmd:split(" ").
+      set ship:name to cmd:remove(0, splitCmd[0]:length):trim.
       return "finished".
    }
 }).
@@ -134,7 +143,7 @@ SYS_CMDS:add("add-program", {
    if cmd:startswith("add-program") {
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 and exists("0:/programs/"+splitCmd[1]+".ks") {
-         runoncepath("0:/programs/"+splitCmd[1]+".ks").
+         kernel_ctl["import-lib"]("programs/"+splitCmd[1]).
       } else {
          set kernel_ctl["output"] to "Program does not exist".
          return "finished".
@@ -165,47 +174,12 @@ SYS_CMDS:add("remove-program", {
    }                                                                               
 }).
 
-//SYS_CMDS:add("insert-program", {
-//   declare parameter cmd.
-//   if cmd:startswith("insert-program") {
-//      local splitCmd is cmd:split(" ").
-//      if splitCmd:length > 3 and exists("0:/programs/"+splitCmd[2]+".ks") {
-//         runoncepath("0:/programs/"+splitCmd[2]+".ks").
-//      } else {
-//         set kernel_ctl["output"] to "Program does not exist".
-//         return "finished".
-//      }
-//      if kernel_ctl["availablePrograms"]:haskey(splitCmd[2]) {
-//         local temp is "".
-//         for item in splitCmd:sublist(splitCmd:find("insert-program"), splitCmd:length-splitCmd:find("insert-program")) {
-//            set temp to temp + item.
-//         }
-//         // TODO Wrong call to try and fix this, falling asleep.
-//         local retVal is kernel_ctl["availablePrograms"][splitCmd[2]](temp).
-//         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable initialize, check arguments.".
-//         else {
-//            if splitcmd[1]:tonumber(-1) > -1 {
-//               MISSION_PLAN:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN[MISSION_PLAN:length-1]).
-//               MISSION_PLAN_ID:insert(splitcmd[1]:tonumber(-1), MISSION_PLAN_ID[MISSION_PLAN_ID:length-1]).
-//               MISSION_PLAN:remove(MISSION_PLAN:length-1).
-//               MISSION_PLAN_ID:remove(MISSION_PLAN_ID:length-1).
-//            }
-//         }
-//         return "finished".                                                                                                                                      
-//      } else {
-//         set kernel_ctl["output"] to "Program does not exist in the lexicon".
-//         return "finished".
-//      }
-//   }                                                                               
-//}).
-         
-      
 
 SYS_CMDS:add("run-extra", {
    declare parameter cmd.
    if cmd:startswith("run-extra") {
       local splitCmd is cmd:split(" ").
-      runpath("0:/extra/"+splitCmd[1]+".ks").
+      runpath("0:/extra/"+splitCmd[1]+".ks"). // Do not route through import-lib.  These should be re-runnable.
       return "finished".
    }
 }).
