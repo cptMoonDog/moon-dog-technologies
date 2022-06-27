@@ -24,11 +24,7 @@
                                           launch_param["timeOfFlight"], 
                                           launch_param["azimuthHemisphere"]).
       } else if launch_param["launchTime"] = "now" {          //Will countdown and launch.
-         if launch_param:haskey("orbitType") and launch_param["orbitType"] = "rendezvous" {
-            print "etaPhaseAngle: "+etaPhaseAngle() at(0, 10).
-            set timeOfWindow to time:seconds+etaPhaseAngle().
-            set launch_param["targetApo"] to target:orbit:periapsis.
-         } else set timeOfWindow to time:seconds + countdown + 1.
+         set timeOfWindow to time:seconds + countdown + 1.
       } else if launch_param["launchTime"]:istype("Scalar") { //Will warp to (Utime - countdown), then countdown and launch.
          set timeOfWindow to launch_param["launchTime"].
       }

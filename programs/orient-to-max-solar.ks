@@ -20,7 +20,6 @@ kernel_ctl["availablePrograms"]:add(programName, {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   //if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
    declare parameter argv.

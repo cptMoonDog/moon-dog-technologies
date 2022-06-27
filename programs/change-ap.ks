@@ -20,8 +20,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
-   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+   if not (defined maneuver_ctl) kernel_ctl["import-lib"]("lib/maneuver_ctl").
+   if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics").
    
 //======== Parameters used by the program ====
    declare parameter argv.

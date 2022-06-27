@@ -22,8 +22,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
-   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+   if not (defined transfer_ctl) kernel_ctl["import-lib"]("lib/transfer_ctl").
+   if not (defined maneuver_ctl) kernel_ctl["import-lib"]("lib/maneuver_ctl").
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.

@@ -26,7 +26,11 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    launch_param:add("timeOfFlight",         180+2*launch_param["inclination"]).
 
    ///////////////////////////// Gravity turn parameters ////////////////////////////////
-   launch_param:add("pOverDeg",             10). // Pitchover magnitude in degrees
+   local emptyMass is 348.95. //tons
+   local pitchRef is 10.
+   //launch_param:add("pOverDeg",             5). // Pitchover magnitude in degrees
+   launch_param:add("pOverDeg",             (pitchRef-(ship:mass/emptyMass-1)*pitchRef)). // Pitchover magnitude in degrees
+   //launch_param:add("pOverDeg",             8). // Pitchover magnitude in degrees
    launch_param:add("pOverV0",              50). // Vertical speed at which to start pitchover                        
    launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
@@ -79,10 +83,12 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
      // This is a decent general ascent
    launch_param:add("throttleProgramType", "setpoint"). 
    launch_param:add("throttleReferenceVar", "etaApo"). 
+   local etaRef is 45.
    launch_param:add("throttleProfile", list( 
                                             1000, //Apo to Activate function, max prior
                                             launch_param["targetApo"], //Apo to Deactivate function 
-                                            40)).  //Setpoint
+                                            (etaRef+(ship:mass/emptyMass-1)*etaRef))).  //Setpoint
+                                            //45)).  //Setpoint
 
       // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
       // You can make your own functions too! See configs/launch/throttle-functions.ks
@@ -110,7 +116,7 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "poodle").
+   launch_param:add("upperstage", "mainsail").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      10).
@@ -122,9 +128,9 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
 
    // These assume certain parts have been added to action groups
    // Activate AG1 at 60km (Jettison fairing)
-   launch_param:add("AG1", 60000).
+   launch_param:add("AG1", 70000).
    // Activate AG2 at 65km (Activate solar panels and antennas)
-   launch_param:add("AG2", 65000).
+   launch_param:add("AG2", 75000).
    // Force MECO Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
    //launch_param:add("AG10", ship:orbit:body:atm:height).
    

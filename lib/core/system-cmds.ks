@@ -179,7 +179,7 @@ SYS_CMDS:add("run-extra", {
    declare parameter cmd.
    if cmd:startswith("run-extra") {
       local splitCmd is cmd:split(" ").
-      kernel_ctl["import-lib"]("extra/"+splitCmd[1]).
+      runpath("0:/extra/"+splitCmd[1]+".ks"). // Do not route through import-lib.  These should be re-runnable.
       return "finished".
    }
 }).

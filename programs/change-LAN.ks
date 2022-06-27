@@ -1,16 +1,6 @@
 @lazyglobal off.
-// Program Template
-
 local programName is "change-LAN". //<------- put the name of the script here
 
-// Header allowing for standalone operation.
-//   If this program is to be used as part of a complete mission, run this script without parameters, and
-//   then call the functions in the available_programs lexicon in the correct order of events for the mission
-//   to build the MISSION_PLAN.
-if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
-
-//Add initialzer for this program sequence to the lexicon of available programs
-// Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
 kernel_ctl["availablePrograms"]:add(programName, {
    //One time initialization code.
    //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
@@ -20,11 +10,10 @@ kernel_ctl["availablePrograms"]:add(programName, {
    //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
-   if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
-   if not (defined phys_lib) runpath("0:/lib/physics.ks").
+   if not (defined maneuver_ctl) kernel_ctl["import-lib"]("lib/maneuver_ctl").
+   if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics").
    
 //======== Parameters used by the program ====
-   // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
    local engineName is "".
    local newLAN is "".
