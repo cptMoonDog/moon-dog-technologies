@@ -48,9 +48,43 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local relVelocity is ship:velocity:orbit.
    local velToward is 0.  //speed toward target
    local timeOfClosest is time:seconds.
+   local thrott is 0.
 
    declare function steeringVector {
-      return -1*relVelocity.
+      set relVelocity to (ship:velocity:orbit - target:velocity:orbit).
+      set dist        to (target:position-ship:position).
+      set velToward   to relVelocity:mag*cos(vang(relVelocity, dist)).  //speed toward target
+
+      if relVelocity:mag > 30 or dist:mag < 150 return -1*relVelocity.
+      else if relVelocity:mag < 1 return target:position.
+      else {
+         local nonClosingVel is vxcl(target:position, relVelocity).
+         if nonClosingVel:mag > 1 return -vxcl(target:position, relVelocity):normalized. 
+         else return -1*relVelocity:normalized.
+      }
+   }
+
+   declare function throttleSetting {
+      if dist:mag < 150 { // Within relativistic frame
+         if vang(steeringVector(), ship:facing:forevector) > 5 return 0.
+         if relVelocity:mag < 1 {
+            return 0.
+         } else if relVelocity:mag > 1 {
+            local desiredSpeed is 5.
+            local sensitivity is 10.
+
+            local error is abs(relVelocity:mag).
+            local sigmoid is error/sqrt((100-sensitivity)+error^2).
+            return max(0, sigmoid).
+         }
+      } else if vang(steeringVector(), ship:facing:forevector) > 1 return 0.
+      else if dist:mag < 5000 { // If you can't get within 5km of target...This is not the algorithm you are looking for.// Not close enough
+         local error is vxcl(target:position, relVelocity):mag.
+         if error > 1 {
+            local sigmoid is error/sqrt(1+error^2).
+            return max(0, sigmoid).
+         } else return 0.
+      } else return 0.
    }
 
 
@@ -62,7 +96,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
 
    
-      kernel_ctl["MissionPLanAdd"](programName, {
+   // Programs should probably have at least 3 sections setup, program, and shutdown
+      kernel_ctl["MissionPLanAdd"](programName, { // Find closest approach
          if not(hastarget) {
             set target to targetObject.
          }
@@ -70,7 +105,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          local distanceAtTime is (ship:position - target:position):mag.
          local lastDistance is distanceAtTime.
          local t is time:seconds.
-         local s is distanceAtTime/100.
+         local s is distanceAtTime/100. // Increment
          
          until lastDistance < distanceAtTime {
             set lastDistance to distanceAtTime.
@@ -80,72 +115,23 @@ kernel_ctl["availablePrograms"]:add(programName, {
          }
          set timeOfClosest to t.
 
-         lock steering to steeringVector.
+         lock steering to steeringVector().
+         lock throttle to throttleSetting().
          return OP_FINISHED.
       }).
-      kernel_ctl["MissionPLanAdd"](programName, {
-         set dist        to (target:position-ship:position).
-         set relVelocity to (ship:velocity:orbit - target:velocity:orbit).
-         set velToward   to relVelocity:mag*cos(vang(relVelocity, dist)).  //speed toward target
-         //local dist is (positionat(target, time:seconds)-positionat(ship, time:seconds)).
-         print "toward: "+velToward at(0, 5).
-         print "RelVelocity: "+relVelocity:mag at(0, 6).
-         print "time to target: "+(timeOfClosest - time:seconds) at(0,7).
-
-         if time:seconds < timeOfClosest - 10 {
-            lock throttle to 0.
+      kernel_ctl["MissionPLanAdd"](programName, { // Wait for closest approach and Kill velocity
+         if time:seconds < timeOfClosest - 60 {
+            set kernel_ctl["countdown"] to timeOfClosest - time:seconds.
             return OP_CONTINUE.
-         } else if relVelocity:mag > 5 {
-            lock throttle to 1.
-            return OP_CONTINUE.
-         }
-         lock throttle to 0.
-         return OP_FINISHED.
+         } else if target:position:mag < 5000 {
+            return OP_FINISHED.
+         } else return OP_CONTINUE.
       }).
       kernel_ctl["MissionPlanAdd"](programName, {
-         set dist        to (target:position-ship:position).
-         set relVelocity to (ship:velocity:orbit - target:velocity:orbit).
-         set velToward   to relVelocity:mag*cos(vang(relVelocity, dist)).  //speed toward target
-         
          if dist:mag < 150 { // Within relativistic frame
             if relVelocity:mag < 1 {
-               lock throttle to 0.
-               lock steeering to ship:prograde.
                return OP_FINISHED.
-            } else if relVelocity:mag > 1 {
-               lock steering to -1*relVelocity.
-               // Below: Wait until ship is pointed at retrograde in reference to target.
-               if vang(-1*(ship:velocity:orbit - target:velocity:orbit), ship:facing:forevector) > 1 {return OP_CONTINUE.}
-               lock throttle to abs(relVelocity:mag)/100.
             }
-         } else { // Not close enough
-            if velToward < relVelocity:mag/2 { // drifting away
-               local victor is -vxcl(target:position, relVelocity)+target:position:normalized*relVelocity:mag.
-               lock steering to victor.
-               if vang(victor, ship:facing:forevector) > 2.5 {
-               //if vang(-1*relVelocity(), ship:facing:forevector) > 1 { // Zero out velocity by turning to target retrograde.
-                  lock throttle to 0.
-                  return OP_CONTINUE.
-               } else {
-                  local error is abs(relVelocity:mag).
-                  local sigmoid is error/sqrt(1+error^2). 
-                  lock throttle to sigmoid.
-                  //lock throttle to max(0.01, abs(relVelocity:mag)/ship:availablethrust).
-               }
-               //if abs(relVelocity():mag) > 1 {return OP_CONTINUE.}
-               //lock throttle to 0.
-            } else lock throttle to 0.
-            
-            //} else if abs(velToward()) < 5 and relVelocity():mag < 6 { // Need to move a little faster
-               //if vang(relVelocity(), ship:facing:forevector) > 1 {
-                  //lock steering to dist().  // Point at target
-                  //lock throttle to 0.
-                  //return OP_CONTINUE.
-               //}
-               //lock throttle to 0.1.
-               //if abs((ship:velocity:orbit - target:velocity:orbit):mag) < dist():mag/180 {return OP_CONTINUE.}
-               //lock throttle to 0.
-            //}
          }
          return OP_CONTINUE.
       }).
