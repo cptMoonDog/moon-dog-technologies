@@ -25,7 +25,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
       if argv:split(char(34)):length > 1 set targetObject to argv:split(char(34))[1]. // Quoted second parameter
       else set targetObject to argv:split(" ")[1].
-      set kernel_ctl["output"] to "target: "+ targetObject.
+      //set kernel_ctl["output"] to "target: "+ targetObject.
    } else {
       set kernel_ctl["output"] to
          "Creates and executes a maneuver to match orbital planes with the given target"
@@ -42,12 +42,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPLanAdd"](programName, {
+      set target to targetObject.
       local myPlane is phys_lib["obtPlaneVector"](ship).
       local theirPlane is phys_lib["obtPlaneVector"](vessel(targetObject)).
       local AN_DN is vcrs(myPlane, theirPlane).
       local dInc is vang(myPlane, theirPlane).
 
-      lock minEtaBP to (vang(up:forevector, AN_DN))*((ship:orbit:period)/360).
+      local angleToANDNNode is vang(up:forevector, AN_DN).  //Great, but am I coming or going?
+      local velAngleToANDNNode is vang(ship:prograde:forevector, AN_DN).
+      if velAngleToANDNNode < 90 set angleToANDNNode to vang(up:forevector, AN_DN). // Heading toward, and this should give less than 180 degrees.
+      else set angleToANDNNode to 180-angleToANDNNode.  // Should switch it to the other direction
+      
+      local minEtaBP is (angleToANDNNode)*((ship:orbit:period)/360).
 
       local dvNormal is ship:velocity:orbit:mag*sin(dInc).
       local dvPrograde is ship:velocity:orbit:mag*cos(dInc)-ship:velocity:orbit:mag.
