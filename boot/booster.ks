@@ -13,7 +13,7 @@ if ship:status = "PRELAUNCH" {
       list processors in procs.
       if procs:length = 1 {
          wait until ship:altitude > 70000.
-         set kuniverse:activeVessel to vessel("Salty Dog 1st Stage Probe").
+         //set kuniverse:activeVessel to vessel("Salty Dog 1st Stage Probe").
          // do landing routine
          local retroheadingVec is vxcl(up:forevector, ship:srfretrograde:forevector).
          local tgtHeadingVec is vxcl(up:forevector, tgt:position).

@@ -6,9 +6,9 @@ if ship:status = "PRELAUNCH" {
    local data is list().
    local payloadData is "".
    if core:tag set data to core:tag:split(","). // Parameters are in the core:tag
-   else if exists("0:/launchparameters.txt") {  // Parameters are in this file.
+   else if exists("0:/launch.conf/current.launch") {  // Parameters are in this file.
       print "found parameters file".
-      local f is open("0:/launchparameters.txt").
+      local f is open("0:/launch.conf/current.launch").
       local i is f:readall:iterator.
       i:next.
       until i:atend {
@@ -102,7 +102,7 @@ if ship:status = "PRELAUNCH" {
    }
 
    kernel_ctl["start"]().
-   //Wait until program is finished, and then wait 5 seconds.
+   //Wait until program is finished, and then wait 1 seconds.
    //The following attempts to pass off control of the craft, from the KOS Processor on the Booster, 
    //to the KOS Processor on the payload.
    //For more info, see payload_boot.ks
