@@ -29,7 +29,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Creates and executes a maneuver to match orbital planes with the given target"
-         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [TARGET]".
+         +char(10)+"Usage: add-program match-plane [ENGINE-NAME] [TARGET]".
       return.
    }
 

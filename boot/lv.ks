@@ -52,7 +52,13 @@ if ship:status = "PRELAUNCH" {
          print "Fatal error: No Launch Vehicle definition file".
          shutdown.
       }
-      if data:length > 1 {
+      if data:length = 1 {
+         print "No parameters specified.".
+         //If no parameters given; runs the launch with default values
+         setLaunchParams(0, "none").
+         launch_param:add("targetApo", 80000).
+         kernel_ctl["import-lib"]("lv/"+data[0]).
+      }else if data:length > 1 {
          // Target handling
          if data:length = 2 and data[1]:tonumber(-1) = -1 { // Second parameter is not numeric.
             print "target: "+ data[1].
@@ -93,12 +99,6 @@ if ship:status = "PRELAUNCH" {
             kernel_ctl["import-lib"]("lv/"+data[0]).
          }
       }
-   } else {
-      print "No parameters specified.".
-      //If no parameters given; runs the launch with default values
-      setLaunchParams(0, "none").
-      launch_param:add("targetApo", 80000).
-      kernel_ctl["import-lib"]("lv/"+data[0]).
    }
 
    kernel_ctl["start"]().

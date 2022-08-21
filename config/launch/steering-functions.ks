@@ -23,7 +23,7 @@
          print eta:apoapsis at(0, 7).
          if vang(ship:facing:starvector, heading(azimuth,90):starvector) < 0.5 and ship:airspeed > launch_param["pOverV0"] {
             set steering_functions["mode"] to "pitchover".
-            return heading(azimuth, phys_lib["linearTan"]()).
+            return heading(azimuth, phys_lib["linearTan"](launch_param["targetApo"])).
          }
          return heading(azimuth,90).
       }
@@ -37,7 +37,7 @@
             set steering_functions["mode"] to "gravity turn".
             return ship:srfprograde.
          }
-         return heading(azimuth, phys_lib["linearTan"]()).
+         return heading(azimuth, phys_lib["linearTan"](launch_param["targetApo"])).
       }
       if steering_functions["mode"] = "gravity turn" {
          //print "gravity turn" at(0, 6).
@@ -46,7 +46,8 @@
          //print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
          //print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
          //print "ref: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 13).
-         return ship:srfprograde.
+         //return ship:srfprograde.
+         return steering_functions["atmospheric"](azimuth, h0).
       }
       
    }).
@@ -81,19 +82,21 @@
          //print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
          //print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
          if vang(ship:srfprograde:forevector, up:forevector) > launch_param["pOverDeg"] and ship:airspeed > launch_param["pOverVf"] {
-            set steering_functions["mode"] to "gravity turn".
-            return heading(azimuth, phys_lib["linearTan"]()).
+            set steering_functions["mode"] to "main".
+            return heading(azimuth, phys_lib["linearTan"](launch_param["targetApo"])).
          }
-         return heading(azimuth, phys_lib["linearTan"]()).
+         return heading(azimuth, phys_lib["linearTan"](launch_param["targetApo"])).
       }
-      if steering_functions["mode"] = "gravity turn" {
+      if steering_functions["mode"] = "main" {
          //print "gravity turn" at(0, 6).
-         //print "arctan: "+ (phys_lib["linearTan"]()) at(0, 7).
+         print "arctan: "+ (phys_lib["linearTan"](launch_param["targetApo"])) at(0, 7).
          //print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
          //print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
          //print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
          //print "ref: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 13).
-         return heading(azimuth, phys_lib["linearTan"]()).
+         local val is phys_lib["linearTan"](launch_param["targetApo"]).
+         if val > 90 OR val < 0 set val to 0.
+         return heading(azimuth, val).
       }
       
    }).
