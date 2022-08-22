@@ -10,7 +10,8 @@
 
    declare function linearTangent {
       parameter orbit_height is 80000.
-      return 90-arctan(ship:apoapsis/(orbit_height-ship:apoapsis)).
+      parameter r is 10.
+      return 90-arctan(r*ship:apoapsis/(orbit_height-ship:apoapsis)).
    }
    phys_lib:add("linearTan", linearTangent@).
 

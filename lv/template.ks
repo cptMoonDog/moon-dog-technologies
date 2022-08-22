@@ -26,11 +26,10 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    launch_param:add("timeOfFlight",         180+2*launch_param["inclination"]).
 
    ///////////////////////////// Gravity turn parameters ////////////////////////////////
-   local emptyMass is 348.95. //tons
-   local pitchRef is 10.
-   //launch_param:add("pOverDeg",             5). // Pitchover magnitude in degrees
-   launch_param:add("pOverDeg",             (pitchRef-(ship:mass/emptyMass-1)*pitchRef)). // Pitchover magnitude in degrees
-   //launch_param:add("pOverDeg",             8). // Pitchover magnitude in degrees
+   local emptyMass is 81.153. //tons
+   /// Pitchover magnitude in degrees, the heavier it is, the less the pitch
+   /// TWR might have something to say about this... question is, how to integrate it, no engines are active, so cannot poll availablethrust
+   launch_param:add("pOverDeg",             (10-(1-ship:mass/emptyMass)*10)). // Give 0 at double empty mass. About 8.5 for SaltyDog CRS
    launch_param:add("pOverV0",              50). // Vertical speed at which to start pitchover                        
    launch_param:add("pOverVf",              150).// Vertical speed at which to handoff steering to prograde follower.
 
@@ -38,7 +37,10 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    // Available by default: "LTGT": Pitchover follows a linear tangent curve, but during main body of the ascent follows ship:srfprograde.  Probably the most efficient.
    //                       "atmospheric": Legacy code.  Initiates a gravity turn using the "pOver" parameters above, and follows ship:srfprograde to altitude.  Not bad, but a little adhoc.
    //                       "linearTangent": Follows a linear tangent curve.  NOT A GRAVITY TURN.  DOES NOT follow ship:srfprograde.
-   launch_param:add("steeringProgram", "atmospheric").
+   //launch_param:add("steeringProgram", "atmospheric").
+   launch_param:add("steeringProgram", "linearTangent").
+   launch_param:add("LTShape", 2).
+   //launch_param:add("steeringProgram", "LTGT").
    
 
    //Throttle program parameters
@@ -81,14 +83,12 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    //                                         launch_param["targetApo"], //Apo to Deactivate function 
    //                                         "linearTangent")).  //Setpoint
      // This is a decent general ascent
-   launch_param:add("throttleProgramType", "setpoint"). 
-   launch_param:add("throttleReferenceVar", "etaApo"). 
-   local etaRef is 45.
-   launch_param:add("throttleProfile", list( 
-                                            1000, //Apo to Activate function, max prior
-                                            launch_param["targetApo"], //Apo to Deactivate function 
-                                            (etaRef+(ship:mass/emptyMass-1)*etaRef))).  //Setpoint
-                                            //45)).  //Setpoint
+   //launch_param:add("throttleProgramType", "setpoint"). 
+   //launch_param:add("throttleReferenceVar", "etaApo"). 
+   //launch_param:add("throttleProfile", list( 
+   //                                         1000, //Apo to Activate function, max prior
+   //                                         launch_param["targetApo"], //Apo to Deactivate function 
+   //                                         45)).  //Setpoint
 
       // For some reason, constant TWR ascents are popular recently.  It's not a great idea (<-- My opinion, your mileage may vary.), but here ya go!
       // You can make your own functions too! See configs/launch/throttle-functions.ks
@@ -102,6 +102,17 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
 
      // Table based methods are the way to go, if you want exactly the right ascent for your specific rocket.
      // It can't be wrong if NASA uses it, right?
+     // Reference Variables available: MET, APO, and etaAPO
+
+     // The profile consists of a table of reference var, throttle setting pairs
+     // For example, if the reference variable is altitude, you might have:
+     // Altitude | Throttle setting
+     //  2000    ,    1
+     //  34000   ,    0.5
+     //  70000   ,    0.1
+     // Note: Setting applies UP TO the given point, NOT following that point.
+     // Also Note: That the output is smoothed such that each point is effectively a fixed point on a curve.
+
      // This table is using Mission Elapsed Time, like the Saturn V used.
    //launch_param:add("throttleProgramType", "table").
    //launch_param:add("throttleReferenceVar", "MET"). 
@@ -112,11 +123,17 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    //                                          200, 0.25,
    //                                          250, 0.1
    //                                          )).
+   launch_param:add("throttleProgramType", "table").
+   launch_param:add("throttleReferenceVar", "APO"). 
+   launch_param:add("throttleProfile", list( 
+                                             70000, 1,
+                                             80000, 0.1
+                                             )).
 
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "mainsail").
+   launch_param:add("upperstage", "poodle").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      10).
@@ -128,9 +145,9 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
 
    // These assume certain parts have been added to action groups
    // Activate AG1 at 60km (Jettison fairing)
-   launch_param:add("AG1", 70000).
+   launch_param:add("AG1", 65000).
    // Activate AG2 at 65km (Activate solar panels and antennas)
-   launch_param:add("AG2", 75000).
+   launch_param:add("AG2", 69000).
    // Force MECO Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
    //launch_param:add("AG10", ship:orbit:body:atm:height).
    
