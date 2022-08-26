@@ -71,6 +71,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
                // Resets the mission plan, so we can stay Alive.
                set runmode to 0.
                until MISSION_PLAN:length = 1 {
+                  set kernel_ctl["output"] to "removing: "+MISSION_PLAN_ID[0].
                   MISSION_PLAN:remove(1).
                   MISSION_PLAN_ID:remove(0).
                }

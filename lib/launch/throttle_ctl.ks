@@ -13,8 +13,8 @@
 
    declare function init {
       if launch_param["throttleProgramType"] = "table" {
-         if mod(launch_param["throttleProfile"]:length, 2) = 0 {
-            print "Error in throttle profile.  Even number of data points.  Check for final altitude parameter.".
+         if mod(launch_param["throttleProfile"]:length, 2) > 0 {
+            print "Error in throttle profile.  Odd number of data points.".
             shutdown.
          }
          lock throttle to getThrottleSetting_table().
@@ -69,7 +69,8 @@
    // If a table based profile is selected by the lv, this will be exported as launch_ctl["throttleMonitor"]
    local step is 0.
    declare function throttleMonitor_table {
-      if ship:apoapsis < launch_param["throttleProfile"][launch_param["throttleProfile"]:length-1] {
+      //if ship:apoapsis < launch_param["throttleProfile"][launch_param["throttleProfile"]:length-1] {
+      if ship:apoapsis < launch_param["targetApo"] {
          if step+2 < launch_param["throttleProfile"]:length-1 //Another step exists
             and getReferenceValue_table() > launch_param["throttleProfile"][step]
          { 
@@ -121,14 +122,14 @@
    //  34000   |    0.5
    //  70000   |    0.1
    declare function getThrottleSetting_table {
-      if ship:apoapsis > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-1] {
+      //if ship:apoapsis > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-1] {
+      if ship:apoapsis > launch_param["targetApo"] {
          return 0.
       } else if step = 0 {
          return launch_param["throttleProfile"][step+1].
       } else {
-         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3]*0.99 {
-            if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3] return 0.
-            else return max(0, 0.01+1-getReferenceValue_table()/launch_param["throttleProfile"][launch_param["throttleProfile"]:length-3]).
+         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2] { // Reference > last full point
+            return 0.
          } else {
             if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
                //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
@@ -169,7 +170,8 @@
          } else {
             return max(0.01, ((1 - min(1, ship:apoapsis/launch_param["throttleProfile"][1]))+(1 - min(1, ship:altitude/ship:body:atm:height)))/2).
          }
-      } else if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
+      //} else if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
+      } else if vang(up:forevector, ship:prograde:forevector) > 90-kickWithin and vang(up:forevector, ship:prograde:forevector) < 90+kickWithin {
          //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
          //function will return 0@89 deg, rise to 1@90 deg and fall to 0@91 deg. I.e. max thottle at horizontal prograde.
          //Adds the final kick to orbital altitude, if not there already. 

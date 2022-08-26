@@ -6,9 +6,9 @@ if ship:status = "PRELAUNCH" {
    local data is list().
    local payloadData is "".
    if core:tag set data to core:tag:split(","). // Parameters are in the core:tag
-   else if exists("0:/launchparameters.txt") {  // Parameters are in this file.
+   else if exists("0:/launch.conf/current.launch") {  // Parameters are in this file.
       print "found parameters file".
-      local f is open("0:/launchparameters.txt").
+      local f is open("0:/launch.conf/current.launch").
       local i is f:readall:iterator.
       i:next.
       until i:atend {
@@ -52,7 +52,13 @@ if ship:status = "PRELAUNCH" {
          print "Fatal error: No Launch Vehicle definition file".
          shutdown.
       }
-      if data:length > 1 {
+      if data:length = 1 {
+         print "No parameters specified.".
+         //If no parameters given; runs the launch with default values
+         setLaunchParams(0, "none").
+         launch_param:add("targetApo", 80000).
+         kernel_ctl["import-lib"]("lv/"+data[0]).
+      }else if data:length > 1 {
          // Target handling
          if data:length = 2 and data[1]:tonumber(-1) = -1 { // Second parameter is not numeric.
             print "target: "+ data[1].
@@ -93,16 +99,10 @@ if ship:status = "PRELAUNCH" {
             kernel_ctl["import-lib"]("lv/"+data[0]).
          }
       }
-   } else {
-      print "No parameters specified.".
-      //If no parameters given; runs the launch with default values
-      setLaunchParams(0, "none").
-      launch_param:add("targetApo", 80000).
-      kernel_ctl["import-lib"]("lv/"+data[0]).
    }
 
    kernel_ctl["start"]().
-   //Wait until program is finished, and then wait 5 seconds.
+   //Wait until program is finished, and then wait 1 seconds.
    //The following attempts to pass off control of the craft, from the KOS Processor on the Booster, 
    //to the KOS Processor on the payload.
    //For more info, see payload_boot.ks

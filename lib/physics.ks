@@ -10,7 +10,8 @@
 
    declare function linearTangent {
       parameter orbit_height is 80000.
-      return 90-arctan(18*ship:apoapsis/orbit_height).
+      parameter r is 10.
+      return 90-arctan(r*ship:apoapsis/(orbit_height-ship:apoapsis)).
    }
    phys_lib:add("linearTan", linearTangent@).
 
@@ -56,8 +57,10 @@
 
    declare function orbitPlaneVector {
       parameter object.
-      local objLan is angleaxis(object:orbit:lan, object:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
-      return angleaxis(object:orbit:inclination, objLan:normalized)*object:body:angularvel:normalized.
+      local obtObject is object.
+      if not(object:istype("Orbit")) set obtObject to object:orbit.
+      local objLan is angleaxis(obtObject:lan, obtObject:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      return angleaxis(obtObject:inclination, objLan:normalized)*obtObject:body:angularvel:normalized.
    }
    phys_lib:add("obtPlaneVector", orbitPlaneVector@).
 

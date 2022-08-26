@@ -22,7 +22,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local localPort is "".
 
    if argv:split(" "):length > 1 {
-      if argv:split(char(34)):length > 1 {
+      if argv:split(char(34)):length > 1 { //char(34) is quotation mark
          set tgtPort to argv:split(char(34))[1]. // Quoted first parameter
          set tgtPort to tgtPort + ":"+argv:split(":")[1]:split(" ")[0].
       } else set tgtPort to argv:split(" ")[0].
