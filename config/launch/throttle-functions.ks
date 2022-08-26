@@ -17,3 +17,8 @@ throttle_functions:add("vOV", {
    return max(minimum, 1-(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude))).
    //return max(minimum, 1-(vang(up:forevector, facing:forevector))*(ship:velocity:orbit:mag/phys_lib["OVatAlt"](Kerbin, ship:altitude))).
 }).
+
+throttle_functions:add("cosine", {
+   parameter shape is -0.5.
+   return (cos(360*ship:apoapsis/launch_param["targetApo"])*(2+shape))/(4+2*shape*cos(360*ship:apoapsis/launch_param["targetApo"])) + 0.5.
+}).

@@ -131,8 +131,7 @@
          set progradeDirection to ship:prograde.
       }
       local progradeVector is progradeDirection:forevector.
-      //if ship:velocity:orbit:mag > 500 and ship:verticalspeed < 100 and ship:periapsis < ship:body:atm:height/2 and (eta:apoapsis > eta:periapsis or eta:apoapsis < 40) { // 
-      if ship:velocity:orbit:mag > 500 and ship:periapsis < ship:body:atm:height/2 and (eta:apoapsis > eta:periapsis or eta:apoapsis < 40) { // 
+      if ship:velocity:orbit:mag > 500 and ship:verticalspeed < 100 and ship:periapsis < ship:body:atm:height/2 and (eta:apoapsis > eta:periapsis or eta:apoapsis < 40) { // 
          /// Attempts to compensate for not reaching orbit by the time apoapsis is reached.  ///
          local pitchLimit is min(45, vang(up:forevector, progradeVector)*(ship:altitude/ship:body:atm:height)).
          local twr is ship:availablethrust/(ship:mass*(ship:body:mu/((ship:body:radius+ship:altitude)^2))).

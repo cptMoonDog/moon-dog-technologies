@@ -128,9 +128,8 @@
       } else if step = 0 {
          return launch_param["throttleProfile"][step+1].
       } else {
-         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2]*0.99 { // Reference > last full point
-            if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2] return 0.
-            else return max(0, 0.01+1-getReferenceValue_table()/launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2]).
+         if getReferenceValue_table() > launch_param["throttleProfile"][launch_param["throttleProfile"]:length-2] { // Reference > last full point
+            return 0.
          } else {
             if vang(up:forevector, ship:facing:forevector) > 90-kickWithin and vang(up:forevector, ship:facing:forevector) < 90+kickWithin {
                //What am I doing here?  Okay, if ship:prograde is within 1 deg (either side) of horizontal...
