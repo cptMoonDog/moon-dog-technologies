@@ -51,16 +51,21 @@
 
    declare function LANVector {
       parameter object.
-      return angleaxis(object:orbit:lan, object:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      local obtObject is object.
+      if not(object:istype("Orbit")) set obtObject to object:orbit.
+      //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      return angleaxis(obtObject:lan, obtObject:body:angularvel)*solarprimevector. 
    }
    phys_lib:add("lanVector", LANVector@).
 
    declare function orbitPlaneVector {
       parameter object.
+      local objLan is LANVector(object).
       local obtObject is object.
       if not(object:istype("Orbit")) set obtObject to object:orbit.
-      local objLan is angleaxis(obtObject:lan, obtObject:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
-      return angleaxis(obtObject:inclination, objLan:normalized)*obtObject:body:angularvel:normalized.
+
+      local myPlane is angleaxis(obtObject:inclination, objLan)*obtObject:body:angularvel.
+      return myPlane.
    }
    phys_lib:add("obtPlaneVector", orbitPlaneVector@).
 

@@ -63,7 +63,7 @@ if ship:status = "PRELAUNCH" {
          if data:length = 2 and data[1]:tonumber(-1) = -1 { // Second parameter is not numeric.
             print "target: "+ data[1].
             if data[1]:trim = "Polar" { /// Dummy Targets ///
-               setLaunchParams(90, 0).
+               setLaunchParams(90, "none").
                kernel_ctl["import-lib"]("lv/"+data[0]).
             } else {
                set target to data[1]:trim.

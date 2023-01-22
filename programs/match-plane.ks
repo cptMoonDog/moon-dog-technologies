@@ -43,7 +43,9 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPLanAdd"](programName, {
       set target to targetObject.
+      // I'm not sure the following works for the ship.  I think it works for other orbitables.
       local myPlane is phys_lib["obtPlaneVector"](ship).
+
       local theirPlane is phys_lib["obtPlaneVector"](vessel(targetObject)).
       local AN_DN is vcrs(myPlane, theirPlane).
       local dInc is vang(myPlane, theirPlane).
