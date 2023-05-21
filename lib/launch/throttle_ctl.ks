@@ -61,7 +61,9 @@
    declare function getValue_setpoint {
       if launch_param["ThrottleProfile"][2] = "linearTangent" {
          return phys_lib["linearTan"](launch_param["throttleProfile"][1]).
-      } else return launch_param["throttleProfile"][2].
+      } else if launch_param["ThrottleProfile"][2] = "floatingEta"
+         return ((max(0, (40-eta:apoapsis)/40)+max(0, (80000-ship:apoapsis)/80000))/2)*80.
+      else return launch_param["throttleProfile"][2].
    }
 
    /////// Monitors (A function that reports to the kernel during the zero-lift portion of the launch sequence.)

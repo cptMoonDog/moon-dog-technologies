@@ -10,8 +10,8 @@
       declare parameter azimuth, h0.
       if steering_functions["mode"] = "launch" {
          //print "launch!" at(0, 6).
-         print ship:altitude at(0, 7).
-         print h0 at(0, 8).
+         //print ship:altitude at(0, 7).
+         //print h0 at(0, 8).
          if ship:altitude > h0 +10 {
             set steering_functions["mode"] to "roll".
             return heading(azimuth,90).
@@ -20,7 +20,7 @@
       }
       if steering_functions["mode"] = "roll" {
          //print "roll" at(0, 6).
-         print eta:apoapsis at(0, 7).
+         //print eta:apoapsis at(0, 7).
          if vang(ship:facing:starvector, heading(azimuth,90):starvector) < 0.5 and ship:airspeed > launch_param["pOverV0"] {
             set steering_functions["mode"] to "pitchover".
             return heading(azimuth, phys_lib["linearTan"](launch_param["targetApo"], launch_param["LTShape"])).
@@ -58,8 +58,8 @@
       declare parameter azimuth, h0.
       if steering_functions["mode"] = "launch" {
          //print "launch!" at(0, 6).
-         print ship:altitude at(0, 7).
-         print h0 at(0, 8).
+         //print ship:altitude at(0, 7).
+         //print h0 at(0, 8).
          if ship:altitude > h0 +10 {
             set steering_functions["mode"] to "roll".
             return heading(azimuth,90).
@@ -68,7 +68,7 @@
       }
       if steering_functions["mode"] = "roll" {
          //print "roll" at(0, 6).
-         print eta:apoapsis at(0, 7).
+         //print eta:apoapsis at(0, 7).
          if vang(ship:facing:starvector, heading(azimuth,90):starvector) < 0.5 and ship:airspeed > launch_param["pOverV0"] {
             set steering_functions["mode"] to "pitchover".
             return heading(azimuth, phys_lib["linearTan"](launch_param["targetApo"], launch_param["LTShape"])).
@@ -89,7 +89,7 @@
       }
       if steering_functions["mode"] = "main" {
          //print "gravity turn" at(0, 6).
-         print "arctan: "+ (phys_lib["linearTan"](launch_param["targetApo"], launch_param["LTShape"])) at(0, 7).
+         //print "arctan: "+ (phys_lib["linearTan"](launch_param["targetApo"], launch_param["LTShape"])) at(0, 7).
          //print "srfprograde: "+(90-vang(ship:srfprograde:forevector, up:forevector)) at(0, 8).
          //print "prograde: "+(90-vang(ship:prograde:forevector, up:forevector)) at(0, 9).
          //print "facing: "+(90-vang(ship:facing:forevector, up:forevector)) at(0, 10).
