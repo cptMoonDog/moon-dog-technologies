@@ -6,9 +6,9 @@
 // This keeps it easy to name ships, missions and designs-in-the-hangar differently.
 local mission is "none".
 local data is list().
-if ship:status = "PRELAUNCH" and core:tag {
+if ship:status = "PRELAUNCH" AND core:tag {
    set data to core:tag:split(":"). // Payload name: mission, param, param...
-} else if core:messages:length and core:messages:peek():content:tostring = "launch complete" {
+} else if core:messages:length AND (core:messages:peek():content:tostring = "SUCCESS" OR core:messages:peek():content:tostring = "ABORT")  {
    core:messages:pop().
    set data to core:messages:peek():content:tostring:split(":"). // Payload name: mission, param, param...
 }
@@ -22,18 +22,29 @@ if data:length > 0 {
       createdir("1:/boot").
       compile "0:/missions/"+mission+".ks" to "1:/boot/"+mission+".ksm".
       set core:bootfilename to "/boot/"+mission+".ksm".
+      runpath("1:/boot/"+mission+".ksm").
       // Add program to wait until booster finishes it's job.
+      clearscreen.
+      set kernel_ctl["status"] to "waiting for handoff...".
       kernel_ctl["MissionPlanAdd"]("wait for launch to complete", {
-         set kernel_ctl["status"] to "waiting for handoff...".
-         if core:messages:empty return OP_CONTINUE.
-         if not core:messages:empty {
-            set kernel_ctl["status"] to "handoff accepted.".
-            set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
-            set core:tag to data[1].  // Retain parameters for use by the mission file.
-            return OP_FINISHED. 
-         } else {
-            set kernel_ctl["status"] to "Handoff failed!".
-            return OP_FAIL.
+         local procs is list().
+         list processors in procs.
+         if core:messages:empty AND procs:length > 1 return OP_CONTINUE.
+         else {
+            if not(core:messages:empty) AND core:messages:peek():content:tostring = "SUCCESS" {
+               core:messages:pop().
+               set kernel_ctl["status"] to "handoff accepted.".
+               set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
+               set core:tag to data[1].  // Retain parameters for use by the mission file.
+               return OP_FINISHED. 
+            } else {
+               if not(core:messages:empty) AND core:messages:peek():content:tostring = "ABORT" core:messages:pop().
+               set kernel_ctl["status"] to "Handoff failed!".
+               set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
+               set core:tag to data[1].  // Retain parameters for use by the mission file.
+               mission_abort().
+               return OP_FAIL.
+            }
          }
       }). 
       kernel_ctl["start"]().

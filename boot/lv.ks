@@ -110,7 +110,7 @@ if ship:status = "PRELAUNCH" {
    local procs is list().
    list processors in procs.
    for payloadCore in procs {
-         payloadCore:connection:sendmessage("launch complete").
+         payloadCore:connection:sendmessage("SUCCESS").
    }
    if payloadData {
       core:connection:sendmessage(payloadData). // Send message to myself

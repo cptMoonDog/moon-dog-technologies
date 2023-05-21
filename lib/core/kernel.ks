@@ -52,7 +52,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
          // Technically this only works for calculations and terminal ops.
          if time:seconds > regulator + 0.05 and config:ipu < 2000 {
             set config:ipu to config:ipu + 1.
-            set kernel_ctl["status"] to "IPU now: "+config:ipu.
+            //set kernel_ctl["status"] to "IPU now: "+config:ipu.
          } else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
          set regulator to time:seconds.
          
@@ -65,6 +65,9 @@ kernel_ctl:add("prompt", ":"). //Prompt
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"] at(0, 1).
                if terminal:input:haschar process_char(terminal:input:getchar()).
+            } else{
+               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               print kernel_ctl["countdown"] at(0, 1).
             }
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
@@ -157,7 +160,10 @@ kernel_ctl:add("prompt", ":"). //Prompt
       print "program added with param: "+name+parameters.
       if kernel_ctl["availablePrograms"]:haskey(name) {
          kernel_ctl["availablePrograms"][name](parameters).
-      } else print "Program: "+name+" does not exist".
+      } else {
+         print "Program: "+name+" does not exist".
+         print kernel_ctl["availablePrograms"].
+      }
    }
    set kernel_ctl["add-program"] to add_program@.
 
@@ -178,7 +184,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
       parameter n.
       if n = OP_FAIL {
          print "runmode: "+runmode.
-         print MISSION_PLAN_ID[runmode-1] + " returned fail flag.".
+         print MISSION_PLAN_ID[runmode] + " returned fail flag.".
          set runmode to MISSION_PLAN:length+100.
       }
       if n >= -1 and n <= 1 set runmode to runmode+n.

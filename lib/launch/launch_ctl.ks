@@ -36,6 +36,11 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
         launch_ctl["staging"]().
         if ship:verticalspeed < -100 {
            set kernel_ctl["status"] to "WARNING! Failed to achieve orbit!".
+           local procs is list().
+           list processors in procs.
+           for payloadCore in procs {
+                 payloadCore:connection:sendmessage("ABORT").
+           }
            return OP_FAIL.
         }
         return launch_ctl["throttle_monitor"]().
