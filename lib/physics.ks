@@ -10,8 +10,8 @@
 
    declare function linearTangent {
       parameter orbit_height is 80000.
-      parameter r is 10.
-      return 90-arctan(r*ship:apoapsis/(orbit_height-ship:apoapsis)).
+      parameter s is 10.
+      return 90-arctan(s*ship:apoapsis/(orbit_height-ship:apoapsis)).
    }
    phys_lib:add("linearTan", linearTangent@).
 
@@ -51,16 +51,21 @@
 
    declare function LANVector {
       parameter object.
-      return angleaxis(object:orbit:lan, object:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      local obtObject is object.
+      if not(object:istype("Orbit")) set obtObject to object:orbit.
+      //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      return angleaxis(obtObject:lan, obtObject:body:angularvel)*solarprimevector. 
    }
    phys_lib:add("lanVector", LANVector@).
 
    declare function orbitPlaneVector {
       parameter object.
+      local objLan is LANVector(object).
       local obtObject is object.
       if not(object:istype("Orbit")) set obtObject to object:orbit.
-      local objLan is angleaxis(obtObject:lan, obtObject:body:angularvel:normalized)*solarprimevector. //Taken from KSLib.  Never would have thought of angularVel in a million years.
-      return angleaxis(obtObject:inclination, objLan:normalized)*obtObject:body:angularvel:normalized.
+
+      local myPlane is angleaxis(obtObject:inclination, objLan)*obtObject:body:angularvel.
+      return myPlane.
    }
    phys_lib:add("obtPlaneVector", orbitPlaneVector@).
 
@@ -69,16 +74,16 @@
    //would require a deltaV increase of: visViva_velocity(body("Kerbin"), 80000, semimajoraxis(body("Kerbin"), 80000, body("Minmus"):orbit:altitude)-ship:orbit:velocity
    declare function visViva_velocity {
       parameter bod.
-      parameter alt.
+      parameter height.
       parameter sma.
-      return sqrt(bod:mu*(2/(bod:radius+alt)-1/sma)).  
+      return sqrt(bod:mu*(2/(bod:radius+height)-1/sma)).  
    }
    phys_lib:add("VatAlt", visViva_velocity@).
 
    declare function OVatAlt {
       parameter bod is Kerbin.
-      parameter alt is 0.
-      return visViva_velocity(bod, alt, bod:radius+alt).
+      parameter height is 0.
+      return visViva_velocity(bod, height, bod:radius+height).
    }
    phys_lib:add("OVatAlt", OVatAlt@).
 

@@ -23,65 +23,59 @@ clearvecdraws().
 //    }
 //       
 //    
-    local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
-    local primary is panels[0]. // Ideally, the biggest.
-    local panelFacingVector is v(0,0,0).
-    local panelTopVector isv(0,0,0).
-    // The part:facing:forevector is parallel with the surface the part is attached to.
-    // the topvector is perpendicular to the surface.
-    // The fixed panels face the opposite direction of the topvector, and 
-    // the rotating panels can face any direction parallel with the surface.
-    // Therefore, the vector to point at the sun, is the sum of the negative
-    // topvectors of the fixed panels, and any convenient vector parallel to the surface for rotating panels, like facing:forevector.
-    for p in panels {
-       set panelTopVector to panelTopVector -p:part:facing:topvector.
-       set panelFacingVector to panelFacingVector +p:part:facing:forevector.
-    }
-    // Fixed panel array
-    if primary:part:title = "OX-STAT Photovoltaic Panels" or primary:part:title = "OX-STAT-XL Photovoltaic Panels" { 
-       if panelTopVector:mag = 0 { // Symmetrical, panels facing radially outward
-          set panelFacingVector to -primary:part:facing:topvector.
-       } else { 
-          set panelFacingVector to panelTopVector.
-       } 
-    } else { // Rotating panel array, probably
-       // Symmetrical radial array
-       if panelTopVector:mag = 0 set panelFacingVector to vcrs(-primary:part:facing:topvector, panelFacingVector)).
-       else set panelFacingVector to vcrs(panelFacingVector, panelTopVector).
-    } 
-    
-   
-    lock steering to ship:facing:forevector*angleaxis(vang(ship:facing:forevector, panelFacingVector), vcrs(ship:facing:forevector, panelFacingVector))).
-    print panels[0]:part:title.
-    print panels[0]:allfieldnames.
+//    local panels is ship:modulesnamed("ModuleDeployableSolarPanel").
+//    local primary is panels[0]. // Ideally, the biggest.
+//    local panelFacingVector is v(0,0,0).
+//    local panelTopVector isv(0,0,0).
+//    // The part:facing:forevector is parallel with the surface the part is attached to.
+//    // the topvector is perpendicular to the surface.
+//    // The fixed panels face the opposite direction of the topvector, and 
+//    // the rotating panels can face any direction parallel with the surface.
+//    // Therefore, the vector to point at the sun, is the sum of the negative
+//    // topvectors of the fixed panels, and any convenient vector parallel to the surface for rotating panels, like facing:forevector.
+//    for p in panels {
+//       set panelTopVector to panelTopVector -p:part:facing:topvector.
+//       set panelFacingVector to panelFacingVector +p:part:facing:forevector.
+//    }
+//    // Fixed panel array
+//    if primary:part:title = "OX-STAT Photovoltaic Panels" or primary:part:title = "OX-STAT-XL Photovoltaic Panels" { 
+//       if panelTopVector:mag = 0 { // Symmetrical, panels facing radially outward
+//          set panelFacingVector to -primary:part:facing:topvector.
+//       } else { 
+//          set panelFacingVector to panelTopVector.
+//       } 
+//    } else { // Rotating panel array, probably
+//       // Symmetrical radial array
+//       if panelTopVector:mag = 0 set panelFacingVector to vcrs(-primary:part:facing:topvector, panelFacingVector)).
+//       else set panelFacingVector to vcrs(panelFacingVector, panelTopVector).
+//    } 
+//    
+//   
+//    lock steering to ship:facing:forevector*angleaxis(vang(ship:facing:forevector, panelFacingVector), vcrs(ship:facing:forevector, panelFacingVector))).
+//    print panels[0]:part:title.
+//    print panels[0]:allfieldnames.
     local test is vecdraw(
                             v(0,0,0), 
-                            //{return -panels[0]:part:facing:topvector.}, // Works for the fixed OX-stat
-                            //{return panels[0]:part:facing:forevector.}, 
-                            {return panelFacingVector.},
-                            RGB(1, 0, 0),
-                            "Panel facing Vector",
-                            1,
+                            {return vxcl(north:forevector*angleaxis(90, up:forevector), ship:velocity:orbit).},
+                            RGB(0, 0, 1),
+                            "Polar",
+                            100,
                             true,
-                            0.2,
+                            0.01,
                             true,
                             true).
-//    
-//    local lanPointer is vecdraw(
-//                            //v(0, 0, 0),
-//                            {return ship:body:position.}, 
-//                            // 
-//                            {return angleaxis(ship:orbit:lan, ship:body:angularvel:normalized)*solarprimevector*ship:body:radius*3.}, //Taken from KSLib.  Never would have gotten in a mission years.
-//                            //{return solarprimevector*angleaxis(ship:orbit:lan, )*ship:body:radius*2.},
-//                            //{return (solarprimevector-ship:body:position)*angleaxis(-ship:orbit:lan, north:forevector-ship:body:position).},
-//                            RGB(0, 1, 0),
-//                            "LAN",
-//                            1,
-//                            true,
-//                            0.2,
-//                            true,
-//                            true).
-//    
+    
+    local test2 is vecdraw(
+                            v(0, 0, 0),
+                            {return vxcl(north:forevector, ship:velocity:orbit).},
+                            RGB(1, 1, 0),
+                            "Equatorial",
+                            100,
+                            true,
+                            0.01,
+                            true,
+                            true).
+    
 //    local BurnPointVector is vecdraw(
 //                            {return ship:body:position.},
 //                            {return LANChangeBurnPointVector()*ship:body:radius*3.},
