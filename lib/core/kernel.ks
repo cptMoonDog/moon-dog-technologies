@@ -47,7 +47,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
    local display_buffer is list().
 
 ///Public functions
-   declare function run {
+   declare function start {
       until FALSE {
          // Technically this only works for calculations and terminal ops.
          if time:seconds > regulator + 0.05 and config:ipu < 2000 {
@@ -89,7 +89,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
       }
       set ship:control:pilotmainthrottle to 0.
    }
-   set kernel_ctl["start"] to run@.
+   set kernel_ctl["start"] to start@.
 
    declare function MPadd {
       declare parameter name.
