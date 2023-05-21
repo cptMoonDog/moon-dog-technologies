@@ -31,20 +31,17 @@ if data:length > 0 {
          list processors in procs.
          if core:messages:empty AND procs:length > 1 return OP_CONTINUE.
          else {
+            set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
+            set core:tag to data[1].  // Retain parameters for use by the mission file.
             if not(core:messages:empty) AND core:messages:peek():content:tostring = "SUCCESS" {
                core:messages:pop().
                set kernel_ctl["status"] to "handoff accepted.".
-               set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
-               set core:tag to data[1].  // Retain parameters for use by the mission file.
-               return OP_FINISHED. 
             } else {
                if not(core:messages:empty) AND core:messages:peek():content:tostring = "ABORT" core:messages:pop().
                set kernel_ctl["status"] to "Handoff failed!".
-               set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
-               set core:tag to data[1].  // Retain parameters for use by the mission file.
                mission_abort().
-               return OP_FAIL.
             }
+            return OP_FINISHED.
          }
       }). 
       kernel_ctl["start"]().
