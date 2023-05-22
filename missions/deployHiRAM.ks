@@ -1,4 +1,4 @@
-@lazyglobal off.
+lazyglobal off.
 
 if ship:status = "PRELAUNCH" {
    compile "0:/lib/core/kernel.ks" to "1:/lib/core/kernel.ksm".

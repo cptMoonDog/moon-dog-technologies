@@ -1,2 +1,4 @@
 //launch
-kss, 51.6, 0, 80000
+pocket-poodle, 90, none, to:250
+//payload
+HiRAM2:deployHiRAM, spark

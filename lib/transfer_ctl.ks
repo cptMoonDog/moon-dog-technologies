@@ -1,6 +1,8 @@
 {
    global transfer_ctl is lexicon().
-   if not (defined phys_lib) runpath("0:/lib/physics.ks"). 
+   if not (defined phys_lib) 
+      if not (defined kernel_ctl) runpath("0:/lib/physics.ks"). 
+      else kernel_ctl["import-lib"]("lib/physics").
 
 
    declare function transfer_dV {
