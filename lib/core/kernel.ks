@@ -34,6 +34,7 @@ kernel_ctl:add("prompt", ":"). //Prompt
 
 
 
+clearscreen.
 {
    local runmode is 0.
 

@@ -5,34 +5,32 @@ if ship:status = "PRELAUNCH" {
    //// Locate launch parameters
    local data is list().
    local payloadData is "".
+   runoncepath("0:/lib/core/kernel.ks").
    if core:tag set data to core:tag:split(","). // Parameters are in the core:tag
    else if exists("0:/launch.conf/current.launch") {  // Parameters are in this file.
-      print "found parameters file".
       local f is open("0:/launch.conf/current.launch").
       local i is f:readall:iterator.
       i:next.
       until i:atend {
          if i:value:tostring:trim:tolower:startswith("//launch") {
-            print "found launch data".
             i:next.
             set data to i:value:tostring:split(",").
          } else if i:value:tostring:trim:tolower:startswith("//payload") { // Also contains parameters we are going to pass off to the payload script.
-            print "found payload data".
             i:next.
             set payloadData to i:value.
          } else i:next.
       }
       if payloadData {
+         deletepath("1:/boot/lv.ks").
          compile "0:/boot/payload.ks" to "1:/boot/payload.ksm".
          set core:bootfilename to "/boot/payload.ksm".
          if exists("0:/missions/"+payloadData:split(":")[1]:split(",")[0]:trim+".ks") {
             local mission is payloadData:split(":")[1]:split(",")[0]:trim.
-            compile "0:/boot/"+mission+".ks" to "1:/boot/"+mission+".ksm".
+            compile "0:/missions/"+mission+".ks" to "1:/boot/"+mission+".ksm".
             // Allow the mission to complete prelaunch configurations.
             // If it misbehaves, that's on the designer.
             runoncepath("1:/boot/"+mission+".ksm").
          }
-         print "changed bootfile".
       }
    }
 
@@ -53,7 +51,6 @@ if ship:status = "PRELAUNCH" {
    }
 
    if data:length > 0 {  
-      runoncepath("0:/lib/core/kernel.ks").
       runoncepath("0:/lib/launch/launch_ctl.ks").
       if not(exists("0:/lv/"+data[0]+".ks")) {
          print "Fatal error: No Launch Vehicle definition file".
@@ -123,7 +120,6 @@ if ship:status = "PRELAUNCH" {
    if payloadData {
       core:connection:sendmessage(payloadData). // Send message to myself
       // Clearing more room.
-      deletepath("1:/boot/lv.ks").
       runoncepath("1:/boot/payload.ksm").
    } else {
       shutdown.

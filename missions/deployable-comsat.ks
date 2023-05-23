@@ -12,22 +12,23 @@ if ship:status = "PRELAUNCH" {
    kernel_ctl["load-to-core"]("programs/orient-to-max-solar").
    //kernel_ctl["load-to-core"]("program/station-keep-behind").
    global mission_abort is {}.
-
-
-
-} else  if (ship:status = "ORBITING" and procs:length > 1) { //or (ship:status = "ORBITING" and procs:length = 1 and ship:orbit:eccentricity > 0.1) {
+} else  if ((ship:status = "ORBITING" OR ship:status = "FLYING" OR ship:status = "SUB_ORBITAL") and procs:length > 1) {
+   //if exists("1:/mothership") deletepath("1:/mothership").
+   //log ship:name to "1:/mothership".
+   //shutdown.
+   clearscreen.
    // Still waiting to be deployed.
    print "orbiting".
-   // Finalize orbit after seperation.
+   // Finalize orbit after separation.
    local mothership is ship.
    print "Mothership: "+mothership:name.
    until procs:length = 1 {
       list processors in procs.
-      wait 0.
+      wait 1.
    }
    wait 1.
    print core:tag.
-   set ship:name to core:tag:split(",")[0].
+   set ship:name to core:tag:split(":")[0].
    print "my name: "+ship:name.
    print "my engine: "+core:tag:split(",")[1]:trim.
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
@@ -50,3 +51,4 @@ if ship:status = "PRELAUNCH" {
 
    kernel_ctl["start"]().
 }
+print "Bootfile completed".

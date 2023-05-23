@@ -59,7 +59,7 @@
          dispCountdown().
          return OP_FINISHED.
       } else if timeOfWindow-time:seconds > countdown+1 { // Warp to countdown
-         print timeOfWindow - time:seconds.
+         //print timeOfWindow - time:seconds.
          if (kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled()) {
             kuniverse:timewarp:warpto(timeOfWindow - countdown).
             wait timeOfWindow - time:seconds - countdown.

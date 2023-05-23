@@ -52,6 +52,7 @@ if ship:status = "PRELAUNCH" AND core:tag {
       }
    }). 
    kernel_ctl["start"]().
+   reboot.
 } else if core:messages:length=2 AND (core:messages:peek():content:tostring = "SUCCESS" OR core:messages:peek():content:tostring = "ABORT")  {
    // This path is for the lv.ks script to hand-off execution to payload.ks 
    if core:messages:peek() = "ABORT" {
