@@ -72,9 +72,9 @@ if ship:status = "PRELAUNCH" {
             } else {
                set target to data[1]:trim.
                if target:body = ship:body { /// Targets in orbit of Origin Body ///
+                  //print "inc: "+target:orbit:inclination at(0, 9).
+                  //print "lat: "+ship:latitude at(0, 8).
                   if abs(target:orbit:inclination) < 1 and abs(ship:latitude) < 1 {
-                     print "inc: "+target:orbit:inclination at(0, 9).
-                     print "lat: "+ship:latitude at(0, 8).
                      launch_param:add("orbitType", "rendezvous").
                      setLaunchParams(0, "none").
                   } else setLaunchParams(target:orbit:inclination, target:orbit:lan).

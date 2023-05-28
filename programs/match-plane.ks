@@ -24,12 +24,14 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set engineName to argv:split(" ")[0].
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
       if argv:split(char(34)):length > 1 set targetObject to argv:split(char(34))[1]. // Quoted second parameter
-      else set targetObject to argv:split(" ")[1].
-      //set kernel_ctl["output"] to "target: "+ targetObject.
+      else {
+         set targetObject to argv:split(" ")[1].
+         //set kernel_ctl["output"] to "target: "+ targetObject.
+      }
    } else {
       set kernel_ctl["output"] to
          "Creates and executes a maneuver to match orbital planes with the given target"
-         +char(10)+"Usage: add-program match-plane [ENGINE-NAME] [TARGET]".
+         +char(10)+"Usage: add-program match-plane [ENGINE-NAME] [TARGET] | [LAN]:[INC]".
       return.
    }
 
@@ -42,11 +44,27 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPLanAdd"](programName, {
-      set target to targetObject.
+      if targetObject:typename = "String" {
+         if targetObject:split(":"):length > 1 
+            set targetObject to createorbit(
+               targetObject:split(":")[1]:tonumber(-1), // Inclination
+               0, // Eccentricity
+               ship:body:radius*1.5, // SMA
+               targetObject:split(":")[0]:tonumber(-1), // LAN
+               0, // Argument of Periapsis
+               0, // Mean Anomaly at epoch
+               0, // epoch
+               ship:body
+            ).
+         else if bodyexists(targetObject) 
+            set targetObject to body(targetObject).
+         else set targetObject to vessel(targetObject).
+      }
+      //set target to targetObject.
       // I'm not sure the following works for the ship.  I think it works for other orbitables.
       local myPlane is phys_lib["obtPlaneVector"](ship).
 
-      local theirPlane is phys_lib["obtPlaneVector"](vessel(targetObject)).
+      local theirPlane is phys_lib["obtPlaneVector"](targetObject).
       local AN_DN is vcrs(myPlane, theirPlane).
       local dInc is vang(myPlane, theirPlane).
 

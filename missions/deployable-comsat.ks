@@ -13,9 +13,6 @@ if ship:status = "PRELAUNCH" {
    //kernel_ctl["load-to-core"]("program/station-keep-behind").
    global mission_abort is {}.
 } else  if ((ship:status = "ORBITING" OR ship:status = "FLYING" OR ship:status = "SUB_ORBITAL") and procs:length > 1) {
-   //if exists("1:/mothership") deletepath("1:/mothership").
-   //log ship:name to "1:/mothership".
-   //shutdown.
    clearscreen.
    // Still waiting to be deployed.
    print "orbiting".

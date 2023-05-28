@@ -76,6 +76,19 @@ if ship:status = "PRELAUNCH" {
             return OP_FINISHED.
          } else return OP_CONTINUE.
       }).
+      kernel_ctl["MissionPlanAdd"]("Stage parachute", {
+         if ship:altitude < 3000 AND ship:airspeed < 300 {
+            stage.
+            wait 1.
+            stage.
+            wait 1.
+            stage.
+            shutdown.
+            return OP_FINISHED.
+         } else {
+            return OP_CONTINUE.
+         }
+      }).
       kernel_ctl["start"]().
    } else {
       // Deploy next satellite

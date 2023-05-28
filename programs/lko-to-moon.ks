@@ -54,14 +54,17 @@ kernel_ctl["availablePrograms"]:add(programName, {
             wait 5.
             set target to body(targetBody).
             local mnvr is node(transfer_ctl["etaPhaseAngle"]()+time:seconds, 0,0, transfer_ctl["dv"](ship:body, target)).
+            local minimumHeight is 100000.
+            if body(targetBody):atm:exists set minimumHeight to body(targetBody):atm:height*1.1.
+            else set minimumHeight to body(targetBody):radius*0.1.
             add(mnvr).
             until false {
-               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis > body(targetBody):radius+10000 {
+               if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis > body(targetBody):radius+minimumHeight {
                   break.
-               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis < body(targetBody):radius+10000 {
+               }else if mnvr:orbit:hasnextpatch and mnvr:orbit:nextpatch:body:name = targetBody and mnvr:orbit:nextpatch:periapsis < body(targetBody):radius+minimumHeight {
                   print "adjusting pe" at(0, 1).
                   set mnvr:prograde to mnvr:prograde + 0.01.
-               }else if mnvr:orbit:apoapsis > body("Mun"):altitude {
+               }else if mnvr:orbit:apoapsis > body(targetBody):altitude {
                   print "adjusting ap" at(0, 1).
                   set mnvr:prograde to mnvr:prograde - 0.01.
                }else {

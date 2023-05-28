@@ -53,7 +53,7 @@
       parameter object.
       local obtObject is object.
       if not(object:istype("Orbit")) set obtObject to object:orbit.
-      //Taken from KSLib.  Never would have thought of angularVel in a million years.
+      //Taken from KSLib.  Never would have thought of angularVel in a million years...But, does it work for a body not spinning?
       return angleaxis(obtObject:lan, obtObject:body:angularvel)*solarprimevector. 
    }
    phys_lib:add("lanVector", LANVector@).
