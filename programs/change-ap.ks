@@ -82,30 +82,30 @@ kernel_ctl["availablePrograms"]:add(programName, {
       return OP_FINISHED.
    }).
    kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
-   kernel_ctl["MissionPLanAdd"](programName, {  //Fining, I think?
-      if (steerDir = "prograde" and ship:apoapsis < newAp*0.995 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.005) {
-         if steerDir = "prograde" {
-            if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
-               lock throttle to 0.
-            wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
-         } else {
-            if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
-               lock throttle to 0.
-            wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
-         }
-         lock throttle to abs(ship:apoapsis-newAp).
-         return OP_CONTINUE.
-      } else if (steerDir = "prograde" and ship:apoapsis > newAp*1.005) or (steerDir = "retrograde" and ship:apoapsis < newAp*0.995) {
-         if steerDir = "prograde" {
-            set steerDir to "retrograde".
-         } else {
-            set steerDir to "prograde".
-         }
-         return OP_CONTINUE.
-      }
-      lock throttle to 0.
-      return OP_FINISHED.
-   }).
+   //kernel_ctl["MissionPLanAdd"](programName, {  //Fining, I think?
+   //   if (steerDir = "prograde" and ship:apoapsis < newAp*0.995 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.005) {
+   //      if steerDir = "prograde" {
+   //         if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
+   //            lock throttle to 0.
+   //         wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
+   //      } else {
+   //         if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
+   //            lock throttle to 0.
+   //         wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
+   //      }
+   //      lock throttle to abs(ship:apoapsis-newAp).
+   //      return OP_CONTINUE.
+   //   } else if (steerDir = "prograde" and ship:apoapsis > newAp*1.005) or (steerDir = "retrograde" and ship:apoapsis < newAp*0.995) {
+   //      if steerDir = "prograde" {
+   //         set steerDir to "retrograde".
+   //      } else {
+   //         set steerDir to "prograde".
+   //      }
+   //      return OP_CONTINUE.
+   //   }
+   //   lock throttle to 0.
+   //   return OP_FINISHED.
+   //}).
    
          
 //========== End program sequence ===============================

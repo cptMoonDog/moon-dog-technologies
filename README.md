@@ -6,6 +6,16 @@ Herein you will find a full featured suite of navigational software built in the
 
 For more information, be sure to check out the [wiki](https://github.com/cptMoonDog/moon-dog-technologies/wiki).
 
+Most Recent Changes
+==================
+Automated missions are increasingly easy to setup.  The initial launch system is stable, and understands how to hand-off control to payload and mission firmware.
+`payload.ks` boot file now can load `mission` firmware and transition to it.  `lv.ks` can transition to `payload.ks` on the same core, when using the `launch.conf/current.launch` parameters file.
+
+Automated constellation deployments tested with the `lv/Chihuahua.ks` launch vehicle and the craft file you can find here: 
+[Model craft](https://kerbalx.com/yehoodig/Mayflower-Constellation-LC)
+To try it yourself, use the `lv.ks` bootfile on the upperstage, and ensure that the core:tag is empty.  Add your parameters for the LV and payload to `launch.conf/current.launch`, make sure that all the satellites have `payload.ks` as boot file, and `[Sat Name]:[Mission], [param1], ..., [param n] in the core:tag.  (It should be ready out of the box.  Just click launch, and it should automatically deploy a constellation of 4 satellites.).
+
+
 Quickstart
 ==========
 
