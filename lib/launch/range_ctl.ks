@@ -39,7 +39,7 @@
       // Start from smallest value of timeOfWindow - time:seconds, and work up.
       local dispCountdown is {
          if time:seconds-lastTime > 1 {
-            set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second.
+            set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second+"       ". //Pad to avoid spurious digits
             hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
             if timeOfWindow-time:seconds < 5 {
                if timeOfWindow-time:seconds > 1 {

@@ -21,13 +21,16 @@ global OP_FAIL is 32767.
 
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
+global CURRENT_ABORT_MODE is 0. // Potential to allow programs and missions to have abort modes.
 global SYS_CMDS is lexicon().
+global SYS_CMDS_HELP is lexicon().
 
 kernel_ctl:add("availablePrograms", lexicon()).
 
 // Kernel Registers
 kernel_ctl:add("interactive", interactive).
-kernel_ctl:add("status", "ISH: Interactive SHell for kOS").
+if(interactive) kernel_ctl:add("status", "ISH: Interactive SHell for kOS").
+else kernel_ctl:add("status", "Moon Dog Technologies").
 kernel_ctl:add("countdown", "").
 kernel_ctl:add("output", "").
 kernel_ctl:add("prompt", ":"). //Prompt
@@ -58,34 +61,37 @@ clearscreen.
          set regulator to time:seconds.
          
          // Execute current routine
-         set_runmode(MISSION_PLAN[runmode]()).
          if runmode < MISSION_PLAN:length and runmode > -1 {
+            set_runmode(MISSION_PLAN[runmode]()).
 
             // If mission plan is still running...
+            local seperator is "".
+            set seperator to seperator:padright(terminal:width):replace(" ", "-").
+            print seperator at(0, 2).
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"] at(0, 1).
                if terminal:input:haschar process_char(terminal:input:getchar()).
             } else{
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-               //print kernel_ctl["countdown"] at(0, 1).
+               print kernel_ctl["countdown"] at(0, 1).
             }
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
                // Resets the mission plan, so we can stay Alive.
                set runmode to 0.
                until MISSION_PLAN:length = 1 {
-                  set kernel_ctl["output"] to "removing: "+MISSION_PLAN_ID[0].
+                  display_buffer:add("removing: "+MISSION_PLAN_ID[0]).
                   MISSION_PLAN:remove(1).
                   MISSION_PLAN_ID:remove(0).
                }
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-               set kernel_ctl["output"] to "Mission completed".
+               set kernel_ctl["status"] to "Mission Ended".
                set ship:control:pilotmainthrottle to 0.
                unlock throttle.
                unlock steering.
             } else {
-               print "System Terminated" at(0, 2).
+               print "System Terminated" at(0, 0).
                break.
             }
          }
@@ -158,12 +164,12 @@ clearscreen.
    declare function add_program {
       parameter name.
       parameter parameters.
-      print "program added with param: "+name+parameters.
+      set kernel_ctl["status"] to "program added with param: "+name+parameters.
       if kernel_ctl["availablePrograms"]:haskey(name) {
          kernel_ctl["availablePrograms"][name](parameters).
       } else {
-         print "Program: "+name+" does not exist".
-         print kernel_ctl["availablePrograms"].
+         set kernel_ctl["status"] to "Program: "+name+" does not exist".
+         set kernel_ctl["status"] to kernel_ctl["availablePrograms"].
       }
    }
    set kernel_ctl["add-program"] to add_program@.
@@ -226,15 +232,19 @@ clearscreen.
    }
 
    // Special internal system commands
-   SYS_CMDS:add("start", {
+   SYS_CMDS:add("engage", {
       declare parameter cmd.
       set runmode to runmode  + 1.
       return "finished".
    }).
 
-   SYS_CMDS:add("exit", {
+   SYS_CMDS:add("abort", {
       declare parameter cmd.
-      set runmode to MISSION_PLAN:length.
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 {
+         if splitCmd[1] = "-r" OR splitCmd[1] = "--reboot" reboot.
+         else if splitCmd[1] = "-s" OR splitCmd[1] = "--shutdown" shutdown.
+      } else set runmode to MISSION_PLAN:length.
       return "finished".
    }).
 
@@ -278,8 +288,11 @@ clearscreen.
    }
             
    declare function update_display {
-      local lineNum is 2. // Status and Countdown shown above output area.
-      until display_buffer:length < terminal:height - 3 display_buffer:remove(0).
+      local lineNum is 3. // Status and Countdown shown above output area.
+      if kernel_ctl["status"] AND display_buffer[display_buffer:length-1] = kernel_ctl["status"] {
+         display_buffer:add(kernel_ctl["status"]).
+      }
+      until display_buffer:length < terminal:height - 4 display_buffer:remove(0).
       for s in display_buffer {
          //Prints the start of the line
          if s:length >= terminal:width print s:remove(terminal:width-3, s:length-terminal:width+3)+"..." at(0, lineNum).

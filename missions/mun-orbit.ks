@@ -32,7 +32,7 @@ if ship:status = "PRELAUNCH" {
       
       kernel_ctl["add-program"]("lko-to-moon", "swivel Mun").
       kernel_ctl["add-program"]("powered-capture", "terrier Mun").
-      kernel_ctl["add-program"]("match-plane", "terrier 0:135").
+      kernel_ctl["add-program"]("match-plane", "terrier 90:135").
       kernel_ctl["add-program"]("change-ap", "terrier 592500").
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
          set core:tag to "Munflower, terrier, 4".

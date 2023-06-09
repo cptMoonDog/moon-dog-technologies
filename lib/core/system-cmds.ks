@@ -29,7 +29,6 @@ SYS_CMDS:add("display", {
 
          else if splitCmd[1] = "programs" {                                                                              //programs
             local temp is "Available Programs:"+char(10).
-            //TODO list available programs on command   
             local avail is open("0:/programs").  
             for token in avail:lex():keys {
                if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
@@ -37,9 +36,11 @@ SYS_CMDS:add("display", {
             set kernel_ctl["output"] to temp.
          }
 
-         else if splitCmd[1] = "help" {                                                                                  //help
+         else if splitCmd[1] = "help" {                                                                                  //help: Gets the program's help message
             kernel_ctl["import-lib"]("programs/"+splitCmd[2]).
-            kernel_ctl["availablePrograms"][splitCmd[2]]("").
+            if kernel_ctl["availablePrograms"]:haskey(splitCmd[2])
+               kernel_ctl["availablePrograms"][splitCmd[2]](""). // Well behaved programs set kernel_ctl["status"] themselves.
+            else set kernel_ctl["output"] to "Program does not exist". 
          }
 
          else if splitCmd[1] = "eta-duna-window" {                                                                       //eta-duna-window
@@ -53,6 +54,7 @@ SYS_CMDS:add("display", {
          local temp is "Available Commands:"+char(10).
          for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
          set kernel_ctl["output"] to temp.
+         return "finished".
       }
    } else if kernel_ctl["prompt"] = "Display what?:" { // subcommands
       if cmd:trim:tolower = "apo" set kernel_ctl["output"] to ship:apoapsis.
@@ -77,34 +79,34 @@ SYS_CMDS:add("setup-launch", {
    // Secondary input items
    }else if kernel_ctl["prompt"] = "Type(*lko*/coplanar/transfer): " {
       if cmd = "" set cmd to "lko". //Default value
-      launch_param:add("orbitType", cmd).
+      set launch_param["orbitType"] to cmd.
       set kernel_ctl["output"] to "   Type: "+cmd.
       if cmd = "coplanar" set kernel_ctl["prompt"] to "Target: ".
       else set kernel_ctl["prompt"] to "Inclination(*0*): ".
    }else if kernel_ctl["prompt"] = "Inclination(*0*): " {
       if cmd = "" set cmd to "0". //Default value
-      launch_param:add("inclination", cmd:tonumber(0)).
+      set launch_param["inclination"] to cmd:tonumber(0).
       set kernel_ctl["output"] to "   Inclination: "+cmd.
       set kernel_ctl["prompt"] to "LAN(*none*): ".
    } else if kernel_ctl["prompt"] = "LAN(*none*): " {
       if cmd = "" set cmd to "none". //Default value
       if cmd:tonumber(-1) = -1 or launch_param["inclination"] = 0 {
-         launch_param:add("lan", "none").
-         launch_param:add("launchTime", "now").
+         set launch_param["lan"] to "none".
+         set launch_param["launchTime"] to "now".
       } else {
-         launch_param:add("lan", cmd:tonumber(0)).
-         launch_param:add("launchTime", "window").
+         set launch_param["lan"] to cmd:tonumber(0).
+         set launch_param["launchTime"] to "window".
       }
       set kernel_ctl["output"] to "   LAN: "+cmd.
       set kernel_ctl["prompt"] to "Orbit height(*80000*): ".
    } else if kernel_ctl["prompt"] = "Target: " {
       set target to cmd.
       if hastarget { 
-         launch_param:add("lan", target:orbit:LAN).
-         launch_param:add("inclination", target:orbit:inclination).
+         set launch_param["lan"] to target:orbit:LAN.
+         set launch_param["inclination"] to target:orbit:inclination.
          if abs(launch_param["inclination"]) < 0.5
-            launch_param:add("launchTime", "now").
-         else launch_param:add("launchTime", "window").
+            set launch_param["launchTime"] to "now".
+         else set launch_param["launchTime"] to "window".
       } else {
          set kernel_ctl["output"] to "   Target does not exist.".
          return "finished".
@@ -115,7 +117,7 @@ SYS_CMDS:add("setup-launch", {
       if cmd = "" set cmd to "80000". //Default value
       if cmd:trim:endswith("k") or cmd:trim:endswith("km") launch_param:add("targetApo", cmd:trim:remove(cmd:trim:length-1, 1):tonumber(80)*1000).
       else if cmd:tonumber(-1) = -1 launch_param:add("targetApo", 80000).    
-      else launch_param:add("targetApo", cmd:tonumber(80000)).    
+      else set launch_param["targetApo"] to cmd:tonumber(80000).    
       set kernel_ctl["output"] to "   Orbit height: "+cmd.
       set kernel_ctl["prompt"] to "Launch Vehicle: ".
    } else if kernel_ctl["prompt"] = "Launch Vehicle: " {
@@ -225,4 +227,91 @@ SYS_CMDS:add("clear-drawings", {
       clearvecdraws().
       return "finished".
    }
+}).
+
+local PLANE_MODE is false.
+local pid is 0.
+local turn_rate is 1.
+
+SYS_CMDS:add("plane-mode", {
+   declare parameter cmd.
+   if PLANE_MODE set PLANE_MODE to false.
+   else set PLANE_MODE to true.
+   return "finished".
+}).
+
+declare function slowYourRoll {
+   declare parameter compass.
+   declare parameter p.
+   declare parameter roll_local.
+   local lastTime is 0.
+   if vang(ship:facing:forevector, heading(compass, p, roll_local):forevector) > turn_rate and time:seconds > lastTime + 1 {
+      local facingCompass is CHOOSE 360 - vang(vxcl(up:forevector, ship:facing:forevector), north:forevector)
+         if vang(vxcl(up:forevector, ship:facing:forevector), heading(90, 0, 0):forevector) > 90 
+         else vang(vxcl(up:forevector, ship:facing:forevector), north:forevector).
+      local compassDir is CHOOSE -1 if facingCompass > compass else 1.
+      set lastTime to time:seconds.
+      return heading(facingCompass+turn_rate*compassDir, p, roll_local).
+   } else {
+      return heading(compass, p, roll_local) .
+   }
+}
+SYS_CMDS:add("set-heading", {
+   declare parameter cmd.
+   local compass is 0.
+   local p is 0.
+   local roll_local is 0.
+   if PLANE_MODE AND cmd:startswith("set-heading") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 3 set roll_local to splitCmd[3]:tonumber(0).
+      if splitCmd:length > 2 {
+         set compass to splitCmd[1]:tonumber(0).
+         set p to splitCmd[2]:tonumber(0).
+      }
+      lock steering to slowYourRoll(compass, p, roll_local).
+   }
+   return "finished".
+}).
+
+SYS_CMDS:add("unlock-steering", {
+   declare parameter cmd.
+   if PLANE_MODE AND cmd:startswith("unlock-steering") {
+      unlock steering.
+   }
+   return "finished".
+}).
+
+SYS_CMDS:add("set-rate-descent", {
+   declare parameter cmd.
+   if PLANE_MODE AND cmd:startswith("set-rate-descent") {
+      local splitCmd is cmd:split(" ").
+      set pid to PIDLOOP().
+      set pid:setpoint to -splitCmd[1]:tonumber(0).
+      set pid:minoutput to 0.
+      set pid:maxoutput to 1.
+      lock throttle to pid:update(time:seconds, ship:verticalspeed).
+   }
+   return "finished".
+}).
+
+SYS_CMDS:add("set-rate-ascent", {
+   declare parameter cmd.
+   if PLANE_MODE AND cmd:startswith("set-rate-ascent") {
+      local splitCmd is cmd:split(" ").
+      set pid to PIDLOOP().
+      set pid:setpoint to splitCmd[1]:tonumber(0).
+      set pid:minoutput to 0.
+      set pid:maxoutput to 1.
+      lock throttle to pid:update(time:seconds, ship:verticalspeed).
+   }
+   return "finished".
+}).
+
+SYS_CMDS:add("set-rate-turning", {
+   declare parameter cmd.
+   if PLANE_MODE and cmd:startswith("set-rate-turning") {
+      local splitCmd is cmd:split(" ").
+      set turn_rate to splitCmd[1]:tonumber(1).
+   }
+   return "finished".
 }).
