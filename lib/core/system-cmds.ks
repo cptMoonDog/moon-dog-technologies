@@ -1,17 +1,77 @@
 @lazyglobal off.
 
 // Add a new command to the SYS_CMDS lexicon
-SYS_CMDS:add("display", {
+SYS_CMDS_HELP:add("help", char(10)+
+   "Displays help information."+char(10)+
+   "   Usage: help [topic]"+char(10)+
+   "   help --topics : For a list of general helps."+char(10)+
+   "   help --list-commands : For a list of system commands."+char(10)+
+   "   help --list-programs : For a list of installed programs."+char(10)+
+   "   help --list-vars : For a list of displayable environment variables."+char(10)+
+   "   Try:"+char(10)+
+   "      help [Program Name]"+char(10)+
+   "          or "+char(10)+
+   "      help [Command Name]"+char(10)+
+   "   for more specific help."
+).
+SYS_CMDS:add("help", {
    declare parameter cmd.
-   if cmd:startswith("display") { // Check to see what was actually passed.  This allows for subcommand behaviour
+   if cmd:startswith("help") { // Check to see what was actually passed.  This allows for subcommand behaviour
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 {    // These are the things that we can display
+         local topic is splitCmd[1].
+         kernel_ctl["import-lib"]("programs/"+topic).
+         if kernel_ctl["availablePrograms"]:haskey(topic)
+            kernel_ctl["availablePrograms"][topic](""). // Well behaved programs set kernel_ctl["output"] themselves.
+         else if SYS_CMDS_HELP:haskey(topic) set kernel_ctl["output"] to SYS_CMDS_HELP[topic].
+         else if topic = "--list-commands" {                                                                              //commands
+            local temp is char(10)+"Commands:"+char(10).
+            for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
+            set kernel_ctl["output"] to temp.
+         } else if topic = "--list-programs" {                                                                              //programs
+            local temp is char(10)+"Programs:"+char(10).
+            local avail is open("0:/programs").  
+            for token in avail:lex():keys {
+               if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
+            }
+            set kernel_ctl["output"] to temp.
+         } else if topic = "--list-vars" {                                                                                  //help: Gets the program's help message
+            set kernel_ctl["output"] to char(10)+"Displayable variables: "+char(10)+
+               "   apo"+char(10)+
+               "   pe"+char(10)+
+               "   mission-plan"+char(10)+
+               "   commands"+char(10)+
+               "   programs"+char(10)+
+               "   eta-duna-window".
+         } else if topic = "--topics" {                                                                                  //help: Gets the program's help message
+            local temp is char(10)+"Help topics:"+char(10).
+            for token in SYS_CMDS_HELP:keys set temp to temp + char(10) + "   " + token.
+            set kernel_ctl["output"] to temp.
+         } else set kernel_ctl["output"] to SYS_CMDS_HELP["help"]. 
 
-         if      splitCmd[1] = "apo"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
-         else if splitCmd[1] = "pe"       set kernel_ctl["output"] to "   "+ship:periapsis.                              //pe
-         else if splitCmd[1] = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
+         return "finished".
+      } else {
+         set kernel_ctl["output"] to SYS_CMDS_HELP["help"]. 
+         return "finished".
+      }
+   }
+}).
+SYS_CMDS_HELP:add("display", char(10)+
+   "Displays the requested system value."+char(10)+
+   "   Usage: display [PARAMETER]"+char(10)+
+   "   For a list of values use: help --list-vars"
+).
+SYS_CMDS:add("display", {
+   declare parameter cmd.
+   if cmd:startswith("display") OR kernel_ctl["prompt"] = "Display what?:" { // Check to see what was actually passed.  This allows for subcommand behaviour
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 OR kernel_ctl["prompt"] = "Display what?:" {    // These are the things that we can display
+         local item is choose splitCmd[1] if cmd:startswith("display") else cmd.
 
-         else if splitCmd[1] = "mission-plan" {                                                                          //mission-plan
+         if      item = "apo"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
+         else if item = "pe"       set kernel_ctl["output"] to "   "+ship:periapsis.                              //pe
+         else if item = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
+         else if item = "mission-plan" {                                                                          //mission-plan
             local temp is "Mission Plan:"+char(10).
             local count is 0.
             for token in kernel_ctl["MissionPlanList"]() {
@@ -19,31 +79,7 @@ SYS_CMDS:add("display", {
                set count to count + 1.
             }
             set kernel_ctl["output"] to temp.
-         }
-
-         else if splitCmd[1] = "commands" {                                                                              //commands
-            local temp is "Available Commands:"+char(10).
-            for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
-            set kernel_ctl["output"] to temp.
-         }
-
-         else if splitCmd[1] = "programs" {                                                                              //programs
-            local temp is "Available Programs:"+char(10).
-            local avail is open("0:/programs").  
-            for token in avail:lex():keys {
-               if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
-            }
-            set kernel_ctl["output"] to temp.
-         }
-
-         else if splitCmd[1] = "help" {                                                                                  //help: Gets the program's help message
-            kernel_ctl["import-lib"]("programs/"+splitCmd[2]).
-            if kernel_ctl["availablePrograms"]:haskey(splitCmd[2])
-               kernel_ctl["availablePrograms"][splitCmd[2]](""). // Well behaved programs set kernel_ctl["status"] themselves.
-            else set kernel_ctl["output"] to "Program does not exist". 
-         }
-
-         else if splitCmd[1] = "eta-duna-window" {                                                                       //eta-duna-window
+         } else if item = "eta-duna-window" {                                                                       //eta-duna-window
             if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
          } else set kernel_ctl["output"] to "   No data".
@@ -54,18 +90,22 @@ SYS_CMDS:add("display", {
          local temp is "Available Commands:"+char(10).
          for token in SYS_CMDS:keys set temp to temp + char(10) + "   " + token.
          set kernel_ctl["output"] to temp.
-         return "finished".
       }
-   } else if kernel_ctl["prompt"] = "Display what?:" { // subcommands
-      if cmd:trim:tolower = "apo" set kernel_ctl["output"] to ship:apoapsis.
-      else if cmd:trim:tolower = "pe" set kernel_ctl["output"] to ship:periapsis.
-      else if cmd:trim:tolower = "mission-elements" set kernel_ctl["output"] to MISSION_PLAN:length.
-      else if cmd:trim:tolower = "altitude" set kernel_ctl["output"] to ship:altitude.
-      else set kernel_ctl["output"] to "   No data".
-      return "finished".
    }
 }).
 
+SYS_CMDS_HELP:add("setup-launch",
+   char(10)+
+   "Launch Control Wizard"+char(10)+
+   "  Allows you to input your launch parameters"+char(10)+
+   "  for a custom launch, or provides sensible defaults."+char(10)+
+   "  If you are on the launch pad, and you have provided a "+char(10)+
+   "  Launch Vehicle Definition file in '0:/lv', this will "+char(10)+
+   "  add the necessary launch routines to the Mission Plan."+char(10)+
+   +char(10)+
+   "  Once the launch is added, you can optionally add additional"+char(10)+
+   "   programs, before you call 'engage'."
+).
 SYS_CMDS:add("setup-launch", {
    declare parameter cmd.
    if cmd = "setup-launch" { // Primary command entry
@@ -140,6 +180,11 @@ SYS_CMDS:add("change-callsign", {
 }).
 
 // Program specific commands
+SYS_CMDS_HELP:add("add-program",
+   char(10)+
+   "Adds the given program to the Mission Plan."+char(10)+
+   "   Usage: add-program [Program Name] [Program Parameters...]"
+).
 SYS_CMDS:add("add-program", {
    declare parameter cmd.
    if cmd:startswith("add-program") {
@@ -161,6 +206,11 @@ SYS_CMDS:add("add-program", {
    }                                                                               
 }).
 
+SYS_CMDS_HELP:add("remove-program",
+   char(10)+
+   "Removes the given program from the Mission Plan."+char(10)+
+   "   Usage: remove-program [Program ID] | [Mission Plan index number]"
+).
 SYS_CMDS:add("remove-program", {
    declare parameter cmd.
    if cmd:startswith("remove-program") {
@@ -177,6 +227,11 @@ SYS_CMDS:add("remove-program", {
 }).
 
 
+SYS_CMDS_HELP:add("run-extra",
+   char(10)+
+   "Runs a script found in '0:/extra'."+char(10)+
+   "   Usage: run-extra [basename]"
+).
 SYS_CMDS:add("run-extra", {
    declare parameter cmd.
    if cmd:startswith("run-extra") {
@@ -186,57 +241,122 @@ SYS_CMDS:add("run-extra", {
    }
 }).
 
-SYS_CMDS:add("draw-vector", {
-   declare parameter cmd.
-   if cmd:startswith("draw-vector") {
-      local splitCmd is cmd:split(" ").
-      if splitCmd:length > 1 { 
-         local origin is v(0,0,0).
-         //if splitCmd[1] = "body" set origin to {return ship:body:position.}.
-         local directionVector is v(0,0,0).
-         //{return north:forevector.}.
-         //if splitCmd[2] = "UP" {return up:forevector}.
-         
-         local test is vecdraw(
-                                 origin, 
-                                 directionVector,
-                                 RGB(1, 0, 0),
-                                 "North",
-                                 1,
-                                 true,
-                                 0.2,
-                                 true,
-                                 true).
-      } else {
-         set kernel_ctl["output"] to
-            "Draws a vector on the screen."
-            +char(10)+"Usage: draw-vector [ORIGIN] [DIRECTION] [COLOR] [LABEL]"
-            +char(10)+"   where [ORIGIN] is ship or body"
-            +char(10)+"   [DIRECTION] is AN, DN, LAN, UP, DOWN, NORTH, SOUTH, SPV, MAX or MIN"
-            +char(10)+"   [COLOR] is red green or blue"
-            +char(10)+"   [LABEL] is some text".
-
-         return "finished".
-      }
-   }
-}).
-
-SYS_CMDS:add("clear-drawings", {
-   declare parameter cmd.
-   if cmd:startswith("clear-drawings") {
-      clearvecdraws().
-      return "finished".
-   }
-}).
+//SYS_CMDS:add("draw-vector", {
+//   declare parameter cmd.
+//   if cmd:startswith("draw-vector") {
+//      local splitCmd is cmd:split(" ").
+//      if splitCmd:length > 1 { 
+//         local origin is v(0,0,0).
+//         //if splitCmd[1] = "body" set origin to {return ship:body:position.}.
+//         local directionVector is v(0,0,0).
+//         //{return north:forevector.}.
+//         //if splitCmd[2] = "UP" {return up:forevector}.
+//         
+//         local test is vecdraw(
+//                                 origin, 
+//                                 directionVector,
+//                                 RGB(1, 0, 0),
+//                                 "North",
+//                                 1,
+//                                 true,
+//                                 0.2,
+//                                 true,
+//                                 true).
+//      } else {
+//         set kernel_ctl["output"] to
+//            "Draws a vector on the screen."
+//            +char(10)+"Usage: draw-vector [ORIGIN] [DIRECTION] [COLOR] [LABEL]"
+//            +char(10)+"   where [ORIGIN] is ship or body"
+//            +char(10)+"   [DIRECTION] is AN, DN, LAN, UP, DOWN, NORTH, SOUTH, SPV, MAX or MIN"
+//            +char(10)+"   [COLOR] is red green or blue"
+//            +char(10)+"   [LABEL] is some text".
+//
+//         return "finished".
+//      }
+//   }
+//}).
+//
+//SYS_CMDS:add("clear-drawings", {
+//   declare parameter cmd.
+//   if cmd:startswith("clear-drawings") {
+//      clearvecdraws().
+//      return "finished".
+//   }
+//}).
 
 local PLANE_MODE is false.
 local pid is 0.
 local turn_rate is 1.
 
+SYS_CMDS_HELP:add("plane-mode",
+   char(10)+
+   "EXPERIMENTAL: Adds some aircraft control features to the shell. "
+).
 SYS_CMDS:add("plane-mode", {
    declare parameter cmd.
    if PLANE_MODE set PLANE_MODE to false.
-   else set PLANE_MODE to true.
+   else {
+      set PLANE_MODE to true.
+      SYS_CMDS:add("set-heading", {
+         declare parameter cmd.
+         local compass is 0.
+         local p is 0.
+         local roll_local is 0.
+         if PLANE_MODE AND cmd:startswith("set-heading") {
+            local splitCmd is cmd:split(" ").
+            if splitCmd:length > 3 set roll_local to splitCmd[3]:tonumber(0).
+            if splitCmd:length > 2 {
+               set compass to splitCmd[1]:tonumber(0).
+               set p to splitCmd[2]:tonumber(0).
+            }
+            lock steering to slowYourRoll(compass, p, roll_local).
+         }
+         return "finished".
+      }).
+
+      SYS_CMDS:add("unlock-steering", {
+         declare parameter cmd.
+         if PLANE_MODE AND cmd:startswith("unlock-steering") {
+            unlock steering.
+         }
+         return "finished".
+      }).
+
+      SYS_CMDS:add("set-rate-descent", {
+         declare parameter cmd.
+         if PLANE_MODE AND cmd:startswith("set-rate-descent") {
+            local splitCmd is cmd:split(" ").
+            set pid to PIDLOOP().
+            set pid:setpoint to -splitCmd[1]:tonumber(0).
+            set pid:minoutput to 0.
+            set pid:maxoutput to 1.
+            lock throttle to pid:update(time:seconds, ship:verticalspeed).
+         }
+         return "finished".
+      }).
+
+      SYS_CMDS:add("set-rate-ascent", {
+         declare parameter cmd.
+         if PLANE_MODE AND cmd:startswith("set-rate-ascent") {
+            local splitCmd is cmd:split(" ").
+            set pid to PIDLOOP().
+            set pid:setpoint to splitCmd[1]:tonumber(0).
+            set pid:minoutput to 0.
+            set pid:maxoutput to 1.
+            lock throttle to pid:update(time:seconds, ship:verticalspeed).
+         }
+         return "finished".
+      }).
+
+      SYS_CMDS:add("set-rate-turning", {
+         declare parameter cmd.
+         if PLANE_MODE and cmd:startswith("set-rate-turning") {
+            local splitCmd is cmd:split(" ").
+            set turn_rate to splitCmd[1]:tonumber(1).
+         }
+         return "finished".
+      }).
+   }
    return "finished".
 }).
 
@@ -256,62 +376,3 @@ declare function slowYourRoll {
       return heading(compass, p, roll_local) .
    }
 }
-SYS_CMDS:add("set-heading", {
-   declare parameter cmd.
-   local compass is 0.
-   local p is 0.
-   local roll_local is 0.
-   if PLANE_MODE AND cmd:startswith("set-heading") {
-      local splitCmd is cmd:split(" ").
-      if splitCmd:length > 3 set roll_local to splitCmd[3]:tonumber(0).
-      if splitCmd:length > 2 {
-         set compass to splitCmd[1]:tonumber(0).
-         set p to splitCmd[2]:tonumber(0).
-      }
-      lock steering to slowYourRoll(compass, p, roll_local).
-   }
-   return "finished".
-}).
-
-SYS_CMDS:add("unlock-steering", {
-   declare parameter cmd.
-   if PLANE_MODE AND cmd:startswith("unlock-steering") {
-      unlock steering.
-   }
-   return "finished".
-}).
-
-SYS_CMDS:add("set-rate-descent", {
-   declare parameter cmd.
-   if PLANE_MODE AND cmd:startswith("set-rate-descent") {
-      local splitCmd is cmd:split(" ").
-      set pid to PIDLOOP().
-      set pid:setpoint to -splitCmd[1]:tonumber(0).
-      set pid:minoutput to 0.
-      set pid:maxoutput to 1.
-      lock throttle to pid:update(time:seconds, ship:verticalspeed).
-   }
-   return "finished".
-}).
-
-SYS_CMDS:add("set-rate-ascent", {
-   declare parameter cmd.
-   if PLANE_MODE AND cmd:startswith("set-rate-ascent") {
-      local splitCmd is cmd:split(" ").
-      set pid to PIDLOOP().
-      set pid:setpoint to splitCmd[1]:tonumber(0).
-      set pid:minoutput to 0.
-      set pid:maxoutput to 1.
-      lock throttle to pid:update(time:seconds, ship:verticalspeed).
-   }
-   return "finished".
-}).
-
-SYS_CMDS:add("set-rate-turning", {
-   declare parameter cmd.
-   if PLANE_MODE and cmd:startswith("set-rate-turning") {
-      local splitCmd is cmd:split(" ").
-      set turn_rate to splitCmd[1]:tonumber(1).
-   }
-   return "finished".
-}).

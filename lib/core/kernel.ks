@@ -21,7 +21,7 @@ global OP_FAIL is 32767.
 
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
-global CURRENT_ABORT_MODE is 0. // Potential to allow programs and missions to have abort modes.
+global CURRENT_ABORT_MODE is list(). // Potential to allow programs and missions to have abort modes.
 global SYS_CMDS is lexicon().
 global SYS_CMDS_HELP is lexicon().
 
@@ -232,22 +232,34 @@ clearscreen.
    }
 
    // Special internal system commands
+   SYS_CMDS_HELP:add("engage", char(10)+"Starts running the Mission Plan").
    SYS_CMDS:add("engage", {
       declare parameter cmd.
       set runmode to runmode  + 1.
       return "finished".
    }).
 
+   SYS_CMDS_HELP:add("abort",
+      char(10)+
+      "Aborts the Mission"+char(10)+
+      "   Usage: abort [OPTION]"+char(10)+
+      "   Default: Skips all remaining mission elements"+char(10)+
+      "   -r | --reboot  Reboots the system"+char(10)+
+      "   -s | --shutdown Off switch"
+   ).
    SYS_CMDS:add("abort", {
       declare parameter cmd.
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 {
          if splitCmd[1] = "-r" OR splitCmd[1] = "--reboot" reboot.
          else if splitCmd[1] = "-s" OR splitCmd[1] = "--shutdown" shutdown.
-      } else set runmode to MISSION_PLAN:length.
+      } else {
+         set runmode to MISSION_PLAN:length.
+      }
       return "finished".
    }).
 
+   SYS_CMDS_HELP:add("clear", char(10)+"Clears the screen").
    SYS_CMDS:add("clear", {
       declare parameter cmd.
       display_buffer:clear().
@@ -257,6 +269,7 @@ clearscreen.
 
 
    declare function process_cmd {
+      clearscreen.
       declare parameter cmd.
       if not(cmd_buffer) {
          display_buffer:add(cmd).
@@ -309,9 +322,7 @@ clearscreen.
       clearscreen.
       display_buffer:add("To get started").
       display_buffer:add("Type:").
-      display_buffer:add("   display commands").
-      display_buffer:add("         or").
-      display_buffer:add("   display programs").
+      display_buffer:add("   help").
       update_display().
       MISSION_PLAN:add({
          return OP_CONTINUE.
