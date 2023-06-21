@@ -59,23 +59,25 @@ if ship:status = "PRELAUNCH" {
       return OP_FINISHED.
    }).
    if procs:length = 1 { 
-      // Deorbit the mothership.
-      kernel_ctl["MissionPlanAdd"]("Prep for Deorbit:steering", {
-         lock steering to ship:retrograde.
-         return OP_FINISHED.
-      }).
-      kernel_ctl["MissionPlanAdd"]("Prep for Deorbit:throttle", {
-         if vang(ship:facing:forevector , ship:retrograde:forevector) < 1 {
-            lock throttle to 1.
+      if ship:orbit:periapsis > ship:body:atm:height or (not(ship:body:atm:exists) and  ship:orbit:periapsis > 0) {
+         // Deorbit the mothership.
+         kernel_ctl["MissionPlanAdd"]("Prep for Deorbit:steering", {
+            lock steering to ship:retrograde.
             return OP_FINISHED.
-         } else return OP_CONTINUE.
-      }).
-      kernel_ctl["MissionPlanAdd"]("Deorbit", {
-         if ship:orbit:periapsis < 45000 {
-            lock throttle to 0.
-            return OP_FINISHED.
-         } else return OP_CONTINUE.
-      }).
+         }).
+         kernel_ctl["MissionPlanAdd"]("Prep for Deorbit:throttle", {
+            if vang(ship:facing:forevector , ship:retrograde:forevector) < 1 {
+               lock throttle to 1.
+               return OP_FINISHED.
+            } else return OP_CONTINUE.
+         }).
+         kernel_ctl["MissionPlanAdd"]("Deorbit", {
+            if (ship:body:atm:exists and ship:orbit:periapsis < ship:body:atm:height) or ship:orbit:periapsis < 0 {
+               lock throttle to 0.
+               return OP_FINISHED.
+            } else return OP_CONTINUE.
+         }).
+      }
       kernel_ctl["MissionPlanAdd"]("Stage parachute", {
          if ship:altitude < 3000 AND ship:airspeed < 300 {
             stage.

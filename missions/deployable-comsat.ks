@@ -35,6 +35,7 @@ if ship:status = "PRELAUNCH" {
    print "MP initialized".
    kernel_ctl["start"]().                                            // Execute the mission plan.
    print "MP completed".
+   panels on.
    wait 5.
    set kuniverse:activevessel to mothership.
    wait 0.

@@ -70,11 +70,11 @@ clearscreen.
             print seperator at(0, 2).
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-               print kernel_ctl["countdown"] at(0, 1).
+               print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
                if terminal:input:haschar process_char(terminal:input:getchar()).
             } else{
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-               print kernel_ctl["countdown"] at(0, 1).
+               print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
             }
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
