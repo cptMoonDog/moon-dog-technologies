@@ -76,6 +76,7 @@ clearscreen.
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
             }
+            //set kernel_ctl["countdown"] to "".
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
                // Resets the mission plan, so we can stay Alive.

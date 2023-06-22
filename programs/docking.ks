@@ -16,7 +16,6 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //======== Imports needed by the program =====
    
 //======== Parameters used by the program ====
-   // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
    local tgtPort is "".
    local localPort is "".

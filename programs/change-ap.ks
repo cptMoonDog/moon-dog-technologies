@@ -2,11 +2,6 @@
 // Program Template
 
 local programName is "change-ap". //<------- put the name of the script here
-
-// Header allowing for standalone operation.
-//   If this program is to be used as part of a complete mission, run this script without parameters, and
-//   then call the functions in the available_programs lexicon in the correct order of events for the mission
-//   to build the MISSION_PLAN.
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
 //Add initialzer for this program sequence to the lexicon of available programs

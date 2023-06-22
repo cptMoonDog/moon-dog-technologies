@@ -1,12 +1,39 @@
 @lazyglobal off.
 
+SYS_CMDS_HELP:add("missions", char(10)+
+   "Missions are your system firmware."+char(10)+
+   "   There are two distinct systems in MDTech, for the other see 'help programs'."+char(10)+
+   "   Missions are, simply put, bootfile hacking."+char(10)+
+   "   The 'lv.ks' and 'payload.ks' boot files can swap in a"+char(10)+
+   "   '0:/missions' file of your choice post-launch as an on-orbit bootfile."+char(10)+
+   +char(10)+
+   "   Following this method, it is possible to reconfigure the spacecraft"+char(10)+
+   "   repeatedly as mission requirements change.  "+char(10)+
+   "   See the examples in '0:/missions' for mission design help."+char(10)+
+   char(10)
+).
+
+SYS_CMDS_HELP:add("programs", char(10)+
+   "Programs are pre-defined sequential routines for common tasks."+char(10)+
+   "   There are two distinct systems in MDTech, for the other see 'help missions'."+char(10)+
+   "   The heart and soul of MDTech, is a kernel executing a 'MISSION_PLAN'."+char(10)+
+   "   The 'MISSION_PLAN' is simply a list populated with routines to be run in order."+char(10)+
+   "   When you run the command 'add-program' the routines defined for that program"+char(10)+
+   "   are added to the 'MISSION_PLAN'.  "+char(10)+
+   "   The command 'engage' will begin execution of the 'MISSION_PLAN'"+char(10)+
+   +char(10)+
+   "   For more information about defining your own programs"+char(10)+
+   "   See the examples in '0:/programs'"+char(10)+
+   char(10)
+).
+
 // Add a new command to the SYS_CMDS lexicon
 SYS_CMDS_HELP:add("help", char(10)+
    "Displays help information."+char(10)+
    "   Usage: help [topic]"+char(10)+
    "   help --topics : For a list of general helps."+char(10)+
    "   help --list-commands : For a list of system commands."+char(10)+
-   "   help --list-programs : For a list of installed programs."+char(10)+
+   "   help --list-programs : For a list of runnable programs."+char(10)+
    "   help --list-vars : For a list of displayable environment variables."+char(10)+
    "   Try:"+char(10)+
    "      help [Program Name]"+char(10)+
@@ -241,6 +268,15 @@ SYS_CMDS:add("run-extra", {
    }
 }).
 
+SYS_CMDS:add("test-countdown", {
+   declare parameter cmd.
+   if cmd:startswith("test-countdown") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 set kernel_ctl["countdown"] to splitCmd[1].
+      else set kernel_ctl["countdown"] to "test".
+      return "finished".
+   }
+}).
 //SYS_CMDS:add("draw-vector", {
 //   declare parameter cmd.
 //   if cmd:startswith("draw-vector") {
