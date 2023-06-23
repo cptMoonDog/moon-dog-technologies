@@ -4,12 +4,11 @@ The Moon Dog Technologies Consortium was the dream of one man, and now that of s
 
 Herein you will find a full featured suite of navigational software built in the [kOS](https://KSP-KOS.github.io/KOS) framework, and features and utilities to accompany the instructional videos on [YouTube](https://www.youtube.com/channel/UCXrQZx4C1a3GPn7DXkyWhfw).
 
-For more information, be sure to check out the [wiki](https://github.com/cptMoonDog/moon-dog-technologies/wiki).
 
 Quickstart
 ==========
 
-Set your kOS core boot file to `ish.ks` to start in interactive mode.  Once at the prompt, type `setup-launch` or `display commands` to get an idea how it works.
+Set your kOS core boot file to `ish.ks` to start in interactive mode.  Once at the prompt, type `help`.
 
 Non-interactive mode has multiple entry points.  If you know your way around kOS, start in the `boot` folder.
   - `lv.ks`
@@ -20,7 +19,7 @@ Basically...`lv.ks` searches for parameters in the `core:tag` first, and if it d
 
 Major Features
 ==============
-  - Interactive Shell for executing most routines on the fly.
+  - Interactive Shell 
   - Highly flexible, and extensible launch system.
   - High-level Mission Scripting
     - Allows for adding prebuilt programs to custom sequences.
@@ -29,6 +28,11 @@ Major Features
 
 Most Recent Changes
 ==================
+21JUN2023
+ - Added online help to th interactive shell
+ - Uploaded a video of it to [YouTube](https://youtu.be/8KXW-6Rhv8E)
+ - Fixed a bug in `setup-launch`
+
 08JUN2023
  - Fixed a bunch of bugs and made some quality of life improvements in the Interactive SHell system.
  - Changed some of the commands to be more Spacey.
@@ -40,7 +44,6 @@ Automated missions are increasingly easy to setup.  The initial launch system is
 Automated constellation deployments tested with the `lv/Chihuahua.ks` launch vehicle and the craft file you can find here: 
 [Model craft](https://kerbalx.com/yehoodig/Mayflower-Constellation-LC)
 To try it yourself, use the `lv.ks` bootfile on the upperstage, and ensure that the core:tag is empty.  Add your parameters for the LV and payload to `launch.conf/current.launch`, make sure that all the satellites have `payload.ks` as boot file, and `[Sat Name]:[Mission], [param1], ..., [param n] in the core:tag.  (It should be ready out of the box.  Just click launch, and it should automatically deploy a constellation of 4 satellites.).
-
 
 
 
