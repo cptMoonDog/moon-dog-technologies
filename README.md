@@ -28,6 +28,10 @@ Major Features
 
 Most Recent Changes
 ==================
+05JUL2023
+ - Empty core:tag now fails as is intuitive.  
+ - Specifying a "<name>.launch" is required to source launch parameters from the launch.conf directory.
+
 21JUN2023
  - Added online help to th interactive shell
  - Uploaded a video of it to [YouTube](https://youtu.be/8KXW-6Rhv8E)

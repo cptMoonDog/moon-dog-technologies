@@ -7,7 +7,7 @@ if ship:status = "PRELAUNCH" {
    local payloadData is "".
    runoncepath("0:/lib/core/kernel.ks").
    if core:tag:endswith(".launch") and exists("0:/launch.conf/"+core:tag) {  // Parameters are in this file.
-      local f is open("0:/launch.conf/current.launch").
+      local f is open("0:/launch.conf/"+core:tag).
       local i is f:readall:iterator.
       i:next.
       until i:atend {
