@@ -54,11 +54,11 @@ clearscreen.
    declare function start {
       until FALSE {
          // Technically this only works for calculations and terminal ops.
-         if time:seconds > regulator + 0.05 and config:ipu < 2000 {
-            set config:ipu to config:ipu + 1.
-            //set kernel_ctl["status"] to "IPU now: "+config:ipu.
-         } else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
-         set regulator to time:seconds.
+         //if time:seconds > regulator + 0.05 and config:ipu < 2000 {
+         //   set config:ipu to config:ipu + 1.
+         //   //set kernel_ctl["status"] to "IPU now: "+config:ipu.
+         //} else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
+         //set regulator to time:seconds.
          
          // Execute current routine
          if runmode < MISSION_PLAN:length and runmode > -1 {

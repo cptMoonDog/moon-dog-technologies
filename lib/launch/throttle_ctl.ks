@@ -158,16 +158,17 @@
    //Apoapsis value at which to shutdown.  Presumably the orbital altitude.
    declare function getThrottleSetting_function {
       local defaultSetting is 1.
-         if launch_param["throttleProfile"]:length = 3 // If a setpoint, or parameter for the function is provided, pass it.
-            // Reason for max function is that in some unusual cases the if allowed to throttle very low, 
-            // thrust can balance with drag so well, that orbit is never achieved and as long as the fuel lasts
-            // you effectively have an in atmosphere orbit.
-            set defaultSetting to max(0.01, throttFunction(launch_param["throttleProfile"][2])).
-         else
-            set defaultSetting to max(0.01, throttFunction()). 
+      if launch_param["throttleProfile"]:length = 3 // If a setpoint, or parameter for the function is provided, pass it.
+         // Reason for max function is that in some unusual cases the if allowed to throttle very low, 
+         // thrust can balance with drag so well, that orbit is never achieved and as long as the fuel lasts
+         // you effectively have an in atmosphere orbit.
+         set defaultSetting to max(0.01, throttFunction(launch_param["throttleProfile"][2])).
+      else
+         set defaultSetting to max(0.01, throttFunction()). 
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1]*0.99 {
-         if ship:apoapsis > launch_param["throttleProfile"][1] {
+         local extraForDragCompensation is if ship:altitude < ship:body:atm:height then (ship:body:atm:height - ship:altitude)/ship:apoapsis else 0.
+         if ship:apoapsis > launch_param["throttleProfile"][1] + extraForDragCompensation {
             return 0.
          } else {
             return max(0.01, ((1 - min(1, ship:apoapsis/launch_param["throttleProfile"][1]))+(1 - min(1, ship:altitude/ship:body:atm:height)))/2).

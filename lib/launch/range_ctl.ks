@@ -38,7 +38,7 @@
       // Functions therefore, should take the form of an if-else block checking against a controlling variable.  Frequently time.
       // Start from smallest value of timeOfWindow - time:seconds, and work up.
       local dispCountdown is {
-         set kernel_ctl["status"] to "Last branch".
+         set kernel_ctl["status"] to (timeOfWindow - time:seconds):tostring.
          if time:seconds-lastTime > 1 {
             set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second+"       ". //Pad to avoid spurious digits
             hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
@@ -54,23 +54,25 @@
       if timeOfWindow - time:seconds < -1 { // Missed the window.  Most likely because within time of flight.
          print "Time to window is negative.  Range control failure." at(0, 5).
          set kernel_ctl["status"] to "Time to window is negative.  Range control failure.".
+         wait 0.
          return OP_FAIL.
-      } else if timeOfWindow-time:seconds < 0.01 {
+      } else if timeOfWindow-time:seconds < 1 {
          V0:play(note("C5", 1)).
          dispCountdown().
+         wait 0.
          return OP_FINISHED.
       } else if timeOfWindow-time:seconds > countdown+1 { // Warp to countdown
          if (kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled()) {
             kuniverse:timewarp:warpto(timeOfWindow - countdown).
             wait timeOfWindow - time:seconds - countdown.
          }
-         wait 0.1.
+         wait 0.
          return OP_CONTINUE.
       } else {
          dispCountdown().
-         wait 0.1.
+         wait 0.
          return OP_CONTINUE.
-      }
+      } 
    }
 
    declare function normalizeAngle {

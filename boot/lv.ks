@@ -6,8 +6,7 @@ if ship:status = "PRELAUNCH" {
    local data is list().
    local payloadData is "".
    runoncepath("0:/lib/core/kernel.ks").
-   if core:tag set data to core:tag:split(","). // Parameters are in the core:tag
-   else if exists("0:/launch.conf/current.launch") {  // Parameters are in this file.
+   if core:tag:endswith(".launch") and exists("0:/launch.conf/"+core:tag) {  // Parameters are in this file.
       local f is open("0:/launch.conf/current.launch").
       local i is f:readall:iterator.
       i:next.
@@ -32,6 +31,11 @@ if ship:status = "PRELAUNCH" {
             runoncepath("1:/boot/"+mission+".ksm").
          }
       }
+   } else if core:tag {
+      set data to core:tag:split(","). // Parameters are in the core:tag
+   } else {
+      print "No Launch Vehicle Specified!".
+      shutdown.
    }
 
    // A convenience function 
