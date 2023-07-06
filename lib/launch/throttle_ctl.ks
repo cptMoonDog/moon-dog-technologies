@@ -167,7 +167,7 @@
          set defaultSetting to max(0.01, throttFunction()). 
       if ship:apoapsis < launch_param["throttleProfile"][0] or eta:periapsis < eta:apoapsis return 1.
       else if ship:apoapsis > launch_param["throttleProfile"][1]*0.99 {
-         local extraForDragCompensation is if ship:altitude < ship:body:atm:height then (ship:body:atm:height - ship:altitude)/ship:apoapsis else 0.
+         local extraForDragCompensation is choose (ship:body:atm:height - ship:altitude)/ship:apoapsis if ship:altitude < ship:body:atm:height else 0.
          if ship:apoapsis > launch_param["throttleProfile"][1] + extraForDragCompensation {
             return 0.
          } else {

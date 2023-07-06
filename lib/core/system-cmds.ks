@@ -31,7 +31,9 @@ SYS_CMDS_HELP:add("core-tag", char(10)+
    "The core tag is the name tag of the kOS processor this program is running on."+char(10)+
    "   It is the first place the boot files check for parameters."+char(10)+
    "   For the 'lv.ks' bootfile, you can specify:"+char(10)+
-   "      [LV Name], [Target Name] | [[Inclination], [LAN], [Orbit Height]]"+char(10)+char(10)+
+   "      [LV Name], [Target Name] | [[Inclination], [LAN], [Orbit Height]]"+char(10)+
+   "         Or"+char(10)+
+   "      <name>.launch to source from a parameters file in '0:/launch.conf'"+char(10)+char(10)+
    "   Parameters are optional, but order is important."+char(10)+char(10)+
    "   For the 'payload.ks' bootfile, you can specify:"+char(10)+
    "      [Spacecraft Name]:[Mission Name], [Param 1], ... [Param N]"+char(10)+char(10)
