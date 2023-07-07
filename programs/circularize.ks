@@ -21,22 +21,22 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
    local engineName is "".
-   local node is "".
+   local orbitPoint is "".
    if argv:split(" "):length >= 2 {
       set engineName to argv:split(" ")[0].
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
-      set node to argv:split(" ")[1].
+      set orbitPoint to argv:split(" ")[1].
    } else {
       set kernel_ctl["output"] to
          "Executes a maneuver to circularize at the given point."
-         +char(10)+"Usage: add-program circularize [ENGINE-NAME] ap | pe".
+         +char(10)+"   Usage: add-program circularize [ENGINE-NAME] ap | pe".
       return.
    }
 
 //======== Local Variables =====
    local thrustVector is "".
-   if node:tolower = "ap" set thrustVector to "prograde".
-   else if node:tolower = "pe" set thrustVector to "retrograde".
+   if orbitPoint:tolower = "ap" set thrustVector to "prograde".
+   else if orbitPoint:tolower = "pe" set thrustVector to "retrograde".
    else return OP_FAIL.
 
 //=============== Begin program sequence Definition ===============================
@@ -46,7 +46,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPlanAdd"](programName, {
-      maneuver_ctl["add_burn"](thrustVector, engineName, node:tolower, "circularize").
+      maneuver_ctl["add_burn"](thrustVector, engineName, orbitPoint:tolower, "circularize").
       return OP_FINISHED.
    }).
    kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).

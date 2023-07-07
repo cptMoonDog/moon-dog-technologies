@@ -21,8 +21,19 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local newPe is argv:split(" ")[1]:tonumber(ship:orbit:periapsis).
+   local engineName is "".
+   local newPe is "".
+
+   if argv:split(" "):length >= 2 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      set newAp to argv:split(" ")[1]:tonumber(ship:orbit:apoapsis).
+   } else {
+      set kernel_ctl["output"] to
+         "Executes a maneuver to raise or lower pe"
+         +char(10)+"   Usage: add-program change-pe [ENGINE-NAME] [ALTITUDE]".
+      return.
+   }
 
 //======== Local Variables =====
       local steerDir is "retrograde".

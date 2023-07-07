@@ -20,9 +20,20 @@ kernel_ctl["availablePrograms"]:add(programName, {
    
 //======== Parameters used by the program ====
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local newAp is argv:split(" ")[1]:tonumber(ship:orbit:apoapsis).
+   local engineName is "".
+   local newAp is "".
    local AOP is ship:orbit:argumentofperiapsis. //Argument of periapsis
+
+   if argv:split(" "):length >= 2 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      set newAp to argv:split(" ")[1]:tonumber(ship:orbit:apoapsis).
+   } else {
+      set kernel_ctl["output"] to
+         "Executes a maneuver to raise or lower ap"
+         +char(10)+"   Usage: add-program change-ap [ENGINE-NAME] [ALTITUDE]".
+      return.
+   }
 
 //======== Local Variables =====
       local steerDir is "retrograde".
