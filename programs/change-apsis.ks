@@ -20,7 +20,13 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set engineName to argv:split(" ")[0].
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
       set apsis to argv:split(" ")[1].
-      set newAp to argv:split(" ")[2]:tonumber(ship:orbit:apoapsis).
+      set newAlt to argv:split(" ")[2]:tonumber(-1).
+      if newAlt = -1 {
+         set kernel_ctl["output"] to
+            "Executes a maneuver to raise or lower  ap or pe."
+            +char(10)+"   Usage: add-program change-apsis [ENGINE-NAME] ap | pe [ALTITUDE]".
+         return.
+      }
    } else {
       set kernel_ctl["output"] to
          "Executes a maneuver to raise or lower  ap or pe."
@@ -34,7 +40,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //=============== Begin program sequence Definition ===============================
    kernel_ctl["MissionPLanAdd"](programName, {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-         kernel_ctl["output"] to "staging, Max thrust: "+ship:maxthrust.
+         set kernel_ctl["output"] to "staging, Max thrust: "+ship:maxthrust.
          stage. 
          wait 1.
          if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust < 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
@@ -47,7 +53,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          (apsis = "pe" and ship:orbit:periapsis > newAlt*0.99 and ship:orbit:periapsis < newAlt*1.01)
          return OP_FINISHED.
       
-      if (apsis = "ap" and ship:orbit:apoapsis > newAlt) or
+      if (apsis = "ap" and ship:orbit:apoapsis < newAlt) or
          (apsis = "pe" and ship:orbit:periapsis < newAlt)
          set steerDir to "prograde". 
 
@@ -60,7 +66,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       local dv is abs(newVatApsis - velocityat(ship, choose eta:periapsis if apsis = "ap" else eta:apoapsis):orbit:mag).
 
       maneuver_ctl["add_burn"](steerDir, engineName, apsis, dv).
-
+      set kernel_ctl["output"] to "apsis: "+apsis+char(10)+"new SMA: "+newSMA+char(10)+"dv: "+dv.
       return OP_FINISHED.
    }).
    kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
@@ -79,7 +85,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          lock throttle to 0.1.
          return OP_CONTINUE.
       } else if (apsis = "ap" and ((steerDir = "prograde" and ship:apoapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:apoapsis < newAlt*0.99))) or
-                (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:periapsis < newAlt*0.99) {
+                (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:periapsis < newAlt*0.99))) {
          if steerDir = "prograde" {
             set steerDir to "retrograde".
          } else {
