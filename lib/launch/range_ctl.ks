@@ -85,7 +85,7 @@
    declare function getUT_window {
       parameter RAAN. //LAN
       parameter i. //inclination
-      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination fudge factor :.
+      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination; fudge factor :.
       parameter allowableTrajectories is "all". 
 
       //Longitude correction of launch window due to latitude.
