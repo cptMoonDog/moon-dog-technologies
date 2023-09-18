@@ -280,6 +280,22 @@ SYS_CMDS:add("run-extra", {
    }
 }).
 
+SYS_CMDS_HELP:add("set", 
+  char(10)+
+  "Sets various values"+char(10)+
+  "   Usage: set [variable] [value]"
+).
+SYS_CMDS:add("set", {
+   declare parameter cmd.
+   if cmd:startswith("set") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd[1]:toLower() = "target" {
+         set target to splitCmd[2].
+      }
+   }
+   return "finished".
+}).
+
 SYS_CMDS:add("test-countdown", {
    declare parameter cmd.
    if cmd:startswith("test-countdown") {

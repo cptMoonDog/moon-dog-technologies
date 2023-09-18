@@ -68,6 +68,12 @@ clearscreen.
             local seperator is "".
             set seperator to seperator:padright(terminal:width):replace(" ", "-").
             print seperator at(0, 2).
+            if kernel_ctl["output"] {
+               if kernel_ctl["output"]:istype("String") for s in kernel_ctl["output"]:split(char(10)) display_buffer:add(s).
+               else display_buffer:add(kernel_ctl["output"]:tostring).
+               set kernel_ctl["output"] to "".
+               update_display().
+            }
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
@@ -234,7 +240,13 @@ clearscreen.
 
    // Special internal system commands
    SYS_CMDS_HELP:add("engage", char(10)+"Starts running the Mission Plan").
+   SYS_CMDS_HELP:add("start", char(10)+"Alias for 'engage'").
    SYS_CMDS:add("engage", {
+      declare parameter cmd.
+      set runmode to runmode  + 1.
+      return "finished".
+   }).
+   SYS_CMDS:add("start", {
       declare parameter cmd.
       set runmode to runmode  + 1.
       return "finished".

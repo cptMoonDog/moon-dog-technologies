@@ -4,6 +4,14 @@ The Moon Dog Technologies Consortium was the dream of one man, and now that of s
 
 Herein you will find a full featured suite of navigational software built in the [kOS](https://KSP-KOS.github.io/KOS) framework, and features and utilities to accompany the instructional videos on [YouTube](https://www.youtube.com/channel/UCXrQZx4C1a3GPn7DXkyWhfw).
 
+Major Features
+==============
+  - Interactive Shell 
+  - Highly flexible, and extensible launch system.
+  - High-level Mission Scripting
+    - Allows for adding prebuilt programs to custom sequences.
+    - Rapid mission automation
+  - Assignable firmware
 
 Quickstart
 ==========
@@ -15,19 +23,18 @@ Non-interactive mode has multiple entry points.  If you know your way around kOS
   - `payload.ks`
 
 You can ignore the others, for now.
-Basically...`lv.ks` searches for parameters in the `core:tag` first, and if it doesn't find them `0:/launch.conf/current.launch`.
+Basically...`lv.ks` checks the `core:tag` for parameters.  Either, give it: `[LAUNCH VEHICLE NAME], [INCLINATION], [LAN], [ORBIT ALTITUDE]`, or specify a `.launch` file.
 
-Major Features
-==============
-  - Interactive Shell 
-  - Highly flexible, and extensible launch system.
-  - High-level Mission Scripting
-    - Allows for adding prebuilt programs to custom sequences.
-    - Rapid mission automation
-  - Assignable firmware
+Other Resources
+===============
+[Satellite Constellation Designer](https://docs.google.com/spreadsheets/d/1LfuaOlbYhqdkZ5u4zmiUqkcERuGFl3m6GwSdb_gjIsI/edit?usp=sharing)
+
 
 Most Recent Changes
 ==================
+06JUL2023
+ - Streamlined `circularize` program and added more helps.
+
 05JUL2023
  - Empty core:tag now fails as is intuitive.  
  - Specifying a "<name>.launch" is required to source launch parameters from the launch.conf directory.

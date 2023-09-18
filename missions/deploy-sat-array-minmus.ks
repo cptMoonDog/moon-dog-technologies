@@ -11,6 +11,7 @@ if ship:status = "PRELAUNCH" {
    kernel_ctl["load-to-core"]("programs/powered-capture").
    kernel_ctl["load-to-core"]("programs/match-plane").
    kernel_ctl["load-to-core"]("programs/change-ap").
+   kernel_ctl["load-to-core"]("programs/circularize-at-pe").
 
    compile "0:/missions/mothership-comsat.ks" to "1:/boot/mothership-comsat.ksm".
    runpath("1:/boot/mothership-comsat.ksm").
@@ -30,12 +31,14 @@ if ship:status = "PRELAUNCH" {
       kernel_ctl["import-lib"]("programs/match-plane").
       kernel_ctl["import-lib"]("programs/change-ap").
       
-      kernel_ctl["add-program"]("lko-to-moon", "swivel Mun").
-      kernel_ctl["add-program"]("powered-capture", "terrier Mun").
-      kernel_ctl["add-program"]("match-plane", "terrier 90:135").
-      kernel_ctl["add-program"]("change-ap", "terrier 592500").
+      kernel_ctl["add-program"]("lko-to-moon", "swivel Minmus").
+      kernel_ctl["add-program"]("powered-capture", "terrier Minmus").
+      kernel_ctl["add-program"]("change-pe", "terrier 50000").
+      kernel_ctl["add-program"]("circularize-at-pe").
+      kernel_ctl["add-program"]("match-plane", "terrier 0:135").
+      kernel_ctl["add-program"]("change-ap", "terrier 750000").
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
-         set core:tag to "Munflower, terrier, 4".
+         set core:tag to "Minflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".
          reboot.
          return OPP_FINISHED.
@@ -47,7 +50,7 @@ if ship:status = "PRELAUNCH" {
       print "there has been an error".
       shutdown.
    }
-   print "Mun-orbit-script finished in orbit mode".
+   print "Minmus-orbit-script finished in orbit mode".
    shutdown.
 }
-print "Mun-orbit-script completed".
+print "Minmus-orbit-script completed".

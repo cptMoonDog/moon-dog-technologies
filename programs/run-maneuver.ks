@@ -20,7 +20,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter engineName.
+   declare parameter argv.
+   local engineName is "".
+   if argv:split(" "):length >= 1 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+   } else {
+      set kernel_ctl["output"] to
+         "Configures the ship for the next maneuver (Read as: Stages until [ENGINE-NAME] is active)"
+         +char(10)+"   and executes it."
+         +char(10)+"   Usage: add-program run-maneuver [ENGINE-NAME]".
+      return.
+   }
 
 //======== Local Variables =====
 

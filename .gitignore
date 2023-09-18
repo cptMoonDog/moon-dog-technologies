@@ -2,7 +2,8 @@
 #exclude all launch vehicle files except those that I want to be explicitly public
 lv/
 !lv/template.ks
-!lv/SaltyDog.ks
+!lv/Greyhound.ks
+!lv/Chihuahua.ks
 old/
 
 #emacs

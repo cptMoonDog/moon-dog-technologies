@@ -38,7 +38,7 @@
       // Functions therefore, should take the form of an if-else block checking against a controlling variable.  Frequently time.
       // Start from smallest value of timeOfWindow - time:seconds, and work up.
       local dispCountdown is {
-         set kernel_ctl["status"] to (timeOfWindow - time:seconds):tostring.
+         //set kernel_ctl["status"] to (timeOfWindow - time:seconds):tostring.
          if time:seconds-lastTime > 1 {
             set kernel_ctl["countdown"] to "T-"+timespan(timeOfWindow-time:seconds):second+"       ". //Pad to avoid spurious digits
             hudtext("T-"+timespan(timeOfWindow-time:seconds):second+"...", 1, 2, 20, white, false).//Time arithmetic casts to TimeSpan object
@@ -60,6 +60,7 @@
          V0:play(note("C5", 1)).
          dispCountdown().
          wait 0.
+         set kernel_ctl["countdown"] to "                  ".
          return OP_FINISHED.
       } else if timeOfWindow-time:seconds > countdown+1 { // Warp to countdown
          if (kuniverse:timewarp:warp = 0 and kuniverse:timewarp:rate = 1 and Kuniverse:timewarp:issettled()) {
@@ -84,7 +85,7 @@
    declare function getUT_window {
       parameter RAAN. //LAN
       parameter i. //inclination
-      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination fudge factor :.
+      parameter tof. //Time of Flight, the amount of time from launch to achievement of inclination; fudge factor :.
       parameter allowableTrajectories is "all". 
 
       //Longitude correction of launch window due to latitude.
