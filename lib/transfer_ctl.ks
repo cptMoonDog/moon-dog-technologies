@@ -91,7 +91,7 @@
       // Half-orbit for the transfer orbit, divided by the travel ratio, will give the travel angle for the final orbit.
       // Half-orbit minus the travel angle for the final orbit will give the angle between the objects needed: The phase angle.
 
-      return 180 - 180/(sqrt((finalAlt/((startAlt+finalAlt)/2))^3).
+      return 180 - 180/(sqrt((finalAlt/((startAlt+finalAlt)/2))^3)).
    }
 
 }

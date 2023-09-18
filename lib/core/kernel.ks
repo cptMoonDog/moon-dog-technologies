@@ -240,7 +240,13 @@ clearscreen.
 
    // Special internal system commands
    SYS_CMDS_HELP:add("engage", char(10)+"Starts running the Mission Plan").
+   SYS_CMDS_HELP:add("start", char(10)+"Alias for 'engage'").
    SYS_CMDS:add("engage", {
+      declare parameter cmd.
+      set runmode to runmode  + 1.
+      return "finished".
+   }).
+   SYS_CMDS:add("start", {
       declare parameter cmd.
       set runmode to runmode  + 1.
       return "finished".
