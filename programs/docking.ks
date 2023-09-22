@@ -1,17 +1,7 @@
 @lazyglobal off.
-// Program Template
-
 local programName is "docking". //<------- put the name of the script here
 
-//Add initialzer for this program sequence to the lexicon of available programs
-// Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
 kernel_ctl["availablePrograms"]:add(programName, {
-   //One time initialization code.
-   //   Question: Why not simply have a script file with the contents of the initializer delegate?  Why the extra layers?
-   //   Answer: It seems that the memory area for parameters passed to scripts is always the same.  So, when 
-   //           a script defines a function to be called later, any additional script called with parameters will
-   //           clobber the parameter intended for the first one.  The parameter below will be preserved and its value
-   //           will remain available to the program, as long as the program is written within this scope, 
   
 //======== Imports needed by the program =====
    
@@ -20,7 +10,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local tgtPort is "".
    local localPort is "".
 
-   if argv:split(":"):length > 1 {
+   if argv:trim {
       if argv:split(char(34)):length > 1 { //char(34) is quotation mark
          set tgtPort to argv:split(char(34))[1]. // Quoted first parameter
          set tgtPort to tgtPort + ":"+argv:split(":")[1]:split(" ")[0].
@@ -30,17 +20,17 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Docks with the given target port. Requires the target port to be named."
-         +char(10)+"Usage: add-program docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
+         +char(10)+"Usage: add docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
       return.
    }
 
 //======== Local Variables =====
+   // Most of these values are initial; Don't have a great amount of significance.
    local port is ship:dockingports[0].
-   local standOffFore is 100. // Don't approach closer than 100m until aligned.
+   local standOffFore is 100. 
    local standOffVert is 0.
    local standOffLateral is 0.
    local nullZone is 0.5.
-   //local approachSpeed is 10.
 
    local dist is (port:position).
 
@@ -48,7 +38,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local offsetLateral is dist*port:portfacing:starvector.
    local offsetFore is dist*port:portfacing:forevector.
 
-   local vel is ship:velocity:orbit. //(target:ship:velocity:orbit - ship:velocity:orbit).
+   local vel is ship:velocity:orbit. 
 
    local speedVert is vel*port:portfacing:topvector.
    local speedLateral is vel*port:portfacing:starvector.
@@ -73,11 +63,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
       } else { // Else null your rates.
          local pvar is 3*speed.
          local sigmoid is abs(pvar)/sqrt(1+abs(pvar)^2).
-         if speed > 0.01 return sigmoid.
-         else if speed < -0.01 return -sigmoid.
+         if speed > 0.001 return sigmoid.
+         else if speed < -0.001 return -sigmoid.
          else return 0.
       }
    }
+
+   declare function actuateControls {
+      set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
+      set ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
+      set ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone).
+   }
+
    declare function steeringVector {
       if not(hastarget) return ship:prograde.
       else if (hastarget and not(target:istype("DockingPort"))) {
@@ -114,11 +111,6 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set speedFore     to vel*port:portfacing:forevector.
       set nullZone to dist:mag/10.
       set speedLimit to sqrt(dist:mag)/10.
-   }
-   declare function actuateControls {
-      set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
-      set ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
-      set ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone).
    }
 
 

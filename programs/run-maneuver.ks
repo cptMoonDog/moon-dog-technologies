@@ -29,7 +29,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set kernel_ctl["output"] to
          "Configures the ship for the next maneuver (Read as: Stages until [ENGINE-NAME] is active)"
          +char(10)+"   and executes it."
-         +char(10)+"   Usage: add-program run-maneuver [ENGINE-NAME]".
+         +char(10)+"   Usage: add run-maneuver [ENGINE-NAME]".
       return.
    }
 

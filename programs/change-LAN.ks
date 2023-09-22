@@ -24,7 +24,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Changes the Longitude of the Ascending Node (LAN/RAAN)."
-         +char(10)+"Usage: add-program change-LAN [ENGINE-NAME] [NEW-LONGITUDE]".
+         +char(10)+"Usage: add change-LAN [ENGINE-NAME] [NEW-LONGITUDE]".
       return.
    }
 

@@ -18,7 +18,7 @@ SYS_CMDS_HELP:add("programs", char(10)+
    "   There are two distinct systems in MDTech, for the other see 'help missions'."+char(10)+
    "   The heart and soul of MDTech, is a kernel executing a 'MISSION_PLAN'."+char(10)+
    "   The 'MISSION_PLAN' is simply a list populated with routines to be run in order."+char(10)+
-   "   When you run the command 'add-program' the routines defined for that program"+char(10)+
+   "   When you run the command 'add the routines defined for that program"+char(10)+
    "   are added to the 'MISSION_PLAN'.  "+char(10)+
    "   The command 'engage' will begin execution of the 'MISSION_PLAN'"+char(10)+
    +char(10)+
@@ -219,14 +219,14 @@ SYS_CMDS:add("change-callsign", {
 }).
 
 // Program specific commands
-SYS_CMDS_HELP:add("add-program",
+SYS_CMDS_HELP:add("add",
    char(10)+
    "Adds the given program to the Mission Plan."+char(10)+
-   "   Usage: add-program [Program Name] [Program Parameters...]"
+   "   Usage: add [Program Name] [Program Parameters...]"
 ).
-SYS_CMDS:add("add-program", {
+SYS_CMDS:add("add", {
    declare parameter cmd.
-   if cmd:startswith("add-program") {
+   if cmd:startswith("add") {
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 and exists("0:/programs/"+splitCmd[1]+".ks") {
          kernel_ctl["import-lib"]("programs/"+splitCmd[1]).
@@ -235,7 +235,7 @@ SYS_CMDS:add("add-program", {
          return "finished".
       }
       if kernel_ctl["availablePrograms"]:haskey(splitCmd[1]) {
-         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add-program":length+splitCmd[1]:length+1):trim).
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add":length+splitCmd[1]:length+1):trim).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable to initialize, check arguments.".
          return "finished".                                                                                                                                      
       } else {
@@ -245,14 +245,14 @@ SYS_CMDS:add("add-program", {
    }                                                                               
 }).
 
-SYS_CMDS_HELP:add("remove-program",
+SYS_CMDS_HELP:add("remove",
    char(10)+
    "Removes the given program from the Mission Plan."+char(10)+
-   "   Usage: remove-program [Program ID] | [Mission Plan index number]"
+   "   Usage: remove [Program ID] | [Mission Plan index number]"
 ).
-SYS_CMDS:add("remove-program", {
+SYS_CMDS:add("remove", {
    declare parameter cmd.
-   if cmd:startswith("remove-program") {
+   if cmd:startswith("remove") {
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 {
          if splitCmd[1]:tonumber(-1) > -1 { // index number
@@ -296,15 +296,6 @@ SYS_CMDS:add("set", {
    return "finished".
 }).
 
-SYS_CMDS:add("test-countdown", {
-   declare parameter cmd.
-   if cmd:startswith("test-countdown") {
-      local splitCmd is cmd:split(" ").
-      if splitCmd:length > 1 set kernel_ctl["countdown"] to splitCmd[1].
-      else set kernel_ctl["countdown"] to "test".
-      return "finished".
-   }
-}).
 //SYS_CMDS:add("draw-vector", {
 //   declare parameter cmd.
 //   if cmd:startswith("draw-vector") {

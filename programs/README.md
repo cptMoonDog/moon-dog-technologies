@@ -47,7 +47,7 @@ A well behaved program file will look something like this:
        } else {
           set kernel_ctl["output"] to
              "Docks with the given target port"
-             +char(10)+"Usage: add-program docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
+             +char(10)+"Usage: add docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
           return.
        }
     

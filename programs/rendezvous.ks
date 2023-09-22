@@ -31,7 +31,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Creates a rendezvous with a ship or object in a coplanar orbit."
-         +char(10)+"Usage: add-program rendezvous [ENGINE-NAME] [TARGET]".
+         +char(10)+"Usage: add rendezvous [ENGINE-NAME] [TARGET]".
       return.
    }
 

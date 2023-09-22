@@ -29,7 +29,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Executes a maneuver to circularize at the given point."
-         +char(10)+"   Usage: add-program circularize [ENGINE-NAME] ap | pe".
+         +char(10)+"   Usage: add circularize [ENGINE-NAME] ap | pe".
       return.
    }
 
