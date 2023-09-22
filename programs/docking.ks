@@ -20,7 +20,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local tgtPort is "".
    local localPort is "".
 
-   if argv:split(" "):length > 1 {
+   if argv:split(":"):length > 1 {
       if argv:split(char(34)):length > 1 { //char(34) is quotation mark
          set tgtPort to argv:split(char(34))[1]. // Quoted first parameter
          set tgtPort to tgtPort + ":"+argv:split(":")[1]:split(" ")[0].
@@ -29,46 +29,18 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set kernel_ctl["output"] to "target: "+ tgtPort.
    } else {
       set kernel_ctl["output"] to
-         "Docks with the given target port"
+         "Docks with the given target port. Requires the target port to be named."
          +char(10)+"Usage: add-program docking [TARGET]:[PORT] [LOCAL PORT (Optional)]".
       return.
    }
 
 //======== Local Variables =====
-   declare function getControlInputForAxis {
-      parameter offset, speed, setpoint, nullZone.
-      local speedLimit is 0.5.
-      // If not in nullZone
-      if offset < setpoint - nullZone or setpoint + nullZone < offset{
-         local error is abs(offset-setpoint).
-         local sigmoid is error/sqrt(1+error^2). 
-         // Accelerate toward nullZone.
-         if offset > setpoint and speed > -speedLimit {
-            return sigmoid.
-         } else if offset < setpoint and speed < speedLimit {
-            return -sigmoid.
-         } else return 0.
-      } else { // Else null your rates.
-         local pvar is 3*speed.
-         local sigmoid is abs(pvar)/sqrt(1+abs(pvar)^2).
-         if speed > 0.04 return sigmoid.
-         else if speed < -0.04 return -sigmoid.
-         else return 0.
-      }
-   }
-   declare function steeringVector {
-      if not(hastarget) return ship:prograde.
-      else if (hastarget and not(target:istype("DockingPort"))) {
-         return target:position.
-      } else return target:portfacing:vector:normalized*-1.
-   }
-
    local port is ship:dockingports[0].
    local standOffFore is 100. // Don't approach closer than 100m until aligned.
    local standOffVert is 0.
    local standOffLateral is 0.
    local nullZone is 0.5.
-   local approachSpeed is 10.
+   //local approachSpeed is 10.
 
    local dist is (port:position).
 
@@ -82,8 +54,37 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local speedLateral is vel*port:portfacing:starvector.
    local speedFore is vel*port:portfacing:forevector.
 
-   local safeDistance is 25.
+   local safeDistance is 0.
    
+   local speedLimit is 0.
+
+   declare function getControlInputForAxis {
+      parameter offset, speed, setpoint, nullZone.
+      // If not in nullZone
+      if offset < setpoint - nullZone or setpoint + nullZone < offset{
+         local error is abs(offset-setpoint).
+         local sigmoid is error/sqrt(1+error^2). 
+         // Accelerate toward nullZone.
+         if offset > setpoint and speed > -speedLimit {
+            return sigmoid.
+         } else if offset < setpoint and speed < speedLimit {
+            return -sigmoid.
+         } else return 0.
+      } else { // Else null your rates.
+         local pvar is 3*speed.
+         local sigmoid is abs(pvar)/sqrt(1+abs(pvar)^2).
+         if speed > 0.01 return sigmoid.
+         else if speed < -0.01 return -sigmoid.
+         else return 0.
+      }
+   }
+   declare function steeringVector {
+      if not(hastarget) return ship:prograde.
+      else if (hastarget and not(target:istype("DockingPort"))) {
+         return target:position.
+      } else return target:portfacing:vector:normalized*-1.
+   }
+
    declare function updateVectors {
       set dist          to (target:position - port:position).
 
@@ -111,6 +112,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set speedVert     to vel*port:portfacing:topvector.
       set speedLateral  to vel*port:portfacing:starvector.
       set speedFore     to vel*port:portfacing:forevector.
+      set nullZone to dist:mag/10.
+      set speedLimit to sqrt(dist:mag)/10.
    }
    declare function actuateControls {
       set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
@@ -155,22 +158,10 @@ kernel_ctl["availablePrograms"]:add(programName, {
          wait 0.
          updateVectors().
       } else updateVectors().
-         //local vess is vessel(tgtPort:split(":")[0]).
-         //for p in vess:dockingports {
-            //if p:tag = tgtPort:split(":")[1] {
-               //set target to p.
-               //wait 0.
-               //break.
-            //}
-         //}
-         //if not(hastarget) or (hastarget and not(target:istype("DockingPort"))) {
-            //print "Select docking port." at(0, 3).
-            //return OP_CONTINUE.
-         //}
-      //} 
-      // Wait until port is aligned with target port.
-      //if vang(port:portfacing:forevector, target:portfacing:vector:normalized*-1) > 0.5 return OP_CONTINUE.
-     // else
+      // Double the combined size of the longest parts of the bounding boxes of both vessels + 1 for good measure.
+      set safeDistance to abs(
+         (target:ship:bounds:relmin + target:ship:bounds:relmax):mag +
+         (ship:bounds:relmin + ship:bounds:relmax):mag)*2 + 1.
       if not RCS {
          RCS on.
          return OP_FINISHED.
@@ -182,6 +173,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
       // If target disappears that means docking was successful.
       if not(hastarget) {
          RCS off.
+         unlock steering.
+         wait 0.
          return OP_FINISHED.
       }
 
@@ -191,8 +184,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
          (offsetLateral > -nullZone and offsetLateral < nullZone) and // Horizontally aligned
          standOffFore > 1 and standOffFore > max(0, offsetFore - 1) {
 
-         if speedFore < (offsetFore/safeDistance)*approachSpeed {
-            set standOffFore to standOffFore - 1. // Reduce standoff distance.
+         if speedFore < (offsetFore/safeDistance)*speedLimit {
+            set standOffFore to max(0, standOffFore - 1). // Reduce standoff distance.
          } 
       } else { 
          // Parallel to target port, but target port is behind us.  Navigate in box shape around target vessel.
@@ -201,18 +194,15 @@ kernel_ctl["availablePrograms"]:add(programName, {
             set standOffVert to (offsetVert/abs(offsetVert))*safeDistance.
             set standOffLateral to (offsetLateral/abs(offsetLateral))*safeDistance.
             set standOffFore to (offsetFore/abs(offsetFore))*safeDistance.
-            set nullZone to 5. // Relax nullZone, because do not need precision when far from target.
          }
          // We are at a "safedistance" in at least one direction normal to the port.  Reset forward standoff to positive number.
-         if abs(offsetVert) > safeDistance-5 or abs(offsetLateral) > safeDistance-5 {
+         if abs(offsetVert) > safeDistance-1 or abs(offsetLateral) > safeDistance-1 {
             set standOffFore to safeDistance.
-            set nullZone to 0.5.
          }
          // We are at a "safedistance" in the forward direction.  Move into alignment with target port.
-         if offsetFore > safeDistance-5 {
+         if offsetFore > safeDistance-1 {
             set standOffVert to 0.
             set standOffLateral to 0.
-            set nullZone to 0.5.
          }
       }
       
