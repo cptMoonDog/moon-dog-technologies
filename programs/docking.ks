@@ -51,21 +51,17 @@ kernel_ctl["availablePrograms"]:add(programName, {
    declare function getControlInputForAxis {
       parameter offset, speed, setpoint, nullZone.
       // If not in nullZone
-      if offset < setpoint - nullZone or setpoint + nullZone < offset{
-         local error is abs(offset-setpoint).
-         local sigmoid is error/sqrt(1+error^2). 
+      if offset < setpoint - nullZone or offset > setpoint + nullZone {
          // Accelerate toward nullZone.
          if offset > setpoint and speed > -speedLimit {
-            return sigmoid.
+            return +max(1, abs(offset/nullZone)).
          } else if offset < setpoint and speed < speedLimit {
-            return -sigmoid.
+            return -max(1, abs(offset/nullZone)).
          } else return 0.
       } else { // Else null your rates.
-         local pvar is 3*speed.
-         local sigmoid is abs(pvar)/sqrt(1+abs(pvar)^2).
-         if speed > 0.001 return sigmoid.
-         else if speed < -0.001 return -sigmoid.
-         else return 0.
+         local error is speed.
+         local sigmoid is error/sqrt(1/(100*nullZone)+error^2).
+         return sigmoid.
       }
    }
 
@@ -133,6 +129,14 @@ kernel_ctl["availablePrograms"]:add(programName, {
       print "OffsetFore: "+round(offsetFore, 2)+"         " at(0, 16).
       print "OffsetVert: "+round(offsetVert, 2)+"         " at(0, 17).
       print "OffsetLateral: "+round(offsetLateral, 2)+"        " at(0, 18).
+
+      print "Control Fore: "+round(ship:control:fore, 2)+"         " at(0, 20).
+      print "Control Vert: "+round(ship:control:top, 2)+"         " at(0, 21).
+      print "Control Star: "+round(ship:control:starboard, 2)+"        " at(0, 22).
+
+      print "speedFore: "+round(speedFore, 2)+"            " at(0, 24).
+      print "speedvert: "+round(speedVert, 2)+"            " at(0, 25).
+      print "speedLateral: "+round(speedLateral, 2)+"            " at(0, 26).
    }
 
 
@@ -147,6 +151,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
    // Setup
    kernel_ctl["MissionPlanAdd"](programName, {
+      if not(hastarget) or not(target:istype("Vessel")) set target to tgtPort:split(":")[0].
+      wait 0.
       // Collect info about this vessel
       if ship:dockingports:length = 0 {
          print "No Docking ports on this vessel.".
@@ -166,11 +172,11 @@ kernel_ctl["availablePrograms"]:add(programName, {
          if port:state:contains("Docked") return OP_FAIL.
          port:controlfrom().
       }
-      if not(hastarget) {
-         set target to tgtPort:split(":")[0].
-         wait 0.
-         updateVectors().
-      } else updateVectors().
+      set dist to (target:position - port:position).
+      set vel to (target:velocity:orbit - ship:velocity:orbit).
+      set safeDistance to abs(
+         (target:bounds:relmin + target:bounds:relmax):mag +
+         (ship:bounds:relmin + ship:bounds:relmax):mag)*2 + 1.
       if dist:mag < safeDistance - nullZone {
          if vel:mag < 1 {
             RCS on.
@@ -184,6 +190,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          }
          return OP_CONTINUE.
       } else RCS off.
+      updateVectors().
       lock steering to steeringVector().
       if not RCS {
          RCS on.
@@ -202,7 +209,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
 
       updateVectors().
-      //debuggingOutput().
+      debuggingOutput().
       // If aligned with target port, and standoff distance is not negative (occupying same space as target) move closer.
       if (offsetVert    > -nullZone and offsetVert    < nullZone) and // Vertically aligned
          (offsetLateral > -nullZone and offsetLateral < nullZone) // Horizontally aligned
