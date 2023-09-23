@@ -44,7 +44,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local speedLateral is vel*port:portfacing:starvector.
    local speedFore is vel*port:portfacing:forevector.
 
-   local safeDistance is 0.
+   local safeDistance is 100.
    
    local speedLimit is 0.
 
@@ -92,18 +92,26 @@ kernel_ctl["availablePrograms"]:add(programName, {
       if target:istype("Vessel") {
          set vel to (target:velocity:orbit - ship:velocity:orbit).
          if dist:mag < 200 {
-            for p in target:dockingports {
+            if tgtPort:split(":"):length > 1 for p in target:dockingports {
                if p:tag = tgtPort:split(":")[1] {
                   set target to p.
                   wait 0.
                   break.
                }
             }
+            else if target:dockingPorts:length = 0 {
+               set kernel_ctl["output"] to "No docking ports on target".
+            }
+            else set target to target:dockingPorts[0].
             wait 0.
             set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
          }
-      } else {
+      } else if hastarget {
          set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
+         // Double the combined size of the longest parts of the bounding boxes of both vessels + 1 for good measure.
+         if hastarget set safeDistance to abs(
+            (target:ship:bounds:relmin + target:ship:bounds:relmax):mag +
+            (ship:bounds:relmin + ship:bounds:relmax):mag)*2 + 1.
       }
 
       set speedVert     to vel*port:portfacing:topvector.
@@ -111,6 +119,20 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set speedFore     to vel*port:portfacing:forevector.
       set nullZone to dist:mag/10.
       set speedLimit to sqrt(dist:mag)/10.
+
+   }
+
+   declare function debuggingOutput {
+      
+      print "standOffFore: "+round(standOffFore, 2)+"         " at(0, 10).
+      print "standOffVert: "+round(standOffVert, 2)+"         " at(0, 11).
+      print "standOffLateral: "+round(standOffLateral, 2)+"        " at(0, 12).
+
+      print "nullZone: "+round(nullZone, 2)+"           " at(0, 14).
+
+      print "OffsetFore: "+round(offsetFore, 2)+"         " at(0, 16).
+      print "OffsetVert: "+round(offsetVert, 2)+"         " at(0, 17).
+      print "OffsetLateral: "+round(offsetLateral, 2)+"        " at(0, 18).
    }
 
 
@@ -125,7 +147,6 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
    // Setup
    kernel_ctl["MissionPlanAdd"](programName, {
-      lock steering to steeringVector.
       // Collect info about this vessel
       if ship:dockingports:length = 0 {
          print "No Docking ports on this vessel.".
@@ -150,10 +171,20 @@ kernel_ctl["availablePrograms"]:add(programName, {
          wait 0.
          updateVectors().
       } else updateVectors().
-      // Double the combined size of the longest parts of the bounding boxes of both vessels + 1 for good measure.
-      set safeDistance to abs(
-         (target:ship:bounds:relmin + target:ship:bounds:relmax):mag +
-         (ship:bounds:relmin + ship:bounds:relmax):mag)*2 + 1.
+      if dist:mag < safeDistance - nullZone {
+         if vel:mag < 1 {
+            RCS on.
+            set ship:control:fore to -target:position*ship:facing:forevector/target:position:mag.
+            set ship:control:top to -target:position*ship:facing:topvector/target:position:mag.
+            set ship:control:starboard to -target:position*ship:facing:starvector/target:position:mag.
+         } else {
+            set ship:control:fore to 0.
+            set ship:control:top to 0.
+            set ship:control:starboard to 0.
+         }
+         return OP_CONTINUE.
+      } else RCS off.
+      lock steering to steeringVector().
       if not RCS {
          RCS on.
          return OP_FINISHED.
@@ -171,36 +202,41 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
 
       updateVectors().
+      //debuggingOutput().
       // If aligned with target port, and standoff distance is not negative (occupying same space as target) move closer.
       if (offsetVert    > -nullZone and offsetVert    < nullZone) and // Vertically aligned
-         (offsetLateral > -nullZone and offsetLateral < nullZone) and // Horizontally aligned
-         standOffFore > 1 and standOffFore > max(0, offsetFore - 1) {
+         (offsetLateral > -nullZone and offsetLateral < nullZone) // Horizontally aligned
+         {
+         //standOffFore > 1 and standOffFore > max(0, offsetFore - 1) {
 
          if speedFore < (offsetFore/safeDistance)*speedLimit {
             set standOffFore to max(0, standOffFore - 1). // Reduce standoff distance.
          } 
+         actuateControls().
+         wait 0.
+         return OP_CONTINUE.
       } else { 
-         // Parallel to target port, but target port is behind us.  Navigate in box shape around target vessel.
-         if offsetFore < 0 { // 
-            // Move off to a safe distance, in the same direction as all current offsets (away).
-            set standOffVert to (offsetVert/abs(offsetVert))*safeDistance.
-            set standOffLateral to (offsetLateral/abs(offsetLateral))*safeDistance.
-            set standOffFore to (offsetFore/abs(offsetFore))*safeDistance.
-         }
-         // We are at a "safedistance" in at least one direction normal to the port.  Reset forward standoff to positive number.
-         if abs(offsetVert) > safeDistance-1 or abs(offsetLateral) > safeDistance-1 {
-            set standOffFore to safeDistance.
-         }
+         if offsetFore > safeDistance - nullZone {
          // We are at a "safedistance" in the forward direction.  Move into alignment with target port.
-         if offsetFore > safeDistance-1 {
             set standOffVert to 0.
             set standOffLateral to 0.
+         } else if abs(offsetVert) > safeDistance - nullZone or abs(offsetLateral) > safeDistance - nullZone {
+         // We are at a "safedistance" in at least one direction normal to the port.  Reset forward standoff to positive number.
+            set standOffFore to safeDistance.
+         } else if offsetFore < 0 { // 
+         // Parallel to target port, but target port is behind us.  Navigate in box shape around target vessel.
+            // Move Straight back to a safe distance, then move diagonally.
+            set standOffFore to (offsetFore/abs(offsetFore))*safeDistance.
+            if abs(offsetFore) > safeDistance - nullZone {
+               set standOffVert to (offsetVert/abs(offsetVert))*safeDistance.
+               set standOffLateral to (offsetLateral/abs(offsetLateral))*safeDistance.
+            }
          }
+         actuateControls().
+         wait 0.
+         return OP_CONTINUE.
       }
       
-      actuateControls().
-      wait 0.
-      return OP_CONTINUE.
    }).
 //========== End program sequence ===============================
 
