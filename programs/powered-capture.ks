@@ -28,7 +28,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Sets up a powered capture maneuver, waits until vehicle is inside of the target body's SOI."
-         +char(10)+"Usage: add powered-capture [ENGINE-NAME] [TARGET]".
+         +char(10)+"Usage: Q powered-capture [ENGINE-NAME] [TARGET]".
       return.
    }
 

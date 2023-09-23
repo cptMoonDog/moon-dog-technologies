@@ -31,7 +31,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Sets up a Hohmann transfer to a body in orbit of the same origin body as the current vessel."
-         +char(10)+"Usage: add lko-to-moon [ENGINE-NAME] [TARGET]".
+         +char(10)+"Usage: Q lko-to-moon [ENGINE-NAME] [TARGET]".
       return.
    }
 

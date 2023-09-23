@@ -18,7 +18,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       if timeLength = -1 {
          set kernel_ctl["output"] to
             "Adds a simple countdown to the MissonPlan. Defaults to 10 seconds."
-            +char(10)+"Usage: add countdown [LENGTH SECONDS (Optional)]".
+            +char(10)+"Usage: Q countdown [LENGTH SECONDS (Optional)]".
          return.
       }
    } else {

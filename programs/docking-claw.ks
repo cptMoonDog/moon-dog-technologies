@@ -29,7 +29,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Attempts to capture with the claw, the part on the target vessel that has the given tag."
-         +char(10)+"Usage: add docking [TARGET]:[TAG] [LOCAL CLAW (Optional)]".
+         +char(10)+"Usage: Q docking [TARGET]:[TAG] [LOCAL CLAW (Optional)]".
       return.
    }
 

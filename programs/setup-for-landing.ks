@@ -37,7 +37,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Creates and executes a maneuver to match an orbit which overflys a given position on the surface."
-         +char(10)+"Usage: add setup-for-landing [ENGINE-NAME] [LAT]:[LON]".
+         +char(10)+"Usage: Q setup-for-landing [ENGINE-NAME] [LAT]:[LON]".
       return.
    }
 

@@ -30,7 +30,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Executes a maneuver to raise or lower  ap or pe."
-         +char(10)+"   Usage: add change-apsis [ENGINE-NAME] ap | pe [ALTITUDE]".
+         +char(10)+"   Usage: Q change-apsis [ENGINE-NAME] ap | pe [ALTITUDE]".
       return.
    }
 

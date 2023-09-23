@@ -219,14 +219,19 @@ SYS_CMDS:add("change-callsign", {
 }).
 
 // Program specific commands
-SYS_CMDS_HELP:add("add",
+SYS_CMDS_HELP:add("Q",
    char(10)+
-   "Adds the given program to the Mission Plan."+char(10)+
-   "   Usage: add [Program Name] [Program Parameters...]"
+   "Queues the given program in the Mission Plan."+char(10)+
+   "   Usage: Q [Program Name] [Program Parameters...]"
 ).
-SYS_CMDS:add("add", {
+SYS_CMDS:add("add-program", {
    declare parameter cmd.
-   if cmd:startswith("add") {
+   set kernel_ctl["output"] to "'add-program' has been renamed to 'Q'.".
+   return "finished".
+}).
+SYS_CMDS:add("Q", {
+   declare parameter cmd.
+   if cmd:startswith("Q") {
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 and exists("0:/programs/"+splitCmd[1]+".ks") {
          kernel_ctl["import-lib"]("programs/"+splitCmd[1]).
@@ -235,7 +240,7 @@ SYS_CMDS:add("add", {
          return "finished".
       }
       if kernel_ctl["availablePrograms"]:haskey(splitCmd[1]) {
-         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add":length+splitCmd[1]:length+1):trim).
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "Q":length+splitCmd[1]:length+1):trim).
          if retVal = OP_FAIL set kernel_ctl["output"] to "Unable to initialize, check arguments.".
          return "finished".                                                                                                                                      
       } else {
