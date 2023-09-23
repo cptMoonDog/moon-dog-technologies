@@ -24,7 +24,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Initiates warp until the next encounter with [TARGET BODY]"
-         +char(10)+"   Usage: add-program warp-to-soi [TARGET BODY]".
+         +char(10)+"   Usage: Q warp-to-soi [TARGET BODY]".
       return.
    }
 //======== Local Variables =====

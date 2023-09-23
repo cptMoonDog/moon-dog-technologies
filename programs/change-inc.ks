@@ -27,7 +27,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    } else {
       set kernel_ctl["output"] to
          "Changes orbit inclination at the next AN or DN."
-         +char(10)+"Usage: add-program change-inc [ENGINE-NAME] [NEW-INCLINATION]".
+         +char(10)+"Usage: Q change-inc [ENGINE-NAME] [NEW-INCLINATION]".
       return.
    }
 

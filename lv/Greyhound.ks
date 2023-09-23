@@ -124,7 +124,7 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
 
    // These assume certain parts have been added to action groups
    // Activate AG1 at 60km (Jettison fairing)
-   launch_param:add("AG1", 60000).
+   launch_param:add("AG1", 45000).
    // Activate AG2 at 65km (Activate solar panels and antennas)
    launch_param:add("AG2", 65000).
    // Force MECO Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
