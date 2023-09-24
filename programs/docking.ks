@@ -49,26 +49,29 @@ kernel_ctl["availablePrograms"]:add(programName, {
    local speedLimit is 0.
 
    declare function getControlInputForAxis {
-      parameter offset, speed, setpoint, nullZone.
+      parameter offset, speed, setpoint, nullZone, sensitivity.
       // If not in nullZone
-      if offset < setpoint - nullZone or offset > setpoint + nullZone {
+      if offset < setpoint - max(0.05, nullZone) or offset > setpoint + max(0.05, nullZone) {
          // Accelerate toward nullZone.
          if offset > setpoint and speed > -speedLimit {
-            return +max(1, abs(offset/nullZone)).
+            return +max(1, (abs(offset)-nullZone)/sqrt(nullZone+(abs(offset) - nullZone)^2)).
          } else if offset < setpoint and speed < speedLimit {
-            return -max(1, abs(offset/nullZone)).
+            return -max(1, (abs(offset)-nullZone)/sqrt(nullZone+(abs(offset) - nullZone)^2)).
          } else return 0.
       } else { // Else null your rates.
+         local sigmoid is 0.
          local error is speed.
-         local sigmoid is error/sqrt(1/(100*nullZone)+error^2).
+         local tuningFactor is 1/sensitivity.
+         local scale is abs(nullZone/(offset - setpoint))*tuningFactor.
+         set sigmoid to error/sqrt(scale+error^2).
          return sigmoid.
       }
    }
 
    declare function actuateControls {
-      set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone).
-      set ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone).
-      set ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone).
+      set ship:control:fore      to getControlInputForAxis(offsetFore, speedFore, standOffFore, nullZone, 15).
+      set ship:control:top       to getControlInputForAxis(offsetVert, speedVert, standOffVert, nullZone, 40).
+      set ship:control:starboard to getControlInputForAxis(offsetLateral, speedLateral, standOffLateral, nullZone, 20).
    }
 
    declare function steeringVector {
@@ -104,6 +107,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          }
       } else if hastarget {
          set vel to (target:ship:velocity:orbit - ship:velocity:orbit).
+         wait 0.
          // Double the combined size of the longest parts of the bounding boxes of both vessels + 1 for good measure.
          if hastarget set safeDistance to abs(
             (target:ship:bounds:relmin + target:ship:bounds:relmax):mag +
@@ -120,19 +124,19 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
    declare function debuggingOutput {
       
-      print "standOffFore: "+round(standOffFore, 2)+"         " at(0, 10).
-      print "standOffVert: "+round(standOffVert, 2)+"         " at(0, 11).
-      print "standOffLateral: "+round(standOffLateral, 2)+"        " at(0, 12).
+      print "nullZone: "+round(nullZone, 2)+"           " at(0, 10).
 
-      print "nullZone: "+round(nullZone, 2)+"           " at(0, 14).
+      print "Control Fore: "+round(ship:control:fore, 2)+"         " at(0, 12).
+      print "Control Vert: "+round(ship:control:top, 2)+"         " at(0, 13).
+      print "Control Star: "+round(ship:control:starboard, 2)+"        " at(0, 14).
 
-      print "OffsetFore: "+round(offsetFore, 2)+"         " at(0, 16).
-      print "OffsetVert: "+round(offsetVert, 2)+"         " at(0, 17).
-      print "OffsetLateral: "+round(offsetLateral, 2)+"        " at(0, 18).
+      print "standOffFore: "+round(standOffFore, 2)+"         " at(0, 16).
+      print "standOffVert: "+round(standOffVert, 2)+"         " at(0, 17).
+      print "standOffLateral: "+round(standOffLateral, 2)+"        " at(0, 18).
 
-      print "Control Fore: "+round(ship:control:fore, 2)+"         " at(0, 20).
-      print "Control Vert: "+round(ship:control:top, 2)+"         " at(0, 21).
-      print "Control Star: "+round(ship:control:starboard, 2)+"        " at(0, 22).
+      print "OffsetFore: "+round(offsetFore, 2)+"         " at(0, 20).
+      print "OffsetVert: "+round(offsetVert, 2)+"         " at(0, 21).
+      print "OffsetLateral: "+round(offsetLateral, 2)+"        " at(0, 22).
 
       print "speedFore: "+round(speedFore, 2)+"            " at(0, 24).
       print "speedvert: "+round(speedVert, 2)+"            " at(0, 25).
