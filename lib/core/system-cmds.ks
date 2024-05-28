@@ -18,9 +18,9 @@ SYS_CMDS_HELP:add("programs", char(10)+
    "   There are two distinct systems in MDTech, for the other see 'help missions'."+char(10)+
    "   The heart and soul of MDTech, is a kernel executing a 'MISSION_PLAN'."+char(10)+
    "   The 'MISSION_PLAN' is simply a list populated with routines to be run in order."+char(10)+
-   "   When you run the command 'add the routines defined for that program"+char(10)+
+   "   When you run the command 'Q' the routines defined for that program"+char(10)+
    "   are added to the 'MISSION_PLAN'.  "+char(10)+
-   "   The command 'engage' will begin execution of the 'MISSION_PLAN'"+char(10)+
+   "   The command 'start' will begin execution of the 'MISSION_PLAN'"+char(10)+
    +char(10)+
    "   For more information about defining your own programs"+char(10)+
    "   See the examples in '0:/programs'"+char(10)+
@@ -47,6 +47,7 @@ SYS_CMDS_HELP:add("help", char(10)+
    "   help --list-commands : For a list of system commands."+char(10)+
    "   help --list-programs : For a list of runnable programs."+char(10)+
    "   help --list-vars : For a list of displayable environment variables."+char(10)+
+   "   help --list-lv : For a list of configured launch vehicles."+char(10)+
    "   Try:"+char(10)+
    "      help [Program Name]"+char(10)+
    "          or "+char(10)+
@@ -70,6 +71,13 @@ SYS_CMDS:add("help", {
          } else if topic = "--list-programs" {                                                                              //programs
             local temp is char(10)+"Programs:"+char(10).
             local avail is open("0:/programs").  
+            for token in avail:lex():keys {
+               if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
+            }
+            set kernel_ctl["output"] to temp.
+         } else if topic = "--list-lv" {                                                                              //Launch Vehicles
+            local temp is char(10)+"Configured Launch Vehicles:"+char(10).
+            local avail is open("0:/lv").  
             for token in avail:lex():keys {
                if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
             }
@@ -219,15 +227,39 @@ SYS_CMDS:add("change-callsign", {
 }).
 
 // Program specific commands
+SYS_CMDS_HELP:add("add-program",
+   char(10)+
+   "Depreciated.  See Q or add"
+).
+SYS_CMDS_HELP:add("add",
+   char(10)+
+   "Queues the given program in the Mission Plan."+char(10)+
+   "   Usage: add [Program Name] [Program Parameters...]"
+).
 SYS_CMDS_HELP:add("Q",
    char(10)+
    "Queues the given program in the Mission Plan."+char(10)+
    "   Usage: Q [Program Name] [Program Parameters...]"
 ).
-SYS_CMDS:add("add-program", {
+SYS_CMDS:add("add", {
    declare parameter cmd.
-   set kernel_ctl["output"] to "'add-program' has been renamed to 'Q'.".
-   return "finished".
+   if cmd:startswith("add") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd:length > 1 and exists("0:/programs/"+splitCmd[1]+".ks") {
+         kernel_ctl["import-lib"]("programs/"+splitCmd[1]).
+      } else {
+         set kernel_ctl["output"] to "Program does not exist".
+         return "finished".
+      }
+      if kernel_ctl["availablePrograms"]:haskey(splitCmd[1]) {
+         local retVal is kernel_ctl["availablePrograms"][splitCmd[1]](cmd:remove(0, "add":length+splitCmd[1]:length+1):trim).
+         if retVal = OP_FAIL set kernel_ctl["output"] to "Unable to initialize, check arguments.".
+         return "finished".                                                                                                                                      
+      } else {
+         set kernel_ctl["output"] to "Program does not exist in the lexicon".
+         return "finished".
+      }
+   }                                                                               
 }).
 SYS_CMDS:add("Q", {
    declare parameter cmd.

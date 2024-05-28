@@ -6,35 +6,44 @@ if ship:status = "PRELAUNCH" {
    local data is list().
    local payloadData is "".
    runoncepath("0:/lib/core/kernel.ks").
-   if core:tag:endswith(".launch") and exists("0:/launch.conf/"+core:tag) {  // Parameters are in this file.
-      local f is open("0:/launch.conf/"+core:tag).
-      local i is f:readall:iterator.
-      i:next.
-      until i:atend {
-         if i:value:tostring:trim:tolower:startswith("//launch") {
-            i:next.
-            set data to i:value:tostring:split(",").
-         } else if i:value:tostring:trim:tolower:startswith("//payload") { // Also contains parameters we are going to pass off to the payload script.
-            i:next.
-            set payloadData to i:value.
-         } else i:next.
-      }
-      if payloadData {
-         deletepath("1:/boot/lv.ks").
-         compile "0:/boot/payload.ks" to "1:/boot/payload.ksm".
-         set core:bootfilename to "/boot/payload.ksm".
-         if exists("0:/missions/"+payloadData:split(":")[1]:split(",")[0]:trim+".ks") {
-            local mission is payloadData:split(":")[1]:split(",")[0]:trim.
-            compile "0:/missions/"+mission+".ks" to "1:/boot/"+mission+".ksm".
-            // Allow the mission to complete prelaunch configurations.
-            // If it misbehaves, that's on the designer.
-            runoncepath("1:/boot/"+mission+".ksm").
+   if core:tag:endswith(".launch") or not core:tag {  // Parameters are in this file.
+      local confFile is "0:/launch.conf/current.launch".
+      if core:tag {
+         set confFile to "0:/launch.conf/"+core:tag.
+      } else set confFile to "0:/launch.conf/current.launch".
+      if exists(confFile) {
+         local f is open(confFile).
+         local i is f:readall:iterator.
+         i:next.
+         until i:atend {
+            if i:value:tostring:trim:tolower:startswith("//launch") {
+               i:next.
+               set data to i:value:tostring:split(",").
+            } else if i:value:tostring:trim:tolower:startswith("//payload") { // Also contains parameters we are going to pass off to the payload script.
+               i:next.
+               set payloadData to i:value.
+            } else i:next.
          }
+         if payloadData {
+            deletepath("1:/boot/lv.ks").
+            compile "0:/boot/payload.ks" to "1:/boot/payload.ksm".
+            set core:bootfilename to "/boot/payload.ksm".
+            if exists("0:/missions/"+payloadData:split(":")[1]:split(",")[0]:trim+".ks") {
+               local mission is payloadData:split(":")[1]:split(",")[0]:trim.
+               compile "0:/missions/"+mission+".ks" to "1:/boot/"+mission+".ksm".
+               // Allow the mission to complete prelaunch configurations.
+               // If it misbehaves, that's on the designer.
+               runoncepath("1:/boot/"+mission+".ksm").
+            }
+         }
+      } else {
+         print "No Launch configuration Specified!".
+         shutdown.
       }
    } else if core:tag {
       set data to core:tag:split(","). // Parameters are in the core:tag
    } else {
-      print "No Launch Vehicle Specified!".
+      print "No Launch configuration Specified!".
       shutdown.
    }
 

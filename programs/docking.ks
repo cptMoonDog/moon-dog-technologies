@@ -117,8 +117,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set speedVert     to vel*port:portfacing:topvector.
       set speedLateral  to vel*port:portfacing:starvector.
       set speedFore     to vel*port:portfacing:forevector.
-      set nullZone to dist:mag/10.
-      set speedLimit to sqrt(dist:mag)/10.
+      set nullZone to min(dist:mag/10, 1).
+      set speedLimit to sqrt(dist:mag)/15.
 
    }
 
