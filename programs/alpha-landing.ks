@@ -148,44 +148,52 @@ kernel_ctl["availablePrograms"]:add(programName, {
          local ttZeroH is ship:groundspeed/(ship:maxthrust/ship:mass). 
          local vertAccel is -(ship:body:mu/((ship:altitude+ship:body:radius)^2)). //negative is down.
          local ttImpact is (-ship:verticalspeed - sqrt(max(0, ship:verticalspeed^2 - 2*alt:radar*vertAccel)))/(vertAccel).
+         local ttTarget is tgt:position*ship:srfprograde:forevector/ship:groundspeed.
          clearscreen.
          print "ttzh: "+ttZeroH at(0, 10).
          print "tti: "+ttImpact at(0, 11).
-         lock steering to vxcl(vcrs(steerHeadingDirection:forevector, up:forevector), ship:srfretrograde:forevector). //ship:retrograde.
-         lock throttle to 0.
-         if ship:altitude-spot:terrainheight > 100 and ship:altitude < 50000 {
-            local pitchLimit is vang(up:forevector, ship:srfretrograde:forevector).
-            local ttZeroV is max(0, ship:verticalspeed/(ship:body:mu/((ship:altitude+ship:body:radius)^2)-ship:maxthrust/ship:mass)). //Assuming full thrust straight up.
-            local ttZeroSrf is ship:velocity:surface:mag/(ship:maxthrust/ship:mass).
-            local pitchMin is min(pitchLimit, (-ship:verticalspeed/ship:velocity:surface:mag)*90).
-            if ttImpact-8 < ttZeroV set pitchangle to max(pitchMin, pitchangle-0.5).
-            else set pitchangle to min(pitchLimit, pitchangle+0.5).
-            print "ttzv: "+ttzeroV at(0, 12).
-            print "ttz: "+ttzeroSrf at(0, 13).
-            print "pitch: "+pitchangle at(0, 14).
-            print "pitchLimit: "+pitchLimit at(0, 15).
-            print "pitchMin: "+pitchMin at(0, 16).
-            print "terrain height: "+ship:geoposition:terrainheight at(0, 17).
-            print "spot height: "+spot:terrainheight at(0,18).
+         lock targetVSpeed to -alt:radar*ship:groundspeed/(tgt:position*ship:srfprograde:forevector). //
+         print "targetVSpeed: "+targetVspeed at(0, 12).
+         lock steering to ship:srfretrograde:forevector*angleAxis(max(-1, min(0, ((abs(ship:verticalspeed)-abs(targetVSpeed))/targetVSpeed)))*90, ship:srfretrograde:starVector).
+         //local throttMargin is 0.1.
+         if ttTarget < ttZeroH lock throttle to max((ship:verticalspeed^2)/(ship:altitude), ttZeroH/ttTarget).
+         else lock throttle to 0.
+         return OP_CONTINUE.
+         //lock steering to vxcl(vcrs(steerHeadingDirection:forevector, up:forevector), ship:srfretrograde:forevector). //ship:retrograde.
+         //lock throttle to 0.
+         //if ship:altitude-spot:terrainheight > 100 and ship:altitude < 50000 {
+         //   local pitchLimit is vang(up:forevector, ship:srfretrograde:forevector).
+         //   local ttZeroV is max(0, ship:verticalspeed/(ship:body:mu/((ship:altitude+ship:body:radius)^2)-ship:maxthrust/ship:mass)). //Assuming full thrust straight up.
+         //   local ttZeroSrf is ship:velocity:surface:mag/(ship:maxthrust/ship:mass).
+         //   local pitchMin is min(pitchLimit, (-ship:verticalspeed/ship:velocity:surface:mag)*90).
+         //   if ttImpact-8 < ttZeroV set pitchangle to max(pitchMin, pitchangle-0.5).
+         //   else set pitchangle to min(pitchLimit, pitchangle+0.5).
+         //   print "ttzv: "+ttzeroV at(0, 12).
+         //   print "ttz: "+ttzeroSrf at(0, 13).
+         //   print "pitch: "+pitchangle at(0, 14).
+         //   print "pitchLimit: "+pitchLimit at(0, 15).
+         //   print "pitchMin: "+pitchMin at(0, 16).
+         //   print "terrain height: "+ship:geoposition:terrainheight at(0, 17).
+         //   print "spot height: "+spot:terrainheight at(0,18).
 
-            if ship:verticalspeed > -10 and ship:verticalspeed < 0 or ship:verticalspeed > 10 lock steering to ship:srfretrograde.
-            else lock steering to steerHeadingDirection.
+         //   //if ship:verticalspeed > -10 and ship:verticalspeed < 0 or ship:verticalspeed > 10 lock steering to ship:srfretrograde.
+         //   //else lock steering to steerHeadingDirection.
 
-            local throttMargin is 0.1.
-            lock throttle to ttImpact/sqrt(throttMargin+ttImpact^2).
+         //   local throttMargin is 0.1.
+         //   lock throttle to ttImpact/sqrt(throttMargin+ttImpact^2).
 
-            if ship:altitude-spot:terrainheight < 25 {
-               gear on.
-               if ship:velocity:surface:mag > 100 kuniverse:reverttolaunch().
-            }
-            return OP_CONTINUE.
-         } else if ship:altitude-spot:terrainheight > 6 {
-            lock steering to ship:srfretrograde.
-         } else if ship:altitude-spot:terrainheight < 6 {
-            lock throttle to 0.
-            lock steering to up.
-            return OP_FINISHED.
-         }
+         //   if ship:altitude-spot:terrainheight < 25 {
+         //      gear on.
+         //      if ship:velocity:surface:mag > 100 kuniverse:reverttolaunch().
+         //   }
+         //   return OP_CONTINUE.
+         //} else if ship:altitude-spot:terrainheight > 6 {
+         //   lock steering to ship:srfretrograde.
+         //} else if ship:altitude-spot:terrainheight < 6 {
+         //   lock throttle to 0.
+         //   lock steering to up.
+         //   return OP_FINISHED.
+         //}
       }).
 //========== End program sequence ===============================
    
