@@ -88,6 +88,10 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //======== Local Variables =====
       local pitchangle is 90-vang(up:forevector, ship:srfprograde:forevector).
       local thrott is 0.
+      local vSpeedPID is pidloop(1, 0, 0, 0, 1).
+      local hSpeedPID is pidloop(1, 0, 0, 0, 1).
+      local pitchPID is pidloop(1, 0, 0, -90, 0).
+      local yawPID is pidloop(1, 0, 0, -90, 90).
       local tgt is latlng(lat, lng).
       lock tgtHeadingVector to vxcl(up:forevector, tgt:position).
       lock spHeadingVector to vxcl(up:forevector, ship:srfprograde:forevector).
@@ -145,55 +149,40 @@ kernel_ctl["availablePrograms"]:add(programName, {
          //Landing point estimate:
          local spot is latlng(ship:geoposition:lat, ship:geoposition:lng+ship:groundspeed/(2*constant:pi*ship:body:radius)*10).
 
-         local ttZeroH is ship:groundspeed/(ship:maxthrust/ship:mass). 
+         local ttZeroH is ship:groundspeed/((ship:maxthrust/ship:mass)*cos(vang(ship:srfprograde:forevector, vxcl(up:forevector, ship:srfprograde:forevector)))). 
+         local ttZeroV is -ship:verticalspeed/((ship:maxthrust/ship:mass)*sin(vang(ship:srfprograde:forevector, vxcl(up:forevector, ship:srfprograde:forevector)))). 
          local vertAccel is -(ship:body:mu/((ship:altitude+ship:body:radius)^2)). //negative is down.
          local ttImpact is (-ship:verticalspeed - sqrt(max(0, ship:verticalspeed^2 - 2*alt:radar*vertAccel)))/(vertAccel).
          local ttTarget is tgt:position*ship:srfprograde:forevector/ship:groundspeed.
          clearscreen.
          print "ttzh: "+ttZeroH at(0, 10).
-         print "tti: "+ttImpact at(0, 11).
-         lock targetVSpeed to -alt:radar*ship:groundspeed/(tgt:position*ship:srfprograde:forevector). //
-         print "targetVSpeed: "+targetVspeed at(0, 12).
-         lock steering to ship:srfretrograde:forevector*angleAxis(max(-1, min(0, ((abs(ship:verticalspeed)-abs(targetVSpeed))/targetVSpeed)))*90, ship:srfretrograde:starVector).
-         //local throttMargin is 0.1.
-         if ttTarget < ttZeroH lock throttle to max((ship:verticalspeed^2)/(ship:altitude), ttZeroH/ttTarget).
-         else lock throttle to 0.
-         return OP_CONTINUE.
-         //lock steering to vxcl(vcrs(steerHeadingDirection:forevector, up:forevector), ship:srfretrograde:forevector). //ship:retrograde.
-         //lock throttle to 0.
-         //if ship:altitude-spot:terrainheight > 100 and ship:altitude < 50000 {
-         //   local pitchLimit is vang(up:forevector, ship:srfretrograde:forevector).
-         //   local ttZeroV is max(0, ship:verticalspeed/(ship:body:mu/((ship:altitude+ship:body:radius)^2)-ship:maxthrust/ship:mass)). //Assuming full thrust straight up.
-         //   local ttZeroSrf is ship:velocity:surface:mag/(ship:maxthrust/ship:mass).
-         //   local pitchMin is min(pitchLimit, (-ship:verticalspeed/ship:velocity:surface:mag)*90).
-         //   if ttImpact-8 < ttZeroV set pitchangle to max(pitchMin, pitchangle-0.5).
-         //   else set pitchangle to min(pitchLimit, pitchangle+0.5).
-         //   print "ttzv: "+ttzeroV at(0, 12).
-         //   print "ttz: "+ttzeroSrf at(0, 13).
-         //   print "pitch: "+pitchangle at(0, 14).
-         //   print "pitchLimit: "+pitchLimit at(0, 15).
-         //   print "pitchMin: "+pitchMin at(0, 16).
-         //   print "terrain height: "+ship:geoposition:terrainheight at(0, 17).
-         //   print "spot height: "+spot:terrainheight at(0,18).
-
-         //   //if ship:verticalspeed > -10 and ship:verticalspeed < 0 or ship:verticalspeed > 10 lock steering to ship:srfretrograde.
-         //   //else lock steering to steerHeadingDirection.
-
-         //   local throttMargin is 0.1.
-         //   lock throttle to ttImpact/sqrt(throttMargin+ttImpact^2).
-
-         //   if ship:altitude-spot:terrainheight < 25 {
-         //      gear on.
-         //      if ship:velocity:surface:mag > 100 kuniverse:reverttolaunch().
-         //   }
-         //   return OP_CONTINUE.
-         //} else if ship:altitude-spot:terrainheight > 6 {
-         //   lock steering to ship:srfretrograde.
-         //} else if ship:altitude-spot:terrainheight < 6 {
-         //   lock throttle to 0.
-         //   lock steering to up.
-         //   return OP_FINISHED.
-         //}
+         print "ttTarget: "+ttTarget at(0, 11).
+         print "tti: "+ttImpact at(0, 12).
+         print "ttVZero: "+ttZeroV at(0, 13).
+         local ttzhError is ttZeroH - ttTarget.
+         local vSpeedError is ttZeroV - ttImpact.
+         //local vSpeedError is abs(ship:verticalspeed) - abs(targetVSpeed).
+         local ttImpactError is max(ttImpact - ttTarget, ttZeroV-ttImpact).
+         local ttImpactSigmoid is max(0, ttImpactError/sqrt(1+ttImpactError^2)).
+         //local ttSigmoid is max(0, ttzhError/sqrt(1+ttzhError^2)).
+         local vSpeedSigmoid is vSpeedError/sqrt(10+vSpeedError^2).
+         print "ttzhError: "+ttzhError at(0, 15).
+         print "vSpeedError: "+vSpeedError at(0, 16).
+         //print "ttSigmoid: "+ttSigmoid at(0, 17).
+         print "vSpeedSigmoid: "+vSpeedSigmoid at(0, 18).
+         // Pitch up to maintain descent rate
+         lock steering to ship:srfretrograde:forevector*angleAxis(
+           max(-vSpeedSigmoid*vang(ship:srfretrograde:forevector, up:forevector), -vang(ship:srfretrograde:forevector, up:forevector)), 
+           //max(-vSpeedSigmoid*vang(ship:srfretrograde:forevector, up:forevector), -vang(ship:srfretrograde:forevector, up:forevector)), 
+           vcrs(up:forevector, ship:srfretrograde:forevector)
+         // This is wrong, vang doesn't give any information about which direction.
+         )*angleAxis(choose -vang(vxcl(up:forevector, ship:srfprograde:forevector), vxcl(up:forevector, tgt:position))*2 if alt:radar > 1000 else 0, up:forevector).
+         lock throttle to ttImpactSigmoid.
+         if abs(alt:radar) < 5 or ship:status = "LANDED" {
+            gear on.
+            lock throttle to 0.
+            return OP_FINISHED.
+         } else return OP_CONTINUE.
       }).
 //========== End program sequence ===============================
    
