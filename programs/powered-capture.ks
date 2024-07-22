@@ -40,13 +40,13 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPLanAdd"](programName, {
+   kernel_ctl["MissionPlanAdd"](programName, {
       set kernel_ctl["status"] to "waiting...".
       if not (ship:orbit:body = body(targetBody)) return OP_CONTINUE.
       set kernel_ctl["status"] to "finished waiting...".
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPLanAdd"](programName, {
+   kernel_ctl["MissionPlanAdd"](programName, {
       local count is 0.
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          print "staging, Max thrust/engineName: "+ship:maxthrust+" "+engineName.
@@ -63,7 +63,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).
 
 //========== End program sequence ===============================
    

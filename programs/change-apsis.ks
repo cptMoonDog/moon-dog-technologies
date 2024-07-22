@@ -38,7 +38,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       local steerDir is "retrograde".
 
 //=============== Begin program sequence Definition ===============================
-   kernel_ctl["MissionPLanAdd"](programName, {
+   kernel_ctl["MissionPlanAdd"](programName, {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
          set kernel_ctl["output"] to "staging, Max thrust: "+ship:maxthrust.
          stage. 
@@ -69,8 +69,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
       set kernel_ctl["output"] to "apsis: "+apsis+char(10)+"new SMA: "+newSMA+char(10)+"dv: "+dv.
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
-   kernel_ctl["MissionPLanAdd"](programName, {
+   kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"](programName, {
       if (apsis = "ap" and ((steerDir = "prograde" and ship:apoapsis < newAlt*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAlt*1.01))) or 
          (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis < newAlt*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newAlt*1.01))) {
          if steerDir = "prograde" {

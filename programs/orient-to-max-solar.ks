@@ -32,7 +32,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // is given as an anonymous function, and the second part is a function implemented in the maneuver_ctl library. 
    // If you do not like anonymous functions, you could implement a named function elsewhere and add a reference
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
-   kernel_ctl["MissionPLanAdd"](programName, {
+   kernel_ctl["MissionPlanAdd"](programName, {
       set panels            to ship:modulesnamed("ModuleDeployableSolarPanel").
       set primary           to panels[0]. // Ideally, the biggest.
       set panelFacingVector to v(0,0,0).

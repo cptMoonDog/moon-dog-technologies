@@ -37,7 +37,7 @@ if ship:status = "PRELAUNCH" {
       print "transfer period: "+transferPeriod at(0, 17).
       print "transfer sma: "+transferSMA at(0, 18).
       print "stationPeriod: "+stationPeriod at(0, 19).
-      kernel_ctl["add"]("change-apsis", engineName+" pe "+newPe:tostring).  
+      kernel_ctl["add"]("change-apsis", engineName+" pe "+newPe:tostring).
    }
 
    // Warp to near apoapsis

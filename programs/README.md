@@ -71,7 +71,7 @@ A well behaved program file will look something like this:
        local safeDistance is 25.
        
     //=============== Begin program sequence Definition ===============================
-       kernel_ctl["MissionPLanAdd"](programName, {
+       kernel_ctl["MissionPlanAdd"](programName, {
                    .
                    .
                    .
@@ -88,8 +88,8 @@ A well behaved program file will look something like this:
           maneuver_ctl["add_burn"](steerDir, engineName, "ap", dv).
           return OP_FINISHED.
        }).
-       kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
-       kernel_ctl["MissionPLanAdd"](programName, {
+       kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).
+       kernel_ctl["MissionPlanAdd"](programName, {
           if ... {
                    .
                    .

@@ -49,7 +49,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       maneuver_ctl["add_burn"](thrustVector, engineName, orbitPoint:tolower, "circularize").
       return OP_FINISHED.
    }).
-   kernel_ctl["MissionPLanAdd"](programName, maneuver_ctl["burn_monitor"]).
+   kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).
 //========== End program sequence ===============================
    
 }). //End of initializer delegate
