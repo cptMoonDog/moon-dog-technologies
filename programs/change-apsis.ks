@@ -62,40 +62,41 @@ kernel_ctl["availablePrograms"]:add(programName, {
          choose newAlt if apsis = "ap" else ship:orbit:apoapsis, 
          choose newAlt if apsis = "pe" else ship:orbit:periapsis
       ).
-      local newVatApsis is phys_lib["VatAlt"](ship:orbit:body, choose ship:orbit:periapsis if apsis = "ap" else ship:orbit:apoapsis, newSMA).
-      local dv is abs(newVatApsis - velocityat(ship, choose eta:periapsis if apsis = "ap" else eta:apoapsis):orbit:mag).
+      local newVatBurnPt is phys_lib["VatAlt"](ship:orbit:body, choose ship:orbit:periapsis if apsis = "ap" else ship:orbit:apoapsis, newSMA).
+      local dv is abs(newVatBurnPt - velocityat(ship, time:seconds + (choose eta:periapsis if apsis = "ap" else eta:apoapsis)):orbit:mag).
 
       maneuver_ctl["add_burn"](steerDir, engineName, choose "pe" if apsis = "ap" else "ap", dv).
-      set kernel_ctl["output"] to "apsis: "+apsis+char(10)+"new SMA: "+newSMA+char(10)+"dv: "+dv.
+      set kernel_ctl["output"] to "apsis: "+apsis+char(10)+"new SMA: "+newSMA+char(10)+"dv: "+dv+char(10)+"newAlt: "+newAlt.
       return OP_FINISHED.
    }).
    kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).
-   kernel_ctl["MissionPlanAdd"](programName, {
-      if (apsis = "ap" and ((steerDir = "prograde" and ship:apoapsis < newAlt*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAlt*1.01))) or 
-         (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis < newAlt*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newAlt*1.01))) {
-         if steerDir = "prograde" {
-            if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
-               lock throttle to 0.
-            wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
-         } else {
-            if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
-               lock throttle to 0.
-            wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
-         }
-         lock throttle to 0.1.
-         return OP_CONTINUE.
-      } else if (apsis = "ap" and ((steerDir = "prograde" and ship:apoapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:apoapsis < newAlt*0.99))) or
-                (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:periapsis < newAlt*0.99))) {
-         if steerDir = "prograde" {
-            set steerDir to "retrograde".
-         } else {
-            set steerDir to "prograde".
-         }
-         return OP_CONTINUE.
-      }
-      lock throttle to 0.
-      return OP_FINISHED.
-   }).
+   // What does this do?  Fining?  It's blocking the mission plan.
+   //kernel_ctl["MissionPlanAdd"](programName, {
+   //   if (apsis = "ap" and ((steerDir = "prograde" and ship:apoapsis < newAlt*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAlt*1.01))) or 
+   //      (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis < newAlt*0.99 ) or (steerDir = "retrograde" and ship:periapsis > newAlt*1.01))) {
+   //      if steerDir = "prograde" {
+   //         if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
+   //            lock throttle to 0.
+   //         wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
+   //      } else {
+   //         if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
+   //            lock throttle to 0.
+   //         wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
+   //      }
+   //      lock throttle to 0.1.
+   //      return OP_CONTINUE.
+   //   } else if (apsis = "ap" and ((steerDir = "prograde" and ship:apoapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:apoapsis < newAlt*0.99))) or
+   //             (apsis = "pe" and ((steerDir = "prograde" and ship:periapsis > newAlt*1.01) or (steerDir = "retrograde" and ship:periapsis < newAlt*0.99))) {
+   //      if steerDir = "prograde" {
+   //         set steerDir to "retrograde".
+   //      } else {
+   //         set steerDir to "prograde".
+   //      }
+   //      return OP_CONTINUE.
+   //   }
+   //   lock throttle to 0.
+   //   return OP_FINISHED.
+   //}).
    
          
 //========== End program sequence ===============================
