@@ -1,3 +1,6 @@
+//How to use
+// Place the satellite on the stack, and use the payload.ks bootfile
+// Set the core:tag value to: [Satellite Name]:deployable-comsat, [ENGINE], [Circularization point ap | pe (optional, default: ap)]
 @lazyglobal off.
 
 // This is for a deployable communications satellite
@@ -8,9 +11,8 @@ if ship:status = "PRELAUNCH" {
    compile "0:/lib/core/kernel.ks" to "1:/lib/core/kernel.ksm".
    kernel_ctl["load-to-core"]("lib/physics").
    kernel_ctl["load-to-core"]("lib/maneuver_ctl").
-   kernel_ctl["load-to-core"]("programs/circularize-at-ap").
+   kernel_ctl["load-to-core"]("programs/circularize").
    kernel_ctl["load-to-core"]("programs/orient-to-max-solar").
-   //kernel_ctl["load-to-core"]("program/station-keep-behind").
    global mission_abort is {}.
 } else  if ((ship:status = "ORBITING" OR ship:status = "FLYING" OR ship:status = "SUB_ORBITAL") and procs:length > 1) {
    clearscreen.
@@ -30,8 +32,9 @@ if ship:status = "PRELAUNCH" {
    print "my engine: "+core:tag:split(",")[1]:trim.
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
    print "kernel started".
-   kernel_ctl["import-lib"]("programs/circularize-at-ap").                    // Make pre-defined programs available
-   kernel_ctl["add"]("circularize-at-ap", core:tag:split(",")[1]:trim).                   // Define the order of execution, parameter is engine.
+   kernel_ctl["import-lib"]("programs/circularize").                    // Make pre-defined programs available
+   local circPoint is choose core:tag:split(",")[2]:trim if core:tag:split(","):length = 3 else "ap". 
+   kernel_ctl["add"]("circularize", core:tag:split(",")[1]:trim+" "+circPoint).                   
    print "MP initialized".
    kernel_ctl["start"]().                                            // Execute the mission plan.
    print "MP completed".

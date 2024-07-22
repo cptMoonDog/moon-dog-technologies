@@ -179,7 +179,7 @@ clearscreen.
          set kernel_ctl["status"] to kernel_ctl["availablePrograms"].
       }
    }
-   set kernel_ctl["add_program"] to add_program@.
+   set kernel_ctl["add-program"] to add_program@.
    set kernel_ctl["add"] to add_program@.
    set kernel_ctl["Q"] to add_program@.
 

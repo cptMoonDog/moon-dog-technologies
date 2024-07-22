@@ -10,8 +10,8 @@ if ship:status = "PRELAUNCH" {
    kernel_ctl["load-to-core"]("programs/lko-to-moon").
    kernel_ctl["load-to-core"]("programs/powered-capture").
    kernel_ctl["load-to-core"]("programs/match-plane").
-   kernel_ctl["load-to-core"]("programs/change-ap").
-   kernel_ctl["load-to-core"]("programs/circularize-at-pe").
+   kernel_ctl["load-to-core"]("programs/change-apsis").
+   kernel_ctl["load-to-core"]("programs/circularize").
 
    compile "0:/missions/mothership-comsat.ks" to "1:/boot/mothership-comsat.ksm".
    runpath("1:/boot/mothership-comsat.ksm").
@@ -29,14 +29,14 @@ if ship:status = "PRELAUNCH" {
       kernel_ctl["import-lib"]("programs/lko-to-moon").
       kernel_ctl["import-lib"]("programs/powered-capture").
       kernel_ctl["import-lib"]("programs/match-plane").
-      kernel_ctl["import-lib"]("programs/change-ap").
+      kernel_ctl["import-lib"]("programs/change-apsis").
       
       kernel_ctl["add"]("lko-to-moon", "swivel Minmus").
       kernel_ctl["add"]("powered-capture", "terrier Minmus").
-      kernel_ctl["add"]("change-pe", "terrier 50000").
-      kernel_ctl["add"]("circularize-at-pe").
+      kernel_ctl["add"]("change-apsis", "terrier pe 50000").
+      kernel_ctl["add"]("circularize", "terrier pe").
       kernel_ctl["add"]("match-plane", "terrier 0:135").
-      kernel_ctl["add"]("change-ap", "terrier 750000").
+      kernel_ctl["add"]("change-apsis", "terrier ap 750000").
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
          set core:tag to "Minflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".

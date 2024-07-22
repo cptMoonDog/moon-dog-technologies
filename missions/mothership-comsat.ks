@@ -4,7 +4,7 @@
 if ship:status = "PRELAUNCH" { 
    kernel_ctl["load-to-core"]("lib/core/kernel").  
    kernel_ctl["load-to-core"]("lib/physics").  
-   kernel_ctl["load-to-core"]("programs/change-pe").  
+   kernel_ctl["load-to-core"]("programs/change-apsis").  
 } else if core:bootfilename = "/boot/mothership-comsat.ksm" {
    // Only run if directly booted.
    // Start the kernel
@@ -27,13 +27,13 @@ if ship:status = "PRELAUNCH" {
    } else if procs:length > nSats {
    // If deployment has not already started, adjust orbit for correct transfer orbit period.
       kernel_ctl["import-lib"]("lib/physics").
-      kernel_ctl["import-lib"]("programs/change-pe").
+      kernel_ctl["import-lib"]("programs/change-apsis").
 
       local stationPeriod is phys_lib["period"](ship:body, ship:orbit:apoapsis+ship:body:radius).
       local transferPeriod is ((nSats - 1)/nSats)*stationPeriod.
       local transferSMA is phys_lib["sma-from-period"](ship:body, transferPeriod).
       local newPe is transferSMA*2 - ship:orbit:apoapsis - ship:body:radius*2.
-      kernel_ctl["add"]("change-pe", engineName+" "+newPe:tostring).  
+      kernel_ctl["add"]("change-apsis", engineName+" pe "+newPe:tostring).  
    }
 
    // Warp to near apoapsis

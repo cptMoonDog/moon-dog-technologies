@@ -10,7 +10,7 @@ if ship:status = "PRELAUNCH" {
    kernel_ctl["load-to-core"]("programs/lko-to-moon").
    kernel_ctl["load-to-core"]("programs/powered-capture").
    kernel_ctl["load-to-core"]("programs/match-plane").
-   kernel_ctl["load-to-core"]("programs/change-ap").
+   kernel_ctl["load-to-core"]("programs/change-apsis").
 
    compile "0:/missions/mothership-comsat.ks" to "1:/boot/mothership-comsat.ksm".
    runpath("1:/boot/mothership-comsat.ksm").
@@ -28,12 +28,12 @@ if ship:status = "PRELAUNCH" {
       kernel_ctl["import-lib"]("programs/lko-to-moon").
       kernel_ctl["import-lib"]("programs/powered-capture").
       kernel_ctl["import-lib"]("programs/match-plane").
-      kernel_ctl["import-lib"]("programs/change-ap").
+      kernel_ctl["import-lib"]("programs/change-apsis").
       
       kernel_ctl["add"]("lko-to-moon", "swivel Mun").
       kernel_ctl["add"]("powered-capture", "terrier Mun").
       kernel_ctl["add"]("match-plane", "terrier 90:135").
-      kernel_ctl["add"]("change-ap", "terrier 592500").
+      kernel_ctl["add"]("change-apsis", "terrier ap 592500").
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
          set core:tag to "Munflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".

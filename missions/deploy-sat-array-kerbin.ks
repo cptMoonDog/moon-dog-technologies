@@ -4,8 +4,9 @@
 // This should theoretically only happen when called by boot/payload.ks
 if ship:status = "PRELAUNCH" {
    compile "0:/lib/core/kernel.ks" to "1:/lib/core/kernel.ksm".
-   kernel_ctl["load-to-core"]("lib/core/kernel").
    kernel_ctl["load-to-core"]("lib/maneuver_ctl").
+   kernel_ctl["load-to-core"]("lib/physics").  
+   kernel_ctl["load-to-core"]("programs/change-apsis").  
 
    compile "0:/missions/mothership-comsat.ks" to "1:/boot/mothership-comsat.ksm".
 
