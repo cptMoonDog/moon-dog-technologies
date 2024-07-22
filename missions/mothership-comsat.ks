@@ -33,7 +33,7 @@ if ship:status = "PRELAUNCH" {
       local transferPeriod is ((nSats - 1)/nSats)*stationPeriod.
       local transferSMA is phys_lib["sma-from-period"](ship:body, transferPeriod).
       local newPe is transferSMA*2 - ship:orbit:apoapsis - ship:body:radius*2.
-      kernel_ctl["add-program"]("change-pe", engineName+" "+newPe:tostring).  
+      kernel_ctl["add"]("change-pe", engineName+" "+newPe:tostring).  
    }
 
    // Warp to near apoapsis

@@ -75,11 +75,11 @@ clearscreen.
                update_display().
             }
             if kernel_ctl["interactive"] {
-               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               print kernel_ctl["status"]:tostring:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
                if terminal:input:haschar process_char(terminal:input:getchar()).
             } else{
-               print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
+               print kernel_ctl["status"]:tostring:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
             }
             //set kernel_ctl["countdown"] to "".
@@ -179,7 +179,9 @@ clearscreen.
          set kernel_ctl["status"] to kernel_ctl["availablePrograms"].
       }
    }
-   set kernel_ctl["add-program"] to add_program@.
+   set kernel_ctl["add_program"] to add_program@.
+   set kernel_ctl["add"] to add_program@.
+   set kernel_ctl["Q"] to add_program@.
 
    declare function loadToCore {
       parameter name.

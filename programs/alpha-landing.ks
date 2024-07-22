@@ -9,11 +9,13 @@ local programName is "alpha-landing". //<------- put the name of the script here
 //   to build the MISSION_PLAN.
 if not (defined kernel_ctl) runpath("0:/lib/core/kernel.ks"). 
 
-declare function compassHeadingVector {
-   declare parameter tgt.
-   local northAngle is vang(vxcl(up:forevector, tgt), north:forevector).
-   local eastAngle is vang(vxcl(up:forevector, tgt), north:starvector).
+declare function compassHeadingFromVector {
+   declare parameter targetVector.
+   local northAngle is vang(vxcl(up:forevector, targetVector), north:forevector).
+   local eastAngle is vang(vxcl(up:forevector, targetVector), vcrs(up:forevector, north:forevector)).
    local tgtheading is 0. //North.
+   print "nortangle: "+northAngle at(0, 5).
+   print "eastAngle: "+eastAngle at(0, 6).
    if northAngle < 90 and eastAngle < 90 { 
       return northAngle. //Northeast
    } else if northAngle < 90 and eastAngle > 90 { 
@@ -29,18 +31,18 @@ declare function compassVectorAdd {
    declare parameter dir.
    declare parameter axis.
    
-   local difference is compassHeadingVector(axis) - compassHeadingVector(dir).
+   local difference is compassHeadingFromVector(axis) - compassHeadingFromVector(dir).
    set difference to difference/2.
-   if difference < 0 return compassHeadingVector(axis) - difference.
-   else return compassHeadingVector(dir) - difference.
+   if difference < 0 return compassHeadingFromVector(axis) - difference.
+   else return compassHeadingFromVector(dir) - difference.
 } 
 
-declare function compassReflectVectorAbout {
+declare function compassHeadingFromVectorReflectionAbout {
    declare parameter dir.
    declare parameter axis.
    
-   local difference is compassHeadingVector(axis) - compassHeadingVector(dir).
-   local reflection is compassHeadingVector(axis) + difference.
+   local difference is compassHeadingFromVector(axis) - compassHeadingFromVector(dir).
+   local reflection is compassHeadingFromVector(axis) + difference.
    if reflection >= 360 return reflection - 360.
    else return reflection.
 } 
@@ -49,6 +51,7 @@ declare function RetrogradePitchAngle {
    if ship:altitude > 10000 return 90-vang(up:forevector, ship:retrograde:forevector).
    return 90-vang(up:forevector, ship:srfretrograde:forevector).
 }
+
 //Add initialzer for this program sequence to the lexicon of available programs
 // Could be written as available_programs:add...but that occasionally produces an error when run as a standalone script.
 kernel_ctl["availablePrograms"]:add(programName, {
@@ -147,42 +150,67 @@ kernel_ctl["availablePrograms"]:add(programName, {
       kernel_ctl["MissionPlanAdd"](programName, {
          // Orient orbit to target
          //Landing point estimate:
-         local spot is latlng(ship:geoposition:lat, ship:geoposition:lng+ship:groundspeed/(2*constant:pi*ship:body:radius)*10).
-
-         local ttZeroH is ship:groundspeed/((ship:maxthrust/ship:mass)*cos(vang(ship:srfprograde:forevector, vxcl(up:forevector, ship:srfprograde:forevector)))). 
-         local ttZeroV is -ship:verticalspeed/((ship:maxthrust/ship:mass)*sin(vang(ship:srfprograde:forevector, vxcl(up:forevector, ship:srfprograde:forevector)))). 
+         local velDegrees is ship:groundspeed*(180/(constant:pi*ship:body:radius)).
+         local test1 is sin(ship:geoposition:lat)*sin(tgt:lat).
+         local test2 is cos(ship:geoposition:lng)*cos(tgt:lng)*cos(abs(ship:geoposition:lng - tgt:lng)).
+         local ttTarget is max(
+           tgt:position:mag/ship:groundspeed,
+           arccos(min(1, test1 + test2))/velDegrees
+         ).
+         local waiting is true.
+         local ttZeroTotal is ship:velocity:surface:mag/(ship:maxthrust/ship:mass).
+         local ttZeroH is ship:groundspeed/((ship:maxthrust/ship:mass)*cos(vang(-ship:facing:forevector, vxcl(up:forevector, -ship:facing:forevector)))). 
+         local ttZeroV is -ship:verticalspeed/((ship:maxthrust/ship:mass)*sin(vang(-ship:facing:forevector, vxcl(up:forevector, -ship:facing:forevector)))). 
          local vertAccel is -(ship:body:mu/((ship:altitude+ship:body:radius)^2)). //negative is down.
-         local ttImpact is (-ship:verticalspeed - sqrt(max(0, ship:verticalspeed^2 - 2*alt:radar*vertAccel)))/(vertAccel).
-         local ttTarget is tgt:position*ship:srfprograde:forevector/ship:groundspeed.
+         local ttImpact is (-ship:verticalspeed - sqrt(max(0, ship:verticalspeed^2 - 2*(ship:altitude-tgt:terrainheight)*vertAccel)))/vertAccel.
+         set ttImpact to ttImpact + sin(velDegrees*ttImpact)*ttImpact.
+
          clearscreen.
-         print "ttzh: "+ttZeroH at(0, 10).
+         local tgtDescentRate is -((ship:altitude-tgt:terrainheight)/(ttTarget)) - vertAccel*ttTarget/4.
+         print "Target Descent rate: "+tgtDescentRate at(0, 10).
          print "ttTarget: "+ttTarget at(0, 11).
          print "tti: "+ttImpact at(0, 12).
-         print "ttVZero: "+ttZeroV at(0, 13).
-         local ttzhError is ttZeroH - ttTarget.
-         local vSpeedError is ttZeroV - ttImpact.
+         print "ttZero: "+ttZeroTotal at(0, 13).
+         local ttzhError is ttTarget - ttZeroH.
+         local vSpeedError is max(0, min(0, tgtDescentRate) - ship:verticalspeed).
+         //local vSpeedError is -(alt:radar/(ttTarget)) - ship:verticalspeed.
          //local vSpeedError is abs(ship:verticalspeed) - abs(targetVSpeed).
-         local ttImpactError is max(ttImpact - ttTarget, ttZeroV-ttImpact).
+         //local ttImpactError is max(0, choose max(ttZeroH - ttTarget, ttImpact - ttTarget) if ttZeroH > ttZeroV else max(ttZeroV - ttTarget, ttZeroV - ttImpact)).
+         local ttImpactError is 5*(ttZeroTotal - ttTarget)/ttTarget + (ttTarget - ttImpact)/(ttTarget^2) + (ttZeroTotal - ttImpact)/(ttTarget^2).
          local ttImpactSigmoid is max(0, ttImpactError/sqrt(1+ttImpactError^2)).
+         lock throttle to ttImpactSigmoid.
          //local ttSigmoid is max(0, ttzhError/sqrt(1+ttzhError^2)).
          local vSpeedSigmoid is vSpeedError/sqrt(10+vSpeedError^2).
          print "ttzhError: "+ttzhError at(0, 15).
          print "vSpeedError: "+vSpeedError at(0, 16).
+         print "ttImpactError: "+ttImpactError at(0, 17).
          //print "ttSigmoid: "+ttSigmoid at(0, 17).
          print "vSpeedSigmoid: "+vSpeedSigmoid at(0, 18).
+         print "tgt compass: "+compassHeadingFromVector(tgt:position) at(0, 19).
+         print "prograde compass: "+compassHeadingFromVector(ship:srfprograde:forevector) at(0, 20).
          // Pitch up to maintain descent rate
          lock steering to ship:srfretrograde:forevector*angleAxis(
+           //Amount of pitch
            max(-vSpeedSigmoid*vang(ship:srfretrograde:forevector, up:forevector), -vang(ship:srfretrograde:forevector, up:forevector)), 
            //max(-vSpeedSigmoid*vang(ship:srfretrograde:forevector, up:forevector), -vang(ship:srfretrograde:forevector, up:forevector)), 
+           //Axis
            vcrs(up:forevector, ship:srfretrograde:forevector)
-         // This is wrong, vang doesn't give any information about which direction.
-         )*angleAxis(choose -vang(vxcl(up:forevector, ship:srfprograde:forevector), vxcl(up:forevector, tgt:position))*2 if alt:radar > 1000 else 0, up:forevector).
-         lock throttle to ttImpactSigmoid.
+         )* angleAxis(
+            //Amount of steering
+            choose (compassHeadingFromVector(ship:srfprograde:forevector) - compassHeadingFromVector(tgt:position))*3 if alt:radar > 1000 else 0, 
+            //axis
+            up:forevector
+         ).
+         if(ttTarget < ttZeroTotal) {
+           set waiting to false.
+         } 
+         if waiting return OP_CONTINUE.
+         if alt:radar < 50 gear on.
          if abs(alt:radar) < 5 or ship:status = "LANDED" {
-            gear on.
             lock throttle to 0.
             return OP_FINISHED.
-         } else return OP_CONTINUE.
+         } 
+         return OP_CONTINUE.
       }).
 //========== End program sequence ===============================
    

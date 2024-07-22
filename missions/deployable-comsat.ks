@@ -31,7 +31,7 @@ if ship:status = "PRELAUNCH" {
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
    print "kernel started".
    kernel_ctl["import-lib"]("programs/circularize-at-ap").                    // Make pre-defined programs available
-   kernel_ctl["add-program"]("circularize-at-ap", core:tag:split(",")[1]:trim).                   // Define the order of execution, parameter is engine.
+   kernel_ctl["add"]("circularize-at-ap", core:tag:split(",")[1]:trim).                   // Define the order of execution, parameter is engine.
    print "MP initialized".
    kernel_ctl["start"]().                                            // Execute the mission plan.
    print "MP completed".

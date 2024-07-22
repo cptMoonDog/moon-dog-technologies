@@ -9,7 +9,7 @@ What is a Program?
 =================
 A program, is a kOS script file that makes a set of sub-routines available to the system.  
 Once they are made available, they can be added to the `MISSION_PLAN` by 
-calling `kernel_ctl["add-program"](<program name>, <parameter list>).`
+calling `kernel_ctl["add"](<program name>, <parameter list>).`
 
 A well behaved program file will look something like this:
 

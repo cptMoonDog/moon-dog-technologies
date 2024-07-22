@@ -1,4 +1,4 @@
-elazyglobal off.
+@lazyglobal off.
 
 // Define prelaunch configuration setup for the core here:
 // This should theoretically only happen when called by boot/payload.ks
@@ -30,10 +30,10 @@ if ship:status = "PRELAUNCH" {
       kernel_ctl["import-lib"]("programs/match-plane").
       kernel_ctl["import-lib"]("programs/change-ap").
       
-      kernel_ctl["add-program"]("lko-to-moon", "swivel Mun").
-      kernel_ctl["add-program"]("powered-capture", "terrier Mun").
-      kernel_ctl["add-program"]("match-plane", "terrier 90:135").
-      kernel_ctl["add-program"]("change-ap", "terrier 592500").
+      kernel_ctl["add"]("lko-to-moon", "swivel Mun").
+      kernel_ctl["add"]("powered-capture", "terrier Mun").
+      kernel_ctl["add"]("match-plane", "terrier 90:135").
+      kernel_ctl["add"]("change-ap", "terrier 592500").
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
          set core:tag to "Munflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".

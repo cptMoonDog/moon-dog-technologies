@@ -35,7 +35,7 @@ Most Recent Changes
 22SEP2023
  - Is there anyone out there?  If you have been using any enjoying this system, it would be great to hear some feed back.  Just email the captian via gmail.
  - On the off-chance that there are any of you out there, I'm trying to be more polite, by respecting your expectations, but I may still break things.
- - I this release, I've tried to make things easier by changing the "add-program" ISH command with "Q", as in Queue this program.  It is by far, the most common command I use, so this should make life easier.
+ - I this release, I've tried to make things easier by changing the "add" ISH command with "Q", as in Queue this program.  It is by far, the most common command I use, so this should make life easier.
  - Added a "countdown" program so you can add a simple countdown in the MISSION_PLAN.
  - Also tuned the docking program.
  
