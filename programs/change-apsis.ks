@@ -19,7 +19,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
    if argv:split(" "):length >= 3 {
       set engineName to argv:split(" ")[0].
       if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
-      set apsis to argv:split(" ")[1].
+      set apsis to argv:split(" ")[1]:trim.
       set newAlt to argv:split(" ")[2]:tonumber(-1).
       if newAlt = -1 {
          set kernel_ctl["output"] to
@@ -65,7 +65,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       local newVatApsis is phys_lib["VatAlt"](ship:orbit:body, choose ship:orbit:periapsis if apsis = "ap" else ship:orbit:apoapsis, newSMA).
       local dv is abs(newVatApsis - velocityat(ship, choose eta:periapsis if apsis = "ap" else eta:apoapsis):orbit:mag).
 
-      maneuver_ctl["add_burn"](steerDir, engineName, apsis, dv).
+      maneuver_ctl["add_burn"](steerDir, engineName, choose "pe" if apsis = "ap" else "ap", dv).
       set kernel_ctl["output"] to "apsis: "+apsis+char(10)+"new SMA: "+newSMA+char(10)+"dv: "+dv.
       return OP_FINISHED.
    }).

@@ -29,10 +29,13 @@ if ship:status = "PRELAUNCH" {
       kernel_ctl["import-lib"]("lib/physics").
       kernel_ctl["import-lib"]("programs/change-apsis").
 
-      local stationPeriod is phys_lib["period"](ship:body, ship:orbit:apoapsis+ship:body:radius).
+      local stationPeriod is phys_lib["period"](ship:body, ship:orbit:apoapsis).
       local transferPeriod is ((nSats - 1)/nSats)*stationPeriod.
       local transferSMA is phys_lib["sma-from-period"](ship:body, transferPeriod).
-      local newPe is transferSMA*2 - ship:orbit:apoapsis - ship:body:radius*2.
+      local newPe is transferSMA*2 - ship:orbit:apoapsis.
+      print "new pe: "+newPe at(0, 16).
+      print "transfer period: "+transferPeriod at(0, 17).
+      print "transfer sma: "+transferSMA at(0, 18).
       kernel_ctl["add"]("change-apsis", engineName+" pe "+newPe:tostring).  
    }
 
