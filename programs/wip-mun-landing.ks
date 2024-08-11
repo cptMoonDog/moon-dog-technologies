@@ -134,9 +134,9 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
       // will return + (long), - (short)
       declare function longShortSigmoid {
-         local error is context["ttImpactFlat"] - context["ttTarget"].
-         if abs(error) < 1 or (error < -1 and error > -5) set error to 0.
-         return error/sqrt(10+error^2).
+         local error is context["ttImpactFlat"] - context["ttTarget"]+3.5.
+         if abs(error) < 0.01 set error to 0.
+         return error/sqrt(90+error^2).
       }
 
       declare function steeringVectorOverflight {
@@ -159,9 +159,12 @@ kernel_ctl["availablePrograms"]:add(programName, {
          local sma is ship:altitude+ship:body:radius.
          local twr1Angle is arcsin(max(-1, min(1, 1/(ship:body:mu/(sma^2))*(ship:mass/max(0.1, ship:availablethrust))))).
          local steeringError is compassHeadingFromVector(ship:srfprograde:forevector) - compassHeadingFromVector(context["tgt"]:position).
+         local pitchAngle is context["longShortSigmoid"]*min(90, min(90-twr1Angle, vang(ship:srfretrograde:forevector, up:forevector))).
+         if ship:orbit:periapsis > -1000 set pitchAngle to 0.
+         //if alt:radar > 8000 or ship:groundspeed > 300 set pitchAngle to 0.
          return ship:srfretrograde:forevector*angleAxis(
            //Amount of pitch
-           min(0, context["longShortSigmoid"])*min(90, min(90-twr1Angle, vang(ship:srfretrograde:forevector, up:forevector))),
+           pitchAngle,
            //Axis
            vcrs(up:forevector, ship:srfretrograde:forevector)
          )* angleAxis(
@@ -183,7 +186,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
 
       declare function throttleFinalApproach {
-         return max(suicideBurnSigmoid(), (ship:verticalspeed)/(-alt:radar)).
+         return max(suicideBurnSigmoid(), (ship:verticalspeed)*3/(-alt:radar)).
       }
 
       declare function updateContext {
