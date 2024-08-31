@@ -71,16 +71,16 @@ kernel_ctl["availablePrograms"]:add(programName, {
       lock spHeadingVector to vxcl(up:forevector, ship:srfprograde:forevector).
       lock facingHeadingVector to vxcl(up:forevector, ship:facing:forevector).
       lock steerHeadingDirection to angleaxis(vang(tgtHeadingVector, -spHeadingVector), up:forevector)*tgtHeadingVector:direction.
-      local tgtHeadingArrow is vecdraw(
-                        v(0, 0, 0), 
-                        {return tgtHeadingVector.},
-                        RGB(1, 0, 0),
-                        "Target Heading",
-                        1,
-                        true,
-                        0.2,
-                        true,
-                        true).
+//      local tgtHeadingArrow is vecdraw(
+//                        v(0, 0, 0), 
+//                        {return tgtHeadingVector.},
+//                        RGB(1, 0, 0),
+//                        "Target Heading",
+//                        1,
+//                        true,
+//                        0.2,
+//                        true,
+//                        true).
 
       local tgtArrow is vecdraw(
                         v(0, 0, 0), 
@@ -93,34 +93,34 @@ kernel_ctl["availablePrograms"]:add(programName, {
                         true,
                         true).
 
-      local srfProArrow is vecdraw(
-                        v(0, 0, 0), 
-                        {return spHeadingVector*10.},
-                        RGB(1, 0, 1),
-                        "prograde Heading",
-                        1,
-                        true,
-                        0.2,
-                        true,
-                        true).
-
-      local steerArrow is vecdraw(
-                        v(0, 0, 0), 
-                        {return spHeadingVector*10.},
-                        RGB(1, 1, 1),
-                        "steering",
-                        1,
-                        true,
-                        0.2,
-                        true,
-                        true).
+//      local srfProArrow is vecdraw(
+//                        v(0, 0, 0), 
+//                        {return spHeadingVector*10.},
+//                        RGB(1, 0, 1),
+//                        "prograde Heading",
+//                        1,
+//                        true,
+//                        0.2,
+//                        true,
+//                        true).
+//
+//      local steerArrow is vecdraw(
+//                        v(0, 0, 0), 
+//                        {return spHeadingVector*10.},
+//                        RGB(1, 1, 1),
+//                        "steering",
+//                        1,
+//                        true,
+//                        0.2,
+//                        true,
+//                        true).
 
       declare function ttImpactFlat {
          local vertAccel is (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
          local dist is ship:altitude-context["tgt"]:terrainheight.
 
          // Kinematics solved for time with quadratic formula
-         return (ship:verticalspeed + sqrt(ship:verticalspeed^2 + 2*(dist)*vertAccel))/vertAccel.
+         return (ship:verticalspeed + sqrt(max(0.001, min(0.001, ship:verticalspeed))^2 + 2*(dist)*vertAccel))/vertAccel.
       }
 
       // 
@@ -134,17 +134,16 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
       // will return + (long), - (short)
       declare function longShortSigmoid {
-         local error is context["ttImpactFlat"] - context["ttTarget"]+3.5.
+         local error is context["ttImpactFlat"] - context["ttTarget"]+3.25.
          if abs(error) < 0.01 set error to 0.
          return error/sqrt(90+error^2).
       }
 
       declare function steeringVectorOverflight {
          local sma is ship:altitude+ship:body:radius.
-         local twr1Angle is arcsin(max(-1, min(1, 1/(ship:body:mu/(sma^2))*(ship:mass/max(0.1, ship:availablethrust))))).
          return up:forevector*angleAxis(
            //Amount of pitch
-           90-twr1Angle,
+           90-context["twr1Angle"],
            //Axis
            vcrs(up:forevector, ship:srfretrograde:forevector)
          ).
@@ -156,11 +155,25 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
 
       declare function steeringVectorPrimaryDescent {
-         local sma is ship:altitude+ship:body:radius.
-         local twr1Angle is arcsin(max(-1, min(1, 1/(ship:body:mu/(sma^2))*(ship:mass/max(0.1, ship:availablethrust))))).
+         // Pitch that will give twr1.  I.e. Maintain rate of descent/null vertical acceleration at maximum throttle setting.
          local steeringError is compassHeadingFromVector(ship:srfprograde:forevector) - compassHeadingFromVector(context["tgt"]:position).
-         local pitchAngle is context["longShortSigmoid"]*min(90, min(90-twr1Angle, vang(ship:srfretrograde:forevector, up:forevector))).
-         if ship:orbit:periapsis > -1000 set pitchAngle to 0.
+         local pitchAngle is 0. // twr 1 angle relative to retrograde
+         
+         print "twrAngle: " + context["twr1Angle"] at(0, 3).
+         print "retro angle: " + vang(up:forevector, ship:srfretrograde:forevector) at(0, 4).
+         local bottom is (vang(up:forevector, ship:srfretrograde:forevector) - context["twr1Angle"]) - 90.
+         print "bottom: "+bottom at(0,5).
+         local twrRange is abs(90 - context["twr1Angle"] - vang(up:forevector, ship:srfretrograde:forevector)).
+         print "range: " + abs(90 - context["twr1Angle"] - vang(up:forevector, ship:srfretrograde:forevector)) at(0, 6).
+         if context["longShortSigmoid"] < 0 {// Short
+            // Range*multiplier + bottom
+            if ship:verticalspeed > 0 or (ship:altitude-context["tgt"]:terrainheight)/max(0.001, -ship:verticalspeed) > context["ttTarget"] set pitchAngle to 90-vang(up:forevector, ship:srfretrograde:forevector).
+            else set pitchAngle to context["longShortSigmoid"]*twrRange + bottom.
+            print "pitchangle: "+pitchAngle at(0, 7).
+         } else if context["longShortSigmoid"] > 0
+            set pitchAngle to context["longShortSigmoid"]*(90-vang(up:forevector, ship:srfretrograde:forevector)). // Pitch down no more than horizontal
+
+         //if ship:orbit:periapsis > ship:orbit:body:radius/2 set pitchAngle to 0.
          //if alt:radar > 8000 or ship:groundspeed > 300 set pitchAngle to 0.
          return ship:srfretrograde:forevector*angleAxis(
            //Amount of pitch
@@ -175,14 +188,28 @@ kernel_ctl["availablePrograms"]:add(programName, {
          ).
       }
       declare function throttlePrimaryDescent {
-         if vang(ship:facing:forevector, up:forevector) < 45 // Short, 
-            return max(-context["longShortSigmoid"], suicideBurnSigmoid()).
-         else
+         if context["longShortSigmoid"] < 0 
+            if (90-vang(ship:facing:forevector, up:forevector)) > context["twr1Angle"] // Short, Traversing
+               return max(-context["longShortSigmoid"], suicideBurnSigmoid()).
+            else return max(-context["longShortSigmoid"], suicideBurnSigmoid()). // Short, but not Traversing
+         else if context["longShortSigmoid"] > 0 
             return max(context["longShortSigmoid"], suicideBurnSigmoid()).
+         else 
+            return throttleFinalApproach().
       }
 
       declare function steeringVectorFinalApproach {
-         return ship:srfRetrograde:forevector.
+         return ship:srfretrograde:forevector.
+         // TODO Implement traverse capability
+         //local starVelMag is vxcl(up:forevector, vxcl(up:topvector, ship:srfprograde:forevector)):mag.
+         //local topVelMag is vxcl(up:forevector, vxcl(up:starvector, ship:srfprograde:forevector)):mag.
+
+         //local starCompMag is -vxcl(up:forevector, vxcl(up:topvector, context["tgt"]:position)):mag/context["ttImpactFlat"]-starVelMag.
+         //local topCompMag is -vxcl(up:forevector, vxcl(up:starvector, context["tgt"]:position)):mag/context["ttImpactFlat"]-topVelMag.
+         //local dirMag is vxcl(up:forevector, context["tgt"]:position):mag/context["ttImpactFlat"].
+         //print "starCompMag: "+starCompMag at(0, 3).
+         //print "topCompMag: "+topCompMag at(0, 4).
+         //return up:forevector*angleaxis((topCompMag/dirMag)*45, up:starvector)*angleaxis((starCompMag/dirMag)*45, up:topvector).
       }
 
       declare function throttleFinalApproach {
@@ -193,6 +220,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
          local test1 is sin(ship:geoposition:lat)*sin(context["tgt"]:lat).
          local test2 is cos(ship:geoposition:lng)*cos(context["tgt"]:lng)*cos(abs(ship:geoposition:lng - context["tgt"]:lng)).
          local velDegrees is ship:groundspeed*(180/(constant:pi*ship:body:radius)).
+         local sma is ship:altitude+ship:body:radius.
+         set context["twr1Angle"] to arcsin(max(-1, min(1, 1/(ship:body:mu/(sma^2))*(ship:mass/max(0.1, ship:availablethrust))))).
          set context["ttImpactFlat"] to ttImpactFlat().
          set context["ttTarget"] to max(
            context["tgt"]:position:mag/ship:groundspeed,
@@ -244,7 +273,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       kernel_ctl["MissionPlanAdd"](programName, {
          updateContext().
          debuggingOutput().
-         if alt:radar < 1000 {
+         if alt:radar < 300 {
             set context["throttleFunction"] to throttleFinalApproach@.
             set context["steeringFunction"] to steeringVectorFinalApproach@.
            return OP_FINISHED.
@@ -259,6 +288,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
         if abs(alt:radar) < 5 or ship:status = "LANDED" {
            lock throttle to 0.
            lock steering to up:forevector.
+           clearvecdraws().
            return OP_FINISHED.
         } 
         return OP_CONTINUE.
