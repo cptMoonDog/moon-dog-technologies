@@ -303,16 +303,36 @@ SYS_CMDS:add("remove", {
 }).
 
 
-SYS_CMDS_HELP:add("run-extra",
+SYS_CMDS_HELP:add("extra",
    char(10)+
    "Runs a script found in '0:/extra'."+char(10)+
-   "   Usage: run-extra [basename]"
+   "   Usage: extra [basename]"
 ).
-SYS_CMDS:add("run-extra", {
+SYS_CMDS:add("extra", {
    declare parameter cmd.
-   if cmd:startswith("run-extra") {
+   if cmd:startswith("extra") {
       local splitCmd is cmd:split(" ").
       runpath("0:/extra/"+splitCmd[1]+".ks"). // Do not route through import-lib.  These should be re-runnable.
+      lock throttle to 0.
+      lock steering to ship:facing:forevector.
+      return "finished".
+   }
+}).
+
+SYS_CMDS_HELP:add("sys", 
+   char(10)+
+   "Runs one of the following system commands."+char(10)+
+   "   Usage: sys [Command String]"+char(10)+char(10)+
+   "Currently implemented:"+char(10)+
+   "   reboot"+char(10)+
+   "   shutdown"
+).
+SYS_CMDS:add("sys", {
+   declare parameter cmd.
+   if cmd:startswith("sys") {
+      local splitCmd is cmd:split(" ").
+      if splitCmd[1]:trim = "reboot" reboot.
+      if splitCmd[1]:trim = "shutdown" shutdown.
       return "finished".
    }
 }).
