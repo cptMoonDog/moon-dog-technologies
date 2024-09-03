@@ -312,7 +312,9 @@ SYS_CMDS:add("extra", {
    declare parameter cmd.
    if cmd:startswith("extra") {
       local splitCmd is cmd:split(" ").
-      runpath("0:/extra/"+splitCmd[1]+".ks"). // Do not route through import-lib.  These should be re-runnable.
+      local filePath is "0:/extra/"+splitCmd[1]+".ks".
+      if exists(filePath) runpath("0:/extra/"+splitCmd[1]+".ks"). // Do not route through import-lib.  These should be re-runnable.
+      else set kernel_ctl["output"] to "Script: "+splitCmd[1]+" does not exist".
       lock throttle to 0.
       lock steering to ship:facing:forevector.
       return "finished".
