@@ -4,7 +4,7 @@ if ship:availablethrust <=0 stage.
 declare function throttleFunction {
    declare parameter targetAltitude.
    
-   local currentG is (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
+   local currentG is (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    local maxAccel is ship:availablethrust()/ship:mass. // Lose 1 g for hover
    local throttMaxGees is maxAccel/currentG -1.
 
@@ -13,7 +13,7 @@ declare function throttleFunction {
    local gLimit is 1.
    local outputMax is choose max(vang(up:forevector, ship:facing:forevector)/pitchLimit, (1+gLimit)/throttMaxGees) if ship:availablethrust() > 0 else 0.
    //local outputMin is choose currentG/maxAccel if ship:verticalspeed < 0 else 0.  // Minimum 0.5 G
-   local speedLimit is choose sqrt(abs(ship:altitude - targetAltitude)*currentG) if ship:altitude < targetAltitude else -sqrt(abs(ship:altitude - targetAltitude)*currentG).
+   local speedLimit is choose sqrt(abs(alt:radar - targetAltitude)*currentG) if alt:radar < targetAltitude else -sqrt(abs(alt:radar - targetAltitude)*currentG).
    local vSpeedError is 0.
    set vSpeedError to ship:verticalspeed - speedLimit.
    local vSpeedSigmoid is min(outputMax, -vSpeedError/sqrt(currentG+vSpeedError^2)).
@@ -42,9 +42,9 @@ declare function translationFunction {
    local topSpeed is (topDistance/vxcl(up:forevector, tgtGeopos:position):mag)*speedLimit.
    local starSpeed is (starDistance/vxcl(up:forevector, tgtGeopos:position):mag)*speedLimit.
 
-   local currentG is (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
-   local maxAccel is (ship:availablethrust()/ship:mass) - 3*currentG. // Lose 1 g for hover
-   local pitchLimit is arccos(currentG/max(currentG, maxAccel)).
+   local currentG is (ship:body:mu/((alt:radar+ship:body:radius)^2)).
+   local maxAccel is (ship:availablethrust()/ship:mass). // Lose 1 g for hover
+   local pitchLimit is min(65, arccos(currentG/max(currentG, maxAccel))).
 
    print "topSpeed: "+topSpeed at(0, 3).
    print "topDistance: "+topDistance at(0, 4).
@@ -62,20 +62,30 @@ declare function translationFunction {
    ).
 }
 
-local tgtGeoPos is latlng(0.1, ship:geoposition:lng-0.0108).
-lock steering to translationFunction().
-local tgtAlt is 200.
+local tgtGeoPos is latlng(ship:geoposition:lat+1, ship:geoposition:lng+1).
+local tgtAlt is 50.
 lock throttle to throttleFunction(tgtAlt).
-wait until ship:altitude >= tgtAlt-1.
-wait 5.
 lock steering to translationFunction(tgtGeoPos).
-set tgtAlt to 80.
-//wait 15.
-//set tgtGeoPos to latlng(0, ship:geoposition:lng+0.03125).
-wait until vxcl(up:forevector, tgtGeoPos:position):mag < 10.
-lock steering to translationFunction().
-wait 5.
-set tgtAlt to 64.
 
+wait until tgtGeoPos:position:mag < 100.
+set tgtAlt to 0.
+
+
+//local tgtGeoPos is latlng(0.1, ship:geoposition:lng-0.0108).
+//lock steering to translationFunction().
+//local tgtAlt is 200.
+//lock throttle to throttleFunction(tgtAlt).
+//wait until alt:radar >= tgtAlt-1.
+//wait 5.
+//lock steering to translationFunction(tgtGeoPos).
+//wait 5.
+//set tgtAlt to 80.
+////wait 15.
+////set tgtGeoPos to latlng(0, ship:geoposition:lng+0.03125).
+//wait until vxcl(up:forevector, tgtGeoPos:position):mag < 10.
+//lock steering to translationFunction().
+//wait 5.
+//set tgtAlt to 64.
+//
 wait until ship:status = "LANDED".
 

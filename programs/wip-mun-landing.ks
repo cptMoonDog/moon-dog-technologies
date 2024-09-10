@@ -59,6 +59,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //======== Imports needed by the program =====
    if not (defined transfer_ctl) runpath("0:/lib/transfer_ctl.ks").
    if not (defined maneuver_ctl) runpath("0:/lib/maneuver_ctl.ks").
+   if not (defined phys_lib) runpath("0:/lib/physics.ks").
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
@@ -117,33 +118,29 @@ kernel_ctl["availablePrograms"]:add(programName, {
 
       declare function ttImpactFlat {
          local vertAccel is (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
-         local dist is ship:altitude-context["tgt"]:terrainheight.
+         local dist is max(0, ship:altitude-context["tgt"]:terrainheight).
 
          // Kinematics solved for time with quadratic formula
-         return (ship:verticalspeed + sqrt(max(0.001, min(0.001, ship:verticalspeed))^2 + 2*(dist)*vertAccel))/vertAccel.
+         return (ship:verticalspeed + sqrt(max(0.001, min(0.001, ship:verticalspeed)^2) + 2*(dist)*vertAccel))/vertAccel.
       }
 
-      // 
       declare function suicideBurnSigmoid {
          local error is context["suicideBurnLength"] - context["ttImpactFlat"].
          return error/sqrt(1+error^2).
       }
-      declare function ttImpactTTTargetSigmoid {
-         local error is context["ttImpactFlat"] - context["ttTarget"].
-         return error/sqrt(1+error^2).
-      }
       // will return + (long), - (short)
       declare function longShortSigmoid {
-         local error is context["ttImpactFlat"] - context["ttTarget"]+3.25.
-         if abs(error) < 0.01 set error to 0.
-         return error/sqrt(90+error^2).
+         local error is context["ttImpactFlat"] - context["ttTarget"].
+         if phys_lib["OVatAlt"](ship:body, ship:altitude)*0.90 < ship:velocity:orbit:mag set error to 0.
+         return error/sqrt(max(1, context["ttTarget"])+error^2).
       }
 
       declare function steeringVectorOverflight {
          local sma is ship:altitude+ship:body:radius.
          return up:forevector*angleAxis(
            //Amount of pitch
-           90-context["twr1Angle"],
+           vang(up:forevector, ship:srfretrograde:forevector),
+           //90-context["twr1Angle"],
            //Axis
            vcrs(up:forevector, ship:srfretrograde:forevector)
          ).
@@ -165,13 +162,14 @@ kernel_ctl["availablePrograms"]:add(programName, {
          print "bottom: "+bottom at(0,5).
          local twrRange is abs(90 - context["twr1Angle"] - vang(up:forevector, ship:srfretrograde:forevector)).
          print "range: " + abs(90 - context["twr1Angle"] - vang(up:forevector, ship:srfretrograde:forevector)) at(0, 6).
-         if context["longShortSigmoid"] < 0 {// Short
-            // Range*multiplier + bottom
-            if ship:verticalspeed > 0 or (ship:altitude-context["tgt"]:terrainheight)/max(0.001, -ship:verticalspeed) > context["ttTarget"] set pitchAngle to 90-vang(up:forevector, ship:srfretrograde:forevector).
-            else set pitchAngle to context["longShortSigmoid"]*twrRange + bottom.
-            print "pitchangle: "+pitchAngle at(0, 7).
-         } else if context["longShortSigmoid"] > 0
-            set pitchAngle to context["longShortSigmoid"]*(90-vang(up:forevector, ship:srfretrograde:forevector)). // Pitch down no more than horizontal
+         //set pitchAngle to vang(up:forevector, ship:srfretrograde:forevector)*context["longShortSigmoid"].
+         set pitchAngle to min(90-vang(ship:retrograde:forevector, up:forevector), max(-90, vang(ship:retrograde:forevector, up:forevector)*context["longShortSigmoid"])).
+         //if context["longShortSigmoid"] < 0 {// Short
+         //   if ship:verticalspeed < 0 set pitchAngle to max(45, vang(up:forevector, ship:srfretrograde:forevector)*context["longShortSigmoid"]).
+         //   else set pitchAngle to 0.
+         //   print "pitchangle: "+pitchAngle at(0, 7).
+         //} else if context["longShortSigmoid"] > 0
+         //   set pitchAngle to (90-vang(up:forevector, ship:srfretrograde:forevector)). // Pitch down no more than retrograde
 
          //if ship:orbit:periapsis > ship:orbit:body:radius/2 set pitchAngle to 0.
          //if alt:radar > 8000 or ship:groundspeed > 300 set pitchAngle to 0.
@@ -187,34 +185,92 @@ kernel_ctl["availablePrograms"]:add(programName, {
             up:forevector
          ).
       }
+
       declare function throttlePrimaryDescent {
-         if context["longShortSigmoid"] < 0 
-            if (90-vang(ship:facing:forevector, up:forevector)) > context["twr1Angle"] // Short, Traversing
-               return max(-context["longShortSigmoid"], suicideBurnSigmoid()).
-            else return max(-context["longShortSigmoid"], suicideBurnSigmoid()). // Short, but not Traversing
-         else if context["longShortSigmoid"] > 0 
-            return max(context["longShortSigmoid"], suicideBurnSigmoid()).
-         else 
-            return throttleFinalApproach().
+         //return abs(max(context["longShortSigmoid"], suicideBurnSigmoid())).
+         if ship:verticalspeed < 0 return suicideBurnSigmoid().
+         else if context["longShortSigmoid"] > 0 return context["longShortSigmoid"].
+         else return 0.
+         //if context["longShortSigmoid"] < 0 {
+         //   return max(-context["longShortSigmoid"], suicideBurnSigmoid()).
+         //} else if context["longShortSigmoid"] > 0 {
+         //   return max(context["longShortSigmoid"], suicideBurnSigmoid()).
+         //} else return 0.
       }
 
-      declare function steeringVectorFinalApproach {
-         return ship:srfretrograde:forevector.
-         // TODO Implement traverse capability
-         //local starVelMag is vxcl(up:forevector, vxcl(up:topvector, ship:srfprograde:forevector)):mag.
-         //local topVelMag is vxcl(up:forevector, vxcl(up:starvector, ship:srfprograde:forevector)):mag.
+      declare function throttleFunction {
+         declare parameter targetAltitude.
+         
+         local currentG is (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
+         local maxAccel is ship:availablethrust()/ship:mass. // Lose 1 g for hover
+         local throttMaxGees is maxAccel/currentG -1.
 
-         //local starCompMag is -vxcl(up:forevector, vxcl(up:topvector, context["tgt"]:position)):mag/context["ttImpactFlat"]-starVelMag.
-         //local topCompMag is -vxcl(up:forevector, vxcl(up:starvector, context["tgt"]:position)):mag/context["ttImpactFlat"]-topVelMag.
-         //local dirMag is vxcl(up:forevector, context["tgt"]:position):mag/context["ttImpactFlat"].
-         //print "starCompMag: "+starCompMag at(0, 3).
-         //print "topCompMag: "+topCompMag at(0, 4).
-         //return up:forevector*angleaxis((topCompMag/dirMag)*45, up:starvector)*angleaxis((starCompMag/dirMag)*45, up:topvector).
+         local pitchLimit is arccos(currentG/max(currentG, maxAccel)).
+
+         local gLimit is 1.
+         local outputMax is choose max(vang(up:forevector, ship:facing:forevector)/pitchLimit, (1+gLimit)/throttMaxGees) if ship:availablethrust() > 0 else 0.
+         //local outputMin is choose currentG/maxAccel if ship:verticalspeed < 0 else 0.  // Minimum 0.5 G
+         local speedLimit is choose sqrt(abs(alt:radar - targetAltitude)*currentG) if alt:radar < targetAltitude else -sqrt(abs(alt:radar - targetAltitude)*currentG).
+         local vSpeedError is 0.
+         set vSpeedError to ship:verticalspeed - speedLimit.
+         local vSpeedSigmoid is min(outputMax, -vSpeedError/sqrt(currentG+vSpeedError^2)).
+         return vSpeedSigmoid.
       }
-
       declare function throttleFinalApproach {
-         return max(suicideBurnSigmoid(), (ship:verticalspeed)*3/(-alt:radar)).
+         local proximity is vxcl(up:forevector, context["tgt"]:position):mag.//, vxcl(north:forevector, context["tgt"]:position):mag).
+
+         if proximity > 500 return throttleFunction(100).
+         else if proximity > 100 or ship:velocity:surface:mag > 10 return throttleFunction(20).
+         else if proximity > 20 return throttleFunction(20).
+         else if proximity > 10 return throttleFunction(20).
+         else if proximity > 1 or abs(ship:verticalspeed) > 1 return throttleFunction(5).
+         else if proximity <= 1 and abs(ship:verticalspeed) < 1 return throttleFunction(0).
+         else return throttleFunction(5).
       }
+      declare function axisFunction {
+         declare parameter targetSpeed is 0.
+         declare parameter currentSpeed is 0.
+         declare parameter speedLimit is 0.
+         declare parameter pitchLimit is 12.5.
+
+         local error is currentSpeed - min(speedLimit, max(-speedLimit, targetSpeed)).
+         if abs(error) < 0.001 set error to 0.
+         return (error/sqrt(pitchLimit+error^2))*pitchLimit.
+      }
+
+      declare function translationFunction {
+         declare parameter tgtGeoPos is latlng(ship:geoposition:lat, ship:geoposition:lng).
+
+         local topDistance is tgtGeoPos:position*up:topVector.
+         local starDistance is -tgtGeoPos:position*up:starVector.
+         local speedLimit is min(50, sqrt(vxcl(up:forevector, tgtGeoPos:position):mag)/2).
+
+         local topSpeed is (topDistance/vxcl(up:forevector, tgtGeopos:position):mag)*speedLimit.
+         local starSpeed is (starDistance/vxcl(up:forevector, tgtGeopos:position):mag)*speedLimit.
+
+         local currentG is (ship:body:mu/((alt:radar+ship:body:radius)^2)).
+         local maxAccel is (ship:availablethrust()/ship:mass) - currentG. // Lose 1 g for hover
+         local pitchLimit is min(90, arccos(currentG/max(currentG, maxAccel))).
+
+         print "topSpeed: "+topSpeed at(0, 3).
+         print "topDistance: "+topDistance at(0, 4).
+         print "starSpeed: "+starSpeed at(0, 6).
+         print "starDistance: "+starDistance at(0, 7).
+
+         print "pitchLimit: "+pitchLimit at(0, 10).
+         print "speedLimit: "+speedLimit at(0, 11).
+
+         print "Target Distance: "+vxcl(up:forevector, tgtGeoPos:position):mag at(0, 13).
+         return up * R(
+            axisFunction(topSpeed, ship:velocity:surface*up:topvector, speedLimit, pitchLimit), 
+            axisFunction(starSpeed, -ship:velocity:surface*up:starvector, speedLimit, pitchLimit), 
+            0
+         ).
+      }
+      declare function steeringVectorFinalApproach {
+         return translationFunction(context["tgt"]).
+      }
+
 
       declare function updateContext {
          local test1 is sin(ship:geoposition:lat)*sin(context["tgt"]:lat).
@@ -224,12 +280,11 @@ kernel_ctl["availablePrograms"]:add(programName, {
          set context["twr1Angle"] to arcsin(max(-1, min(1, 1/(ship:body:mu/(sma^2))*(ship:mass/max(0.1, ship:availablethrust))))).
          set context["ttImpactFlat"] to ttImpactFlat().
          set context["ttTarget"] to max(
-           context["tgt"]:position:mag/ship:groundspeed,
+           vxcl(up:forevector, context["tgt"]:position):mag/ship:groundspeed,
            arccos(min(1, test1 + test2))/velDegrees
          ).
          set context["longShortSigmoid"] to longShortSigmoid().
-         set context["ttImpactTTTSigmoid"] to ttImpactTTTargetSigmoid().
-         set context["suicideBurnLength"] to ship:velocity:surface:mag/(ship:maxthrust/ship:mass).
+         set context["suicideBurnLength"] to ship:velocity:surface:mag/(ship:availablethrust/ship:mass). // Refinement: How much mass is lost in burn?
          set context["steeringVector"] to context["steeringFunction"]().
          set context["throttleValue"] to context["throttleFunction"]().
       }
@@ -273,7 +328,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
       kernel_ctl["MissionPlanAdd"](programName, {
          updateContext().
          debuggingOutput().
-         if alt:radar < 300 {
+         if alt:radar < 100 {
+            set kernel_ctl["status"] to "Final Approach".
             set context["throttleFunction"] to throttleFinalApproach@.
             set context["steeringFunction"] to steeringVectorFinalApproach@.
            return OP_FINISHED.
@@ -282,10 +338,9 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }).
 
       kernel_ctl["MissionPlanAdd"](programName, {
-         updateContext().
-        set kernel_ctl["status"] to "Final approach".
+        updateContext().
         if alt:radar < 50 gear on.
-        if abs(alt:radar) < 5 or ship:status = "LANDED" {
+        if abs(alt:radar) < 1 or ship:status = "LANDED" {
            lock throttle to 0.
            lock steering to up:forevector.
            clearvecdraws().
