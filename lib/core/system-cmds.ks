@@ -294,8 +294,8 @@ SYS_CMDS:add("remove", {
       if splitCmd:length > 1 {
          if splitCmd[1]:tonumber(-1) > -1 { // index number
             kernel_ctl["MissionPlanRemove"](splitCmd[1]:tonumber(0)).
-         } else if MISSION_PLAN_ID:find(splitCmd[1]) > -1 { // ID 
-            kernel_ctl["MissionPlanRemove"](kernel_ctl["MissionPlanList"]:find(splitCmd[1])).
+         } else if kernel_ctl["MissionPlanList"]():find(splitCmd[1]) > -1 { // ID 
+            kernel_ctl["MissionPlanRemove"](kernel_ctl["MissionPlanList"]():find(splitCmd[1])).
          }
       }
       return "finished".

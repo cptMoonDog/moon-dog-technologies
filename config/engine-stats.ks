@@ -27,4 +27,4 @@ maneuver_ctl["defEngine"]("doubleTwitch",  290 ,  32  ,        0.0).
 maneuver_ctl["defEngine"]("doubleSpider",  290 ,  4   ,        0.0).
 maneuver_ctl["defEngine"]("tripleSpider",  290 ,  6   ,        0.0).
 maneuver_ctl["defEngine"]("quadSpider",    290 ,  8   ,        0.0).
-maneuver_ctl["defEngine"]("wolfhound",     412 ,  375 ,        0.0).
+maneuver_ctl["defEngine"]("wolfhound",     380 ,  375 ,        0.0).

@@ -304,6 +304,21 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //=============== Begin program sequence Definition ===============================
       // Assumes spacecraft is already on a low over flight trajectory.
       kernel_ctl["MissionPlanAdd"](programName, {
+         set kernel_ctl["status"] to "Waiting for deorbit position".
+         set context["steeringFunction"] to {return ship:retrograde.}.
+         set context["throttleFunction"] to {return 0.}.
+         updateContext().
+         lock steering to ship:retrograde.
+         if vang(ship:body:position, context["tgt"]:position) >= 45 and vang(ship:prograde:forevector, context["tgt"]:position) < 90 {
+            if phys_lib["OVatAlt"](ship:body, ship:altitude)*0.90 > ship:velocity:orbit:mag {
+               lock throttle to 0.
+               return OP_FINISHED.
+            } else if vang(ship:retrograde:forevector, ship:facing:forevector) < 1 {
+               lock throttle to 1. 
+            } else lock throttle to 0.
+         } else return OP_CONTINUE.
+      }).
+      kernel_ctl["MissionPlanAdd"](programName, {
          set kernel_ctl["status"] to "Overflight".
          set context["throttleFunction"] to throttleOverflight@.
          set context["steeringFunction"] to steeringVectorOverflight@.

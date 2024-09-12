@@ -18,13 +18,14 @@ kernel_ctl["availablePrograms"]:add(programName, {
    
 //======== Parameters used by the program ====
    // Don't forget to update the standalone system, above, if you change the number of parameters here.
-   declare parameter targetBody.
-   if argv:split(" "):length >= 1 {
+   declare parameter argv.
+   local targetBody is argv.
+   if targetBody {
       set targetBody to argv:split(" ")[0].
    } else {
       set kernel_ctl["output"] to
          "Initiates warp until the next encounter with [TARGET BODY]"
-         +char(10)+"   Usage: Q warp-to-soi [TARGET BODY]".
+         +char(10)+"   Usage: add warp-to-soi [TARGET BODY]".
       return.
    }
 //======== Local Variables =====

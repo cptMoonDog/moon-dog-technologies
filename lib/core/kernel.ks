@@ -127,9 +127,13 @@ clearscreen.
             if id:istype("Scalar") and id < MISSION_PLAN_ID:length {
                MISSION_PLAN:remove(id+1).
                MISSION_PLAN_ID:remove(id).
-            } else {
-               MISSION_PLAN:remove(MISSION_PLAN_ID:find(id)+1).
-               MISSION_PLAN_ID:remove(id).
+            } else { // Remove by name 
+               until MISSION_PLAN_ID:find(id) < 0 {
+                  local lowestIdOfName is MISSION_PLAN_ID:find(id). 
+                  MISSION_PLAN:remove(lowestIdOfName+1).
+                  MISSION_PLAN_ID:remove(lowestIdOfName).
+               }
+               print MISSION_PLAN_ID:find(id) at(0, 10).
             }
          } else {
             MISSION_PLAN:remove(id).
