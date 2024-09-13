@@ -146,8 +146,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
          set nodeCreated to true.
       }
 
-      return OP_CONTINUE.
-      //maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
+      //return OP_CONTINUE.
+      maneuver_ctl["add_burn"]("node", engineName, "node", nextnode:deltav:mag).
       return OP_FINISHED.
    }).
    kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).

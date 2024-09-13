@@ -131,7 +131,8 @@ kernel_ctl["availablePrograms"]:add(programName, {
       // will return + (long), - (short)
       declare function longShortSigmoid {
          local error is context["ttImpactFlat"] - context["ttTarget"].
-         if phys_lib["OVatAlt"](ship:body, ship:altitude)*0.90 < ship:velocity:orbit:mag set error to 0.
+         // Why?
+         //if phys_lib["OVatAlt"](ship:body, ship:altitude)*0.90 > ship:velocity:orbit:mag set error to 0.
          return error/sqrt(max(1, context["ttTarget"])+error^2).
       }
 
@@ -164,6 +165,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          print "range: " + abs(90 - context["twr1Angle"] - vang(up:forevector, ship:srfretrograde:forevector)) at(0, 6).
          //set pitchAngle to vang(up:forevector, ship:srfretrograde:forevector)*context["longShortSigmoid"].
          set pitchAngle to min(90-vang(ship:retrograde:forevector, up:forevector), max(-90, vang(ship:retrograde:forevector, up:forevector)*context["longShortSigmoid"])).
+         if alt:radar < 300 and ship:groundspeed > 100 set pitchAngle to -90.
          //if context["longShortSigmoid"] < 0 {// Short
          //   if ship:verticalspeed < 0 set pitchAngle to max(45, vang(up:forevector, ship:srfretrograde:forevector)*context["longShortSigmoid"]).
          //   else set pitchAngle to 0.
@@ -187,10 +189,10 @@ kernel_ctl["availablePrograms"]:add(programName, {
       }
 
       declare function throttlePrimaryDescent {
-         //return abs(max(context["longShortSigmoid"], suicideBurnSigmoid())).
-         if ship:verticalspeed < 0 return suicideBurnSigmoid().
-         else if context["longShortSigmoid"] > 0 return context["longShortSigmoid"].
-         else return 0.
+         return abs(max(context["longShortSigmoid"], suicideBurnSigmoid())).
+         //if ship:verticalspeed < 0 return max(context["longShortSigmoid"], suicideBurnSigmoid()).
+         //else if context["longShortSigmoid"] > 0 return context["longShortSigmoid"].
+         //else return 0.
          //if context["longShortSigmoid"] < 0 {
          //   return max(-context["longShortSigmoid"], suicideBurnSigmoid()).
          //} else if context["longShortSigmoid"] > 0 {
@@ -279,7 +281,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          local sma is ship:altitude+ship:body:radius.
          set context["twr1Angle"] to arcsin(max(-1, min(1, 1/(ship:body:mu/(sma^2))*(ship:mass/max(0.1, ship:availablethrust))))).
          set context["ttImpactFlat"] to ttImpactFlat().
-         set context["ttTarget"] to max(
+         set context["ttTarget"] to min(
            vxcl(up:forevector, context["tgt"]:position):mag/ship:groundspeed,
            arccos(min(1, test1 + test2))/velDegrees
          ).
@@ -304,21 +306,6 @@ kernel_ctl["availablePrograms"]:add(programName, {
 //=============== Begin program sequence Definition ===============================
       // Assumes spacecraft is already on a low over flight trajectory.
       kernel_ctl["MissionPlanAdd"](programName, {
-         set kernel_ctl["status"] to "Waiting for deorbit position".
-         set context["steeringFunction"] to {return ship:retrograde.}.
-         set context["throttleFunction"] to {return 0.}.
-         updateContext().
-         lock steering to ship:retrograde.
-         if vang(ship:body:position, context["tgt"]:position) >= 45 and vang(ship:prograde:forevector, context["tgt"]:position) < 90 {
-            if phys_lib["OVatAlt"](ship:body, ship:altitude)*0.90 > ship:velocity:orbit:mag {
-               lock throttle to 0.
-               return OP_FINISHED.
-            } else if vang(ship:retrograde:forevector, ship:facing:forevector) < 1 {
-               lock throttle to 1. 
-            } else lock throttle to 0.
-         } else return OP_CONTINUE.
-      }).
-      kernel_ctl["MissionPlanAdd"](programName, {
          set kernel_ctl["status"] to "Overflight".
          set context["throttleFunction"] to throttleOverflight@.
          set context["steeringFunction"] to steeringVectorOverflight@.
@@ -331,7 +318,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
          updateContext().
          // Orient orbit to target
          debuggingOutput().
-         if context["ttTarget"] < context["ttImpactFlat"] or context["ttTarget"] < context["suicideBurnLength"] {
+         if (context["ttTarget"] < context["ttImpactFlat"] or context["ttTarget"] < context["suicideBurnLength"]) {
             set kernel_ctl["status"] to "Primary Descent".
             set context["throttleFunction"] to throttlePrimaryDescent@.
             set context["steeringFunction"] to steeringVectorPrimaryDescent@.
@@ -343,7 +330,7 @@ kernel_ctl["availablePrograms"]:add(programName, {
       kernel_ctl["MissionPlanAdd"](programName, {
          updateContext().
          debuggingOutput().
-         if alt:radar < 100 {
+         if alt:radar < 100 or ship:groundspeed < 50 {
             set kernel_ctl["status"] to "Final Approach".
             set context["throttleFunction"] to throttleFinalApproach@.
             set context["steeringFunction"] to steeringVectorFinalApproach@.

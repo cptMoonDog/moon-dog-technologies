@@ -1,8 +1,30 @@
+# Moon Dog Technologies is in need of faculty and research and development staff.  
+
+## We need help in the following areas:
+
+### Instructors: 
+#### Job Requirements: 
+Make videos and instructional materials about rocket science!  There are new people coming to the game all the time, and any help you can give them will get you an honorary degree from the academy.  If you want to use mdTech to do so, we would love to hear how you found it useful.  We aim to make the pre-eminent KOS automation suite available.
+
+#### Compensation: 
+If you post your lesson or tutorial here, you will get a hearty pat on the back!
+
+#### Necessary Experience: 
+Whatever you have.  Teach what you know, and you will discover even more.
+
+### Moon Dog Technologies Associate Developer:
+#### Job Requirements: 
+We need help in all areas to improve the Moon Dog Technologies software suite.  Currently, we have a drop-in shell program to simplify high-level scripting and mission development, along with many pre-built routines.  We need help adding new routines, debugging, and adding documentation.  To get a sample of capabilities, check out the videos.
+
+#### Compensation: 
+Our gratitude, high praise and credit, and the good feeling that you beat MechJeb in a toy language. :D
+Necessary Experience: Any contributions are welcome.  We aim to educate, enlighten, and elevate.  Regardless of how little or much experience you have, if you have a new drop-in program, or an improvement, we appreciate any contributions, or discussions.
+
 Moon Dog Technologies Software Repository
 ===========================
-The Moon Dog Technologies Consortium was the dream of one man, and now that of several dozen citizens of Kerbin.
+The Moon Dog Technologies Consortium was the dream of several dozen citizens of Kerbin.
 
-Herein you will find a full featured suite of navigational software built in the [kOS](https://KSP-KOS.github.io/KOS) framework, and features and utilities to accompany the instructional videos on [YouTube](https://www.youtube.com/channel/UCXrQZx4C1a3GPn7DXkyWhfw).
+Herein you will find a full featured suite of navigational software built in the [kOS](https://KSP-KOS.github.io/KOS) framework.
 
 Major Features
 ==============
