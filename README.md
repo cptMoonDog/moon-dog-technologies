@@ -7,7 +7,7 @@
 Make videos and instructional materials about rocket science!  There are new people coming to the game all the time, and any help you can give them will get you an honorary degree from the academy.  If you want to use mdTech to do so, we would love to hear how you found it useful.  We aim to make the pre-eminent KOS automation suite available.
 
 #### Compensation: 
-If you post your lesson or tutorial here, you will get a hearty pat on the back!
+If you post a lesson or tutorial anywhere and let us know, you will get receive a hearty pat on the back!
 
 #### Necessary Experience: 
 Whatever you have.  Teach what you know, and you will discover even more.
