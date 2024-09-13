@@ -22,7 +22,7 @@ if ship:status = "PRELAUNCH" {
    local deployedSat is 0.
    print "#procs: "+procs:length.
    if nSats = -1 {
-      print "Number of satellites being deployed is void.".
+      print "Number of satellites being deployed is invalid.".
       shutdown.
    } else if procs:length > nSats {
    // If deployment has not already started, adjust orbit for correct transfer orbit period.

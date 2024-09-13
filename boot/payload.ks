@@ -25,6 +25,7 @@ if ship:status = "PRELAUNCH" AND core:tag {
    // Add program to wait until booster finishes it's job.
    clearscreen.
    set kernel_ctl["status"] to "waiting for handoff...".
+   local abort_mode is choose mission_abort if defined mission_abort else {return OP_FINISHED.}.
    kernel_ctl["MissionPlanAdd"]("wait for launch to complete", {
       local procs is list().
       list processors in procs.
@@ -40,8 +41,7 @@ if ship:status = "PRELAUNCH" AND core:tag {
          if core:messages:empty OR core:messages:peek():content:tostring = "ABORT" {
             if not(core:messages:empty) core:messages:pop().
             set kernel_ctl["status"] to "Aborting...".
-            if defined mission_abort mission_abort().
-            else shutdown.
+            return OP_FAIL.
          } else if core:messages:peek():content:tostring = "SUCCESS" {
             core:messages:pop().
             set kernel_ctl["status"] to "Launch Successful!".
@@ -50,7 +50,7 @@ if ship:status = "PRELAUNCH" AND core:tag {
          }
          return OP_FINISHED.
       }
-   }). 
+   }, abort_mode@ ). 
    kernel_ctl["start"]().
    reboot.
 } else if core:messages:length=2 AND (core:messages:peek():content:tostring = "SUCCESS" OR core:messages:peek():content:tostring = "ABORT")  {

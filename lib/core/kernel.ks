@@ -21,7 +21,8 @@ global OP_FAIL is 32767.
 
 local MISSION_PLAN is list().
 local MISSION_PLAN_ID is list().
-global CURRENT_ABORT_MODE is list(). // Potential to allow programs and missions to have abort modes.
+local MISSION_PLAN_ABORT is list(). // Potential to allow programs and missions to have abort modes.
+
 global SYS_CMDS is lexicon().
 global SYS_CMDS_HELP is lexicon().
 
@@ -61,7 +62,7 @@ clearscreen.
          //set regulator to time:seconds.
          
          // Execute current routine
-         if runmode < MISSION_PLAN:length and runmode > -1 {
+         if runmode < MISSION_PLAN:length and runmode >= -1 {
             set_runmode(MISSION_PLAN[runmode]()).
 
             // If mission plan is still running...
@@ -93,7 +94,7 @@ clearscreen.
                   MISSION_PLAN_ID:remove(0).
                }
                print kernel_ctl["status"]:padright(terminal:width) at(0, 0).
-               set kernel_ctl["status"] to "Mission Ended".
+               set kernel_ctl["status"] to "Mission Complete".
                set ship:control:pilotmainthrottle to 0.
                unlock throttle.
                unlock steering.
@@ -108,12 +109,21 @@ clearscreen.
    }
    set kernel_ctl["start"] to start@.
 
+   declare function default_abort {
+      set kernel_ctl["status"] to "!!!WARNING!!! !!!WARNING!!!".
+      display_buffer:add("!!!WARNING!!!"+char(10)).
+      display_buffer:add("NO ABORT MODE DEFINED"+char(10)).
+      update_display().
+      return OP_FINISHED.
+   }
    declare function MPadd {
       declare parameter name.
       declare parameter delegate.
+      declare parameter abort is default_abort@.
       
       MISSION_PLAN:add(delegate). 
       MISSION_PLAN_ID:add(name).
+      MISSION_PLAN_ABORT:add(abort).
    }
    set kernel_ctl["MissionPlanAdd"] to MPadd@.
    
@@ -127,10 +137,12 @@ clearscreen.
             if id:istype("Scalar") and id < MISSION_PLAN_ID:length {
                MISSION_PLAN:remove(id+1).
                MISSION_PLAN_ID:remove(id).
+               MISSION_PLAN_ABORT:remove(id).
             } else { // Remove by name 
                until MISSION_PLAN_ID:find(id) < 0 {
                   local lowestIdOfName is MISSION_PLAN_ID:find(id). 
                   MISSION_PLAN:remove(lowestIdOfName+1).
+                  MISSION_PLAN_ID:remove(lowestIdOfName).
                   MISSION_PLAN_ID:remove(lowestIdOfName).
                }
                print MISSION_PLAN_ID:find(id) at(0, 10).
@@ -138,6 +150,7 @@ clearscreen.
          } else {
             MISSION_PLAN:remove(id).
             MISSION_PLAN_ID:remove(id).
+            MISSION_PLAN_ABORT:remove(id).
          }
       }
    }
@@ -147,9 +160,11 @@ clearscreen.
       parameter id.
       parameter name.
       parameter delegate.
+      parameter abort is {}.
  
       MISSION_PLAN:insert(id, delegate).
       MISSION_PLAN_ID:insert(id, name).
+      MISSION_PLAN_ID:insert(id, abort).
    }
    set kernel_ctl["MissionPlanInsert"] to MPinsert@.
 
@@ -193,8 +208,9 @@ clearscreen.
    }
    set kernel_ctl["load-to-core"] to loadToCore@.
    
+   // Alpha, kinda sorta works...
    declare function hibernation_wake {
-      import_lib("plans/"+core:tag).
+      import_lib("missions/"+core:tag).
       set runmode to open("1:/hiberfile"):readall:string:tonumber(0).
    }
    set kernel_ctl["wakeup"] to hibernation_wake@.  
@@ -205,9 +221,14 @@ clearscreen.
       if n = OP_FAIL {
          print "runmode: "+runmode.
          print MISSION_PLAN_ID[runmode] + " returned fail flag.".
-         set runmode to MISSION_PLAN:length+100.
+         set MISSION_PLAN to MISSION_PLAN:sublist(0, runmode+1).
+         set MISSION_PLAN_ID to MISSION_PLAN:sublist(0, runmode).
+         MISSION_PLAN_ID:add("abort").
+         MISSION_PLAN:add(MISSION_PLAN_ABORT[runmode]).
+         set runmode to runmode+1.
       }
       if n >= -1 and n <= 1 set runmode to runmode+n.
+      // Hibernation.  Alpha, kinda sorta works...
       if n and exists("1:/hiberfile") {
          local hib is open("1:/hiberfile").
          hib:clear.
@@ -247,22 +268,21 @@ clearscreen.
    // Special internal system commands
    SYS_CMDS_HELP:add("engage", char(10)+"Starts running the Mission Plan").
    SYS_CMDS_HELP:add("start", char(10)+"Alias for 'engage'").
-   SYS_CMDS:add("engage", {
+   declare function start_system {
       declare parameter cmd.
       set runmode to runmode  + 1.
       return "finished".
-   }).
-   SYS_CMDS:add("start", {
-      declare parameter cmd.
-      set runmode to runmode  + 1.
-      return "finished".
-   }).
+   }
+   SYS_CMDS:add("engage", start_system@).
+   SYS_CMDS:add("start", start_system@).
 
    SYS_CMDS_HELP:add("abort",
       char(10)+
       "Aborts the Mission"+char(10)+
       "   Usage: abort [OPTION]"+char(10)+
-      "   Default: Skips all remaining mission elements"+char(10)+
+      "   Default: Runs the abort routine for this mission_plan item and"+char(10)+
+      "            skips all remaining mission elements"+char(10)+
+      "   -c | --clear  clears the mission-plan"+char(10)+
       "   -r | --reboot  Reboots the system"+char(10)+
       "   -s | --shutdown Off switch"
    ).
@@ -272,8 +292,18 @@ clearscreen.
       if splitCmd:length > 1 {
          if splitCmd[1] = "-r" OR splitCmd[1] = "--reboot" reboot.
          else if splitCmd[1] = "-s" OR splitCmd[1] = "--shutdown" shutdown.
+         else if splitCmd[1] = "-c" OR splitCmd[1] = "--clear" {
+            set MISSION_PLAN to MISSION_PLAN:sublist(0, 1).  // If this gets called we are in interactive mode.
+            set MISSION_PLAN_ID to list().
+            set MISSION_PLAN_ABORT to list().
+            set runmode to 0.
+         }
       } else {
-         set runmode to MISSION_PLAN:length.
+         set MISSION_PLAN to MISSION_PLAN:sublist(0, runmode+1).
+         set MISSION_PLAN_ID to MISSION_PLAN:sublist(0, runmode).
+         MISSION_PLAN_ID:add("abort").
+         MISSION_PLAN:add(MISSION_PLAN_ABORT[runmode]).
+         set runmode to runmode+1.
       }
       return "finished".
    }).
