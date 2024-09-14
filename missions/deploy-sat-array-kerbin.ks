@@ -25,7 +25,7 @@ if ship:status = "PRELAUNCH" {
          set core:tag to "Mayflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".
          reboot.
-         return OPP_FINISHED.
+         return OP_FINISHED.
       }).
       
       kernel_ctl["start"]().                                                        // Execute the mission plan.

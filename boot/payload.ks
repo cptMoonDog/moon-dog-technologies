@@ -8,6 +8,7 @@
 local mission is "none".
 local data is list().
 if ship:status = "PRELAUNCH" AND core:tag {
+   // This will only be run, if the payload.ks is the boot script at launch.
    runoncepath("0:/lib/core/kernel.ks").
    set data to core:tag:split(":"). // Payload name: mission, param, param...
    if data:length > 0 {

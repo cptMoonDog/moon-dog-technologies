@@ -27,11 +27,13 @@ if ship:status = "PRELAUNCH" {
    if exists("1:/lib/core/kernel.ksm") { 
       runpath("1:/lib/core/kernel.ksm").
       kernel_ctl["import-lib"]("programs/lko-to-moon").
+      kernel_ctl["import-lib"]("programs/warp-to-soi").
       kernel_ctl["import-lib"]("programs/powered-capture").
       kernel_ctl["import-lib"]("programs/match-plane").
       kernel_ctl["import-lib"]("programs/change-apsis").
       
       kernel_ctl["add"]("lko-to-moon", "swivel Minmus").
+      kernel_ctl["add"]("powered-capture", "Minmus").
       kernel_ctl["add"]("powered-capture", "terrier Minmus").
       kernel_ctl["add"]("change-apsis", "terrier pe 50000").
       kernel_ctl["add"]("circularize", "terrier pe").
@@ -41,7 +43,7 @@ if ship:status = "PRELAUNCH" {
          set core:tag to "Minflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".
          reboot.
-         return OPP_FINISHED.
+         return OP_FINISHED.
       }).
       
       kernel_ctl["start"]().                                                        // Execute the mission plan.
