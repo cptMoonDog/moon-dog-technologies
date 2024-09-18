@@ -42,9 +42,6 @@ clearscreen.
 {
    local runmode is 0.
 
-   local regulator is time:seconds.
-   
-
    local inputbuffer is "".
    local cmd_buffer is "".
    local cmd_history is list().
@@ -55,13 +52,6 @@ clearscreen.
 ///Public functions
    declare function start {
       until FALSE {
-         // Technically this only works for calculations and terminal ops.
-         //if time:seconds > regulator + 0.05 and config:ipu < 2000 {
-         //   set config:ipu to config:ipu + 1.
-         //   //set kernel_ctl["status"] to "IPU now: "+config:ipu.
-         //} else if time:seconds < regulator + 0.001 and config:ipu > 150 set config:ipu to config:ipu - 1.
-         //set regulator to time:seconds.
-         
          // Execute current routine
          if runmode < MISSION_PLAN:length and runmode >= -1 {
             set lagTime to time:seconds.
@@ -86,8 +76,8 @@ clearscreen.
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
             }
             set lagTime to ((time:seconds - lagTime)*1000):tostring:split(".")[0].
-            // Improves User experience in interactive mode.
-            if lagTime:tonumber(-1) > 20 set config:ipu to min(2000, config:ipu+10).
+            // Core ipu throttle.  Improves User experience in interactive mode.
+            if lagTime:tonumber(-1) > 20 set config:ipu to min(2000, config:ipu+100).
             else if config:ipu > 150 set config:ipu to max(150, config:ipu-1).
             //set kernel_ctl["countdown"] to "".
          } else {
