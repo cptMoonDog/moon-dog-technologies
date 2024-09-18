@@ -87,7 +87,7 @@ clearscreen.
             }
             set lagTime to ((time:seconds - lagTime)*1000):tostring:split(".")[0].
             // Improves User experience in interactive mode.
-            if lagTime:tonumber(-1) > 50 set config:ipu to min(2000, config:ipu+1).
+            if lagTime:tonumber(-1) > 20 set config:ipu to min(2000, config:ipu+10).
             else if config:ipu > 150 set config:ipu to max(150, config:ipu-1).
             //set kernel_ctl["countdown"] to "".
          } else {

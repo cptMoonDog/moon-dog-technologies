@@ -48,6 +48,7 @@ SYS_CMDS_HELP:add("help", char(10)+
    "   help --list-programs : For a list of runnable programs."+char(10)+
    "   help --list-vars : For a list of displayable environment variables."+char(10)+
    "   help --list-lv : For a list of configured launch vehicles."+char(10)+
+   "   help --list-missions : For a list of configured launch vehicles."+char(10)+
    "   Try:"+char(10)+
    "      help [Program Name]"+char(10)+
    "          or "+char(10)+
@@ -79,7 +80,14 @@ SYS_CMDS:add("help", {
             local temp is char(10)+"Configured Launch Vehicles:"+char(10).
             local avail is open("0:/lv").  
             for token in avail:lex():keys {
-               if avail:lex[token]:isfile() set temp to temp + char(10) + "   " + token:split(".")[0].
+               if avail:lex[token]:isfile() and avail:lex[token]:extension = "ks" set temp to temp + char(10) + "   " + token:split(".")[0].
+            }
+            set kernel_ctl["output"] to temp.
+         } else if topic = "--list-missions" {                                                                              //Missions
+            local temp is char(10)+"Available Firmware:"+char(10).
+            local avail is open("0:/missions").  
+            for token in avail:lex():keys {
+               if avail:lex[token]:isfile() and avail:lex[token]:extension = "ks" set temp to temp + char(10) + "   " + token:split(".")[0].
             }
             set kernel_ctl["output"] to temp.
          } else if topic = "--list-vars" {                                                                                  //help: Gets the program's help message
@@ -123,6 +131,7 @@ SYS_CMDS:add("display", {
          else if item = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
          else if item = "time"     set kernel_ctl["output"] to "   "+time:clock.                                  //time
          else if item = "ipu"      set kernel_ctl["output"] to "   "+config:ipu.                                  //Instructions per update
+         else if item = "mission"  set kernel_ctl["output"] to "   "+core:bootfilename.                           //current mission (bootfile)
          else if item = "mission-plan" {                                                                          //mission-plan
             local temp is "Mission Plan:"+char(10).
             local count is 0.
@@ -134,6 +143,11 @@ SYS_CMDS:add("display", {
          } else if item = "eta-duna-window" {                                                                       //eta-duna-window
             if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics"). 
             set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
+         } else if item = "launchParam" {
+            if (defined launch_param) {
+               if splitCmd:length > 2 set kernel_ctl["output"] to "   "+launch_param[splitCmd[2]].
+               else set kernel_ctl["output"] to "keys: "+launch_param:keys.
+            } else set kernel_ctl["output"] to "Not defined".
          } else set kernel_ctl["output"] to "   No data".
          return "finished".
 
@@ -307,6 +321,8 @@ SYS_CMDS:add("remove", {
    }                                                                               
 }).
 
+//SYS_CMDS_HELP:add("I
+
 
 SYS_CMDS_HELP:add("extra",
    char(10)+
@@ -346,15 +362,31 @@ SYS_CMDS:add("sys", {
 
 SYS_CMDS_HELP:add("set", 
   char(10)+
-  "Sets various values"+char(10)+
-  "   Usage: set [variable] [value]"
+  "Sets various configurables"+char(10)+
+  "   Usage: set [variable] [value]"+char(10)+
+  "   Variables: "+char(10)+
+  "      target"+char(10)+
+  "      mission"
 ).
 SYS_CMDS:add("set", {
    declare parameter cmd.
    if cmd:startswith("set") {
       local splitCmd is cmd:split(" ").
+      if splitCmd:length <> 3 {
+         set kernel_ctl["output"] to "Invalid command format".
+         return "finished".
+      }
       if splitCmd[1]:toLower() = "target" {
          set target to splitCmd[2].
+         set kernel_ctl["output"] to "target set to: "+splitCmd[2].
+      } else if splitCmd[1]:toLower() = "mission" {
+         if exists("0:/missions/"+splitCmd[2]+".ks") {
+            deletepath("1:/boot").
+            createdir("1:/boot").
+            compile "0:/missions/"+splitCmd[2]+".ks" to "1:/boot/"+splitCmd[2]+".ksm".
+            set core:bootfilename to "/boot/"+splitCmd[2]+".ksm".
+            set kernel_ctl["output"] to "mission (bootfile) set to: "+splitCmd[2].
+         } else set kernel_ctl["output"] to "mission: "+splitCmd[2]+" does not exist.".
       }
    }
    return "finished".
