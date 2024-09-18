@@ -86,6 +86,9 @@ SYS_CMDS:add("help", {
             set kernel_ctl["output"] to char(10)+"Displayable variables: "+char(10)+
                "   apo"+char(10)+
                "   pe"+char(10)+
+               "   altitude"+char(10)+
+               "   time"+char(10)+
+               "   ipu"+char(10)+
                "   mission-plan"+char(10)+
                "   commands"+char(10)+
                "   programs"+char(10)+
@@ -118,6 +121,8 @@ SYS_CMDS:add("display", {
          if      item = "apo"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
          else if item = "pe"       set kernel_ctl["output"] to "   "+ship:periapsis.                              //pe
          else if item = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
+         else if item = "time"     set kernel_ctl["output"] to "   "+time:clock.                                  //time
+         else if item = "ipu"      set kernel_ctl["output"] to "   "+config:ipu.                                  //Instructions per update
          else if item = "mission-plan" {                                                                          //mission-plan
             local temp is "Mission Plan:"+char(10).
             local count is 0.
@@ -211,7 +216,7 @@ SYS_CMDS:add("setup-launch", {
       if cmd:trim and exists("0:/lv/"+cmd:trim+".ks") {
          kernel_ctl["import-lib"]("lv/"+cmd:trim). 
          set kernel_ctl["output"] to "   Launch Vehicle: "+cmd.
-      } else set kernel_ctl["output"] to "   Launch Vehicle: "+cmd+" not found".
+      } else set kernel_ctl["output"] to "Error. Failed to initialize launch: Launch Vehicle: "+cmd+" not found".
       set kernel_ctl["prompt"] to ":".
       return "finished".
    }

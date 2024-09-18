@@ -50,6 +50,7 @@ clearscreen.
    local cmd_history is list().
    local cmd_hist_num is 0.
    local display_buffer is list().
+   local lagTime is time:seconds.
 
 ///Public functions
    declare function start {
@@ -63,6 +64,7 @@ clearscreen.
          
          // Execute current routine
          if runmode < MISSION_PLAN:length and runmode >= -1 {
+            set lagTime to time:seconds.
             set_runmode(MISSION_PLAN[runmode]()).
 
             // If mission plan is still running...
@@ -83,6 +85,10 @@ clearscreen.
                print kernel_ctl["status"]:tostring:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
             }
+            set lagTime to ((time:seconds - lagTime)*1000):tostring:split(".")[0].
+            // Improves User experience in interactive mode.
+            if lagTime:tonumber(-1) > 50 set config:ipu to min(2000, config:ipu+1).
+            else if config:ipu > 150 set config:ipu to max(150, config:ipu-1).
             //set kernel_ctl["countdown"] to "".
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 

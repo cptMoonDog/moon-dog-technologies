@@ -101,13 +101,15 @@
       
    }).
 
+   local atmosphericMode is 0.
    // Old reliable
    steering_functions:add("atmospheric", {
       declare parameter azimuth, h0.
 
+      local facingPitch is vang(up:forevector, ship:facing:forevector).
       ///From launch to pitchover complete
-      if ship:altitude < ship:body:atm:height/2 and
-         vang(up:forevector, ship:facing:forevector) < launch_param["pOverDeg"]*2 and
+      if atmosphericMode = 0 and ship:altitude < ship:body:atm:height/2 and
+         facingPitch < launch_param["pOverDeg"]*2 and
          // ^ Don't activate after pitchover complete.  \/ Do not end until pitchover complete.
          (ship:verticalspeed < launch_param["pOverVf"] or vang(up:forevector, ship:srfprograde:forevector) < launch_param["pOverDeg"]) {
          if ship:altitude < h0 + 10 {
@@ -116,8 +118,7 @@
          }else {
             //First part says, "Wait for roll to complete.", second part says, "If you started the pover already, don't come back here."
             if vang(ship:facing:starvector, heading(azimuth, 90):starvector) > 0.5 and
-               vang(up:forevector, ship:facing:forevector) < 0.5 or
-               ship:verticalspeed < launch_param["pOverV0"] {
+               facingPitch < 0.5 or ship:verticalspeed < launch_param["pOverV0"] {
                //Roll to Azimuth
                return heading(azimuth, 90).
             } else if ship:verticalspeed > launch_param["pOverV0"] {
@@ -126,6 +127,7 @@
             }
          }
       }
+      if atmosphericMode = 0 set atmosphericMode to 1. // Attempting to reduce processor cost
       local progradeDirection is ship:srfprograde.
       if vang(ship:prograde:forevector, ship:srfprograde:forevector) < 4 and ((not(ship:body:atm:exists)) or ship:altitude > ship:body:atm:height/2) {
          set progradeDirection to ship:prograde.
