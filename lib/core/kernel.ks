@@ -70,6 +70,7 @@ clearscreen.
             if kernel_ctl["interactive"] {
                print kernel_ctl["status"]:tostring:padright(terminal:width) at(0, 0).
                print kernel_ctl["countdown"]:padright(terminal:width) at(0, 1).
+               set kernel_ctl["currentRunmode"] to runmode.
                if terminal:input:haschar process_char(terminal:input:getchar()).
             } else{
                print kernel_ctl["status"]:tostring:padright(terminal:width) at(0, 0).
@@ -108,7 +109,7 @@ clearscreen.
    declare function default_abort {
       set kernel_ctl["status"] to "!!!WARNING!!! !!!WARNING!!!".
       display_buffer:add("!!!WARNING!!!"+char(10)).
-      display_buffer:add("NO ABORT MODE DEFINED"+char(10)).
+      display_buffer:add("NO ABORT MODE DEFINED. Runmode: "+runmode+char(10)).
       update_display().
       return OP_FINISHED.
    }
@@ -139,7 +140,7 @@ clearscreen.
                   local lowestIdOfName is MISSION_PLAN_ID:find(id). 
                   MISSION_PLAN:remove(lowestIdOfName+1).
                   MISSION_PLAN_ID:remove(lowestIdOfName).
-                  MISSION_PLAN_ID:remove(lowestIdOfName).
+                  MISSION_PLAN_ABORT:remove(lowestIdOfName).
                }
                print MISSION_PLAN_ID:find(id) at(0, 10).
             }
@@ -156,11 +157,11 @@ clearscreen.
       parameter id.
       parameter name.
       parameter delegate.
-      parameter abort is {}.
+      parameter abort is default_abort@.
  
       MISSION_PLAN:insert(id, delegate).
       MISSION_PLAN_ID:insert(id, name).
-      MISSION_PLAN_ID:insert(id, abort).
+      MISSION_PLAN_ABORT:insert(id, abort).
    }
    set kernel_ctl["MissionPlanInsert"] to MPinsert@.
 
@@ -296,9 +297,9 @@ clearscreen.
          }
       } else {
          set MISSION_PLAN to MISSION_PLAN:sublist(0, runmode+1).
-         set MISSION_PLAN_ID to MISSION_PLAN:sublist(0, runmode).
+         set MISSION_PLAN_ID to MISSION_PLAN_ID:sublist(0, runmode).
          MISSION_PLAN_ID:add("abort").
-         MISSION_PLAN:add(MISSION_PLAN_ABORT[runmode]).
+         MISSION_PLAN:add(MISSION_PLAN_ABORT[runmode-1]).
          set runmode to runmode+1.
       }
       return "finished".

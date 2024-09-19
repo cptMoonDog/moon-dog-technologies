@@ -137,6 +137,7 @@ SYS_CMDS:add("display", {
             local count is 0.
             for token in kernel_ctl["MissionPlanList"]() {
                set temp to temp + char(10) + "   "+ count + " " +token.
+               if count = kernel_ctl["currentRunmode"] - 1 set temp to temp +" <---".
                set count to count + 1.
             }
             set kernel_ctl["output"] to temp.

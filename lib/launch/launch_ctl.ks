@@ -44,6 +44,14 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
            return OP_FAIL.
         }
         return launch_ctl["throttle_monitor"]().
+      }, {
+         lock throttle to 0.
+         stage.
+         wait 1.
+         stage.
+         wait 1.
+         stage.
+         return OP_FINISHED.
       }).
       if not (launch_param:haskey("orbitType")) or not(launch_param["orbitType"] = "transfer") {
          kernel_ctl["MissionPlanAdd"]("circularize", {
