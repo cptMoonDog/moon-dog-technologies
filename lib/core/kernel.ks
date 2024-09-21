@@ -288,8 +288,10 @@ clearscreen.
       local splitCmd is cmd:split(" ").
       if splitCmd:length > 1 {
          if splitCmd[1] = "-r" OR splitCmd[1] = "--reboot" reboot.
-         else if splitCmd[1] = "-s" OR splitCmd[1] = "--shutdown" shutdown.
-         else if splitCmd[1] = "-c" OR splitCmd[1] = "--clear" {
+         else if splitCmd[1] = "-s" OR splitCmd[1] = "--shutdown" {
+            set ship:control:pilotmainthrottle to 0.
+            shutdown.
+         } else if splitCmd[1] = "-c" OR splitCmd[1] = "--clear" {
             set MISSION_PLAN to MISSION_PLAN:sublist(0, 1).  // If this gets called we are in interactive mode.
             set MISSION_PLAN_ID to list().
             set MISSION_PLAN_ABORT to list().

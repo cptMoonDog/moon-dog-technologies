@@ -129,6 +129,8 @@ SYS_CMDS:add("display", {
          if      item = "apo"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
          else if item = "pe"       set kernel_ctl["output"] to "   "+ship:periapsis.                              //pe
          else if item = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
+         else if item = "latitude" set kernel_ctl["output"] to "   "+ship:geoposition:lat.                        //latitude
+         else if item = "longitude" set kernel_ctl["output"] to "   "+ship:geoposition:lng.                       //longitude
          else if item = "time"     set kernel_ctl["output"] to "   "+time:clock.                                  //time
          else if item = "ipu"      set kernel_ctl["output"] to "   "+config:ipu.                                  //Instructions per update
          else if item = "mission"  set kernel_ctl["output"] to "   "+core:bootfilename.                           //current mission (bootfile)
@@ -189,9 +191,13 @@ SYS_CMDS:add("setup-launch", {
       set launch_param["orbitType"] to cmd.
       set kernel_ctl["output"] to "   Type: "+cmd.
       if cmd = "coplanar" set kernel_ctl["prompt"] to "Target: ".
-      else set kernel_ctl["prompt"] to "Inclination(*0*): ".
-   }else if kernel_ctl["prompt"] = "Inclination(*0*): " {
+      else set kernel_ctl["prompt"] to "Inclination(*0*/polar/equ/retrograde/molniya): ".
+   }else if kernel_ctl["prompt"] = "Inclination(*0*/polar/equ/retrograde/molniya): " {
       if cmd = "" set cmd to "0". //Default value
+      else if cmd = "polar" set cmd to "90".
+      else if cmd = "equitorial" set cmd to "0".
+      else if cmd = "retrograde" set cmd to "180".
+      else if cmd = "molniya" set cmd to "63.4".
       set launch_param["inclination"] to cmd:tonumber(0).
       set kernel_ctl["output"] to "   Inclination: "+cmd.
       set kernel_ctl["prompt"] to "LAN(*none*): ".

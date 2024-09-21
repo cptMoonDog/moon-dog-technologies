@@ -27,6 +27,7 @@
       declare parameter engineName.
       declare parameter impulsePoint.    // Acceptable values: ap, pe, AN, DN, raw time. 
       declare parameter dv is 0.              // Acceptable values: circularize, d_inclination, scalar
+      declare parameter thrustLimiter is 1.
 
       local program is 0.
       if steeringProgram = "prograde" set program to {return ship:prograde.}.
@@ -40,9 +41,9 @@
 
       if impulsePoint = "node" {
          set currentNode to nextnode.
-         burn_queue:push(lexicon("ip", nextnode:time, "dv", nextnode:deltaV:mag, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
+         burn_queue:push(lexicon("ip", nextnode:time, "dv", nextnode:deltaV:mag, "isp", engineStat(engineName, "isp")*thrustLimiter, "ff", engineStat(engineName, "ff")*thrustLimiter, "steeringProgram", program)).
       } else {
-         burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", engineStat(engineName, "isp"), "ff", engineStat(engineName, "ff"), "steeringProgram", program)).
+         burn_queue:push(lexicon("ip", impulsePoint, "dv", dv, "isp", engineStat(engineName, "isp")*thrustLimiter, "ff", engineStat(engineName, "ff")*thrustLimiter, "steeringProgram", program)).
       }
       reset_for_next_burn().
    }

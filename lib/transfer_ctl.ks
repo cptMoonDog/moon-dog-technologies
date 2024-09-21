@@ -72,25 +72,6 @@
       parameter startAlt.
       parameter finalAlt.
 
-      //I'm not exactly sure where I got this from, 
-      // Original: 
-      //  local p is 1/(2*sqrt((finalAlt^3)/(((startAlt+finalAlt)/2)^3))).
-      //  local angle is p*360.
-      //  return 180-angle.
-      // Probably: https://forum.kerbalspaceprogram.com/topic/16413-tutorial-interplanetary-how-to-guide/#comment-228757
-      // but it is an arrangement of Kepler's third law.  
-      // The square root of Ratio of the cubes of the final sma to the transfer orbit sma.
-      // Giving the ratio of the periods of the two orbits, essentially the ratio of travel times.
-      // Multiplied by 2(?).
-      // Then degrees in a circle divided by this number.
-      // Then half a circle minus this.
-      // I think I must have been confused, because this can be simplified.
-
-      // This is essentially saying: For a given amount of angular travel in the transfer orbit, how far will something in the target orbit travel?
-      // A Hohmann transfer occurs in one half of the transfer orbit.
-      // Half-orbit for the transfer orbit, divided by the travel ratio, will give the travel angle for the final orbit.
-      // Half-orbit minus the travel angle for the final orbit will give the angle between the objects needed: The phase angle.
-
       return 180 - 180/(sqrt((finalAlt/((startAlt+finalAlt)/2))^3)).
    }
 

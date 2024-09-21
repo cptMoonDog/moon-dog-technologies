@@ -20,16 +20,25 @@ kernel_ctl["availablePrograms"]:add(programName, {
    
 //======== Parameters used by the program ====
    declare parameter argv.
-   local engineName is argv:split(" ")[0].
-   local argumentOfPeri is argv:split(" ")[1]:tonumber(0).
+   local engineName is "".
+   local argumentOfPeri is "".
+   local newApoapsis is "".
+   local newPeriapsis is "".
+   if argv:split(" "):length = 4 {
+      set engineName to argv:split(" ")[0].
+      if not (maneuver_ctl["engineDef"](engineName)) return OP_FAIL.
+      set argumentOfPeri to argv:split(" ")[1].
+      set newApoapsis to argv:split(" ")[2]:tonumber(ship:apoapsis).
+      set newPeriapsis to argv:split(" ")[3]:tonumber(ship:periapsis).
+   } else {
+      set kernel_ctl["output"] to
+         "Attempts to raise the apoapsis to the given altitude, when at the given AOP."
+         +char(10)+"Usage: add transfer-to-orbit [ENGINE-NAME] [AOP] [APOAPSIS] [PERIAPSIS]".
+      return.
+   }
 
 //======== Local Variables =====
-      local steerDir is "retrograde".
-      if ship:orbit:apoapsis < newAp set steerDir to "prograde". 
-      if ship:orbit:periapsis > newAp {
-         print "Error" at(0, 0).
-         shutdown.
-      }
+      local steerDir is "prograde".
 
 //=============== Begin program sequence Definition ===============================
    // The actual instructions implementing the program are in delegates, Which the initializer adds to the MISSION_PLAN.
@@ -39,44 +48,42 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
    kernel_ctl["MissionPlanAdd"](programName, {
       until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-         print "staging, Max thrust: "+ship:maxthrust.
          stage. 
-         if ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") or ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-            print "error in programs/powered-capture.ks: staging.".
-            return OP_FAIL.
-         }
       }
+      wait 5.
       
-      local newSMA is (ship:orbit:periapsis+ship:orbit:body:radius*2+newAp)/2.
-      local newVatPe is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:periapsis, newSMA).
-      local dv is abs(newVatPe - velocityat(ship, eta:periapsis):orbit:mag).
-      maneuver_ctl["add_burn"](steerDir, engineName, "pe", dv).
-      return OP_FINISHED.
+      if ship:geoposition:lat < -85 {
+         local newSMA is (ship:orbit:periapsis+ship:orbit:body:radius*2+newApoapsis)/2.
+         local newVatPe is phys_lib["VatAlt"](ship:orbit:body, ship:orbit:periapsis, newSMA).
+         local dv is abs(newVatPe - velocityat(ship, eta:periapsis):orbit:mag).
+         maneuver_ctl["add_burn"]("prograde", engineName, time:seconds+60, dv, 0.5).
+         return OP_FINISHED.
+      } else return OP_CONTINUE.
    }).
    kernel_ctl["MissionPlanAdd"](programName, maneuver_ctl["burn_monitor"]).
-   kernel_ctl["MissionPlanAdd"](programName, {
-      if (steerDir = "prograde" and ship:apoapsis < newAp*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.01) {
-         if steerDir = "prograde" {
-            if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
-               lock throttle to 0.
-            wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
-         } else {
-            if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
-               lock throttle to 0.
-            wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
-         }
-         lock throttle to 0.1.
-         return OP_CONTINUE.
-      } else if (steerDir = "prograde" and ship:apoapsis > newAp*1.01) or (steerDir = "retrograde" and ship:apoapsis < newAp*0.99) {
-         if steerDir = "prograde" {
-            set steerDir to "retrograde".
-         } else {
-            set steerDir to "prograde".
-         }
-         return OP_CONTINUE.
-      }
-      return OP_FINISHED.
-   }).
+   //kernel_ctl["MissionPlanAdd"](programName, {
+   //   if (steerDir = "prograde" and ship:apoapsis < newAp*0.99 ) or (steerDir = "retrograde" and ship:apoapsis > newAp*1.01) {
+   //      if steerDir = "prograde" {
+   //         if vang(ship:facing:forevector, ship:prograde:forevector) > 0.5
+   //            lock throttle to 0.
+   //         wait until vang(ship:facing:forevector, ship:prograde:forevector) < 0.5.
+   //      } else {
+   //         if vang(ship:facing:forevector, ship:retrograde:forevector) > 0.5
+   //            lock throttle to 0.
+   //         wait until vang(ship:facing:forevector, ship:retrograde:forevector) < 0.5.
+   //      }
+   //      lock throttle to 0.1.
+   //      return OP_CONTINUE.
+   //   } else if (steerDir = "prograde" and ship:apoapsis > newAp*1.01) or (steerDir = "retrograde" and ship:apoapsis < newAp*0.99) {
+   //      if steerDir = "prograde" {
+   //         set steerDir to "retrograde".
+   //      } else {
+   //         set steerDir to "prograde".
+   //      }
+   //      return OP_CONTINUE.
+   //   }
+   //   return OP_FINISHED.
+   //}).
    
          
 //========== End program sequence ===============================

@@ -39,7 +39,7 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
            local procs is list().
            list processors in procs.
            for payloadCore in procs {
-                 payloadCore:connection:sendmessage("ABORT").
+              payloadCore:connection:sendmessage("ABORT").
            }
            return OP_FAIL.
         }
@@ -60,7 +60,7 @@ runoncepath("0:/lib/launch/throttle_ctl.ks").
             if ship:maxthrust > 1.01*maneuver_ctl["engineStat"](launch_param["upperstage"], "thrust") { //Maxthrust is float, straight comparison sometimes fails. 
                stage. 
             }
-            maneuver_ctl["add_burn"]("prograde", launch_param["upperstage"], "ap", "circularize").
+            maneuver_ctl["add_burn"]("prograde", launch_param["upperstage"], "ap", "circularize", choose launch_param["upperStageTL"] if launch_param:haskey("upperStageTL") else 1).
             if maneuver_ctl["getStartTime"]() < time:seconds and ship:periapsis < ship:body:atm:height {
                maneuver_ctl["abort_burn"]().
                lock steering to ship:prograde.
