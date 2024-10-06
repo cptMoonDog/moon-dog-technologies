@@ -110,7 +110,7 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    //Upper stage
    // This tells the system which upper stage is installed.
    // This information is used primarily by the circularization burn.
-   launch_param:add("upperstage", "swivel").
+   launch_param:add("upperstage", "terrier").
 
    //The system will display a countdown of this length before any launch.
    launch_param:add("countDownLength",      10).
@@ -121,10 +121,10 @@ if not(launch_param:haskey("targetApo")) launch_param:add("targetApo", 80000).
    //launch_param:add("orbitType", "transfer").  //If transfer is selected, circularization is not performed and payload is expected to takeover.
 
    // These assume certain parts have been added to action groups
-   // Activate AG1 at 60km (Jettison fairing)
-   launch_param:add("AG1", 60000).
-   // Activate AG2 at 65km (Activate solar panels and antennas)
-   launch_param:add("AG2", 65000).
+   // Activate AG1 at 65km (Jettison fairing)
+   launch_param:add("AG1", 65000).
+   // Activate AG2 at 68km (Activate solar panels and antennas)
+   launch_param:add("AG2", 68000).
    // Force MECO Shutdown main engine and use upperstage/OMS to complete orbital insertion; after leaving atmosphere.
    //launch_param:add("AG10", ship:orbit:body:atm:height).
    

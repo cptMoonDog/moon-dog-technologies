@@ -23,6 +23,19 @@ if ship:status = "PRELAUNCH" AND core:tag {
    }
    // General Payload duties
 
+   local procs is list().
+   list processors in procs.
+   local boosterStillThere is false.
+   for p in procs {
+      if p:bootfilename = "/boot/lv.ks" or p:bootfilename = "/boot/payload.ksm" {
+         set boosterStillThere to true.
+         break.
+      }
+   }
+   if not(boosterStillThere) {
+      wait until ship:status <> "PRELAUNCH".
+      reboot. // This launch does not contain an automated booster.  Just assign the mission.
+   }
    // Add program to wait until booster finishes it's job.
    clearscreen.
    set kernel_ctl["status"] to "waiting for handoff...".

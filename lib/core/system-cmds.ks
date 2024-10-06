@@ -126,14 +126,25 @@ SYS_CMDS:add("display", {
       if splitCmd:length > 1 OR kernel_ctl["prompt"] = "Display what?:" {    // These are the things that we can display
          local item is choose splitCmd[1] if cmd:startswith("display") else cmd.
 
-         if      item = "apo"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
+         if      item = "ap"      set kernel_ctl["output"] to "   "+ship:apoapsis.                               //apo
          else if item = "pe"       set kernel_ctl["output"] to "   "+ship:periapsis.                              //pe
+         else if item = "eccentricity"  set kernel_ctl["output"] to "   "+ship:orbit:eccentricity.                              //eccentricity
          else if item = "altitude" set kernel_ctl["output"] to "   "+ship:altitude.                               //altitude
          else if item = "latitude" set kernel_ctl["output"] to "   "+ship:geoposition:lat.                        //latitude
          else if item = "longitude" set kernel_ctl["output"] to "   "+ship:geoposition:lng.                       //longitude
          else if item = "time"     set kernel_ctl["output"] to "   "+time:clock.                                  //time
          else if item = "ipu"      set kernel_ctl["output"] to "   "+config:ipu.                                  //Instructions per update
-         else if item = "mission"  set kernel_ctl["output"] to "   "+core:bootfilename.                           //current mission (bootfile)
+         else if item = "eta" {
+            if splitCmd:length > 2 {
+               if splitCmd[2] = "ap" set kernel_ctl["output"] to "   "+eta:apoapsis.
+               else if splitCmd[2] = "pe" set kernel_ctl["output"] to "   "+eta:periapsis.
+            }
+         } else if item = "dvTo"  {
+            if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics"). 
+            if splitCmd:length > 2 {
+               set kernel_ctl["output"] to "   "+(phys_lib["VatAlt"](ship:orbit:body, ship:altitude, phys_lib["sma"](ship:orbit:body, ship:altitude, splitCmd[2]:toNumber(-1)))-ship:velocity:orbit:mag).
+            }
+         } else if item = "mission"  set kernel_ctl["output"] to "   "+core:bootfilename.                           //current mission (bootfile)
          else if item = "mission-plan" {                                                                          //mission-plan
             local temp is "Mission Plan:"+char(10).
             local count is 0.
@@ -143,9 +154,10 @@ SYS_CMDS:add("display", {
                set count to count + 1.
             }
             set kernel_ctl["output"] to temp.
-         } else if item = "eta-duna-window" {                                                                       //eta-duna-window
+         } else if item = "eta-duna-window" or item = "etaPole" {                                                                       //eta-duna-window
             if not (defined phys_lib) kernel_ctl["import-lib"]("lib/physics"). 
-            set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
+            if item = "eta-duna-window" set kernel_ctl["output"] to round(phys_lib["etaPhaseAngle"](ship:body, body("Duna"))):tostring+" seconds".
+            else set kernel_ctl["output"] to round(phys_lib["etaAnglePastANDN"]("DN", 90)):tostring+" seconds".
          } else if item = "launchParam" {
             if (defined launch_param) {
                if splitCmd:length > 2 set kernel_ctl["output"] to "   "+launch_param[splitCmd[2]].
@@ -191,12 +203,12 @@ SYS_CMDS:add("setup-launch", {
       set launch_param["orbitType"] to cmd.
       set kernel_ctl["output"] to "   Type: "+cmd.
       if cmd = "coplanar" set kernel_ctl["prompt"] to "Target: ".
-      else set kernel_ctl["prompt"] to "Inclination(*0*/polar/equ/retrograde/molniya): ".
-   }else if kernel_ctl["prompt"] = "Inclination(*0*/polar/equ/retrograde/molniya): " {
+      else set kernel_ctl["prompt"] to "Inclination(*0*/polar/retro/molniya): ".
+   }else if kernel_ctl["prompt"] = "Inclination(*0*/polar/retro/molniya): " {
       if cmd = "" set cmd to "0". //Default value
       else if cmd = "polar" set cmd to "90".
       else if cmd = "equitorial" set cmd to "0".
-      else if cmd = "retrograde" set cmd to "180".
+      else if cmd = "retro" set cmd to "180".
       else if cmd = "molniya" set cmd to "63.4".
       set launch_param["inclination"] to cmd:tonumber(0).
       set kernel_ctl["output"] to "   Inclination: "+cmd.

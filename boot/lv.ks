@@ -7,6 +7,7 @@ if ship:status = "PRELAUNCH" {
    local payloadData is "".
    runoncepath("0:/lib/core/kernel.ks").
    if core:tag:endswith(".launch") or not core:tag {  // Parameters are in this file.
+      set kernel_ctl["output"] to "Launching with launch.conf: current.launch".
       local confFile is "0:/launch.conf/current.launch".
       if core:tag {
          set confFile to "0:/launch.conf/"+core:tag.

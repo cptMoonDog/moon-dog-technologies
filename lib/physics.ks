@@ -216,4 +216,24 @@
    }
    phys_lib:add("etaPhaseAngle", etaPhaseAngle@).
 
+   // Returns the eta to reach the given angle in orbit past the given node.
+   declare function etaAnglePastANDN {
+      parameter ANDN is "AN".
+      parameter targetAngle is 90.
+      if ANDN = "DN" set targetAngle to targetAngle + 180.
+      local targetTA is targetAngle - ship:orbit:argumentofperiapsis.
+      if targetTA < 0 set targetTA to targetTA + 360.
+      local angleDistance is targetTA - ship:orbit:trueanomaly.
+      if angleDistance < 0 set angleDistance to angleDistance +360.
+      if ship:orbit:eccentricity < 0.001 {
+         local pctOrbit is angleDistance/360.
+         local etaBurnPoint is pctOrbit*ship:orbit:period.
+         return etaBurnPoint.
+      } else {
+         local etaBurnPoint is angleDistance/(ship:angularvel:mag*180/constant:pi).
+         return etaBurnPoint.
+      }
+   }
+   phys_lib:add("etaAnglePastANDN", etaAnglePastANDN@).
+
 }
