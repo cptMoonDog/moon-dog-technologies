@@ -97,7 +97,7 @@ if ship:status = "PRELAUNCH" {
             } else return OP_CONTINUE.
          }).
          kernel_ctl["MissionPlanAdd"]("Deorbit", {
-            if (ship:body:atm:exists and ship:orbit:periapsis < ship:body:atm:height) or ship:orbit:periapsis < 0 {
+            if (ship:body:atm:exists and ship:orbit:periapsis < ship:body:atm:height/2) or ship:orbit:periapsis < 0 {
                lock throttle to 0.
                return OP_FINISHED.
             } else return OP_CONTINUE.
