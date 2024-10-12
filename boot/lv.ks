@@ -36,6 +36,7 @@ if ship:status = "PRELAUNCH" {
                // If it misbehaves, that's on the designer.
                runoncepath("1:/boot/"+mission+".ksm").
             }
+            if payloadData:split(":"):length > 1 set ship:name to payloadData:split(":")[0].
          }
       } else {
          print "No Launch configuration Specified!".

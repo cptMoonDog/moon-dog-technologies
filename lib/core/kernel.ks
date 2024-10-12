@@ -81,6 +81,7 @@ clearscreen.
             if lagTime:tonumber(-1) > 20 set config:ipu to min(2000, config:ipu+100).
             else if config:ipu > 150 set config:ipu to max(150, config:ipu-1).
             //set kernel_ctl["countdown"] to "".
+            wait 0.
          } else {
             if kernel_ctl["interactive"]  and runmode = MISSION_PLAN:length { 
                // Resets the mission plan, so we can stay Alive.

@@ -74,11 +74,12 @@ if ship:status = "PRELAUNCH" AND core:tag {
       else shutdown.
    } else {
       core:messages:pop().
-      set data to core:messages:pop():content:tostring:split(":"). // Payload name: mission, param, param...
-      set ship:name to data[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
-      set core:tag to data[1].  // Retain parameters for use by the mission file.
-      if data:length > 0 {
-         set mission to data[1]:split(",")[0]:trim.  // Mission, param, param...
+      set data to core:messages:pop():content:tostring. // Payload name:mission, param, param...
+      if data:split(":"):length > 0 set ship:name to data:split(":")[0]. // Pop off the first parameter supplied (ship name), and rename the ship.
+      set core:tag to data.  // Retain parameters for use by the mission file.
+      if data {
+         local parameters is choose data:split(":")[1]:split(",") if data:split(":"):length > 1 else data:split(",").
+         set mission to parameters[0]:trim.  // Mission, param, param...
          if exists("0:/missions/"+mission+".ks") {
             deletepath("1:/boot/payload.ksm").
             // Compilation of the mission script to the core, and mission pre-launch configuration, should have already been performed by the lv.ks script.

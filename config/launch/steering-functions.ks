@@ -150,6 +150,7 @@
          return progradeVector.
       } else {
          local progradePitch is max(0, 90-vectorangle(up:forevector, progradeVector)).
+         // TODO smoothly steer to neutral after inclination established. Heading function uses angle from north.
          return heading(azimuth, progradePitch). 
       }
    }). 

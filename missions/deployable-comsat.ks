@@ -5,15 +5,18 @@
 
 // This is for a deployable communications satellite
 local procs is list().
+wait 1.
 list processors in procs.
 if ship:status = "PRELAUNCH" {
+   print "prelaunch".
+   print "processors: "+procs:length.
    // Configure core for flight.
    local parameters is core:tag.
-   local elpType is parameters:contains("elp"). // Elliptical deployment type
+   local deploymentType is parameters:contains("moly"). // Molinya deployment type
    compile "0:/lib/core/kernel.ks" to "1:/lib/core/kernel.ksm".
    kernel_ctl["load-to-core"]("lib/physics").
    kernel_ctl["load-to-core"]("lib/maneuver_ctl").
-   if elpType {
+   if deploymentType {
       kernel_ctl["load-to-core"]("programes/run-maneuver").
    } else kernel_ctl["load-to-core"]("programs/circularize").
    kernel_ctl["load-to-core"]("programs/orient-to-max-solar").
@@ -27,18 +30,18 @@ if ship:status = "PRELAUNCH" {
    print "Mothership: "+mothership:name.
    until procs:length = 1 {
       list processors in procs.
-      wait 1.
+      wait 0.
    }
-   wait 1.
+   wait 5.
    print core:tag.
-   local elpType is core:tag:contains("elp").
+   local deploymentType is core:tag:contains("moly").
    set ship:name to core:tag:split(":")[0].
    local myEngine is core:tag:split(",")[1]:trim.
    print "my name: "+ship:name.
    print "my engine: "+myEngine.
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
    print "kernel started".
-   if elpType {
+   if deploymentType {
       kernel_ctl["import-lib"]("lib/physics").
       kernel_ctl["import-lib"]("lib/maneuver_ctl").
       local deployAngle is core:tag:split(",")[3]:trim:tonumber(90).
@@ -55,12 +58,16 @@ if ship:status = "PRELAUNCH" {
    }
    print "MP initialized".
    kernel_ctl["start"]().                                            // Execute the mission plan.
+
    print "MP completed".
+   print "mothership: "+mothership.
    panels on.
    wait 5.
    set kuniverse:activevessel to mothership.
    wait 0.
 } else if ship:status = "ORBITING" and procs:length = 1{ // On station.
+   print "on station".
+   print "processors: "+procs:length.
    runpath("1:/lib/core/kernel.ksm").                                // Startup the system
    kernel_ctl["import-lib"]("programs/orient-to-max-solar").                    // Make pre-defined programs available
    //kernel_ctl["import-lib"]("station-keep-behind").                    // Make pre-defined programs available
@@ -71,3 +78,4 @@ if ship:status = "PRELAUNCH" {
    kernel_ctl["start"]().
 }
 print "Bootfile completed".
+print "processors: "+procs:length.
