@@ -22,7 +22,6 @@ if ship:status = "PRELAUNCH" {
       runpath("1:/lib/core/kernel.ksm").
       
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
-         set core:tag to "Mayflower, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".
          reboot.
          return OP_FINISHED.

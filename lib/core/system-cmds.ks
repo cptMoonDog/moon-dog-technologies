@@ -373,7 +373,7 @@ SYS_CMDS:add("sys", {
    declare parameter cmd.
    if cmd:startswith("sys") {
       local splitCmd is cmd:split(" ").
-      if splitCmd[1]:trim = "reboot" reboot.
+      if splitCmd[1]:trim = "reboot" or splitCmd[1]:trim = "reboot." reboot.
       if splitCmd[1]:trim = "shutdown" shutdown.
       return "finished".
    }
