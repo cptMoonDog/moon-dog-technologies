@@ -92,3 +92,5 @@ until not outputsReverse:next {
    }
 
 }
+
+print finalOutput at(0, 5).
