@@ -18,10 +18,11 @@
       declare function activation {
          declare parameter input.
          if activationFunction = "relu" return max(0, input).
-         else if activationFunction = "sigmoid" return input/sqrt(1+input^2).
-         else if activationFunction = "relu_sigmoid" return max(0, input/sqrt(1+input^2)).
+         else if activationFunction = "sym_sigmoid" return 2/(1+constant:e^(-max(0.0000001, input))) - 1.
+         else if activationFunction = "sigmoid" return 1/(1+constant:e^(-max(0.0000001, input))).
          else if activationFunction = "linear" return input.
          else if activationFunction = "square" return max(0.0000001, min(9999999, input)^2).
+         else if activationFunction = "sqrt" return sqrt(abs(input)).
          else if activationFunction = "cube" return max(0.0000001, min(9999999, input))^3.
       }
 
@@ -72,11 +73,13 @@
          from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
             set deltaWeight to delta*(weights[i]/sumOfWeights)*learningRate.
             set weights[i] to weights[i]+deltaWeight.
+            if abs(weights[i]) > 1000000 or abs(weights[i]) < 0.000001 set weights[i] to random().
             set outputWOBias to outputWOBias + inputs[i]*weights[i].
-            backPropInputs:add(inputs[i] + deltaWeight*(inputs[i]/sumOfInputs)*learningRate).
+            backPropInputs:add(inputs[i] + deltaWeight*(inputs[i]/sumOfInputs)).
          }
          set outputWOBias to activation(outputWOBias).
          set bias to bias+(outputWOBias-trainValue)*learningRate/sumOfWeights.
+         if abs(bias) > 1000000 or abs(bias) < 0.000001 set bias to random().
 
          return backPropInputs.
 
@@ -85,56 +88,74 @@
       return neuron.
    }).
 
+
+   declare function trainDenseLayer {
+      declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
+      declare parameter layer.
+      declare parameter trainValues. // list. One output for each node.
+
+      local backPropValues is list().
+      from {local i is 0.} until i > layer:length-1 step {set i to i+1.} do {
+         local backP is layer[i]["train"](inputs, trainValues[i]).
+         if i > 0 { // Averages the back prop values from all the hidden layer nodes into one back prop list
+            from {local j is 0.} until j > backPropValues:length-1 step {set j to j+1.} do {
+               set backPropValues[j] to backPropValues[j] + backP[j].
+            }
+         } else set backPropValues to backP.
+      }
+      // Final part of averaging operation
+      from {local i is 0.} until i > backPropValues:length-1 step {set i to i+1.} do {
+         set backPropValues[i] to backPropValues[i]/inputs:length.
+      }
+
+      return backPropValues.
+   }
    perceptron:add("train network", {
-      declare parameter inputValues.
+      declare parameter inputValues. // List of lists.  One list for every input node.
       declare parameter trainValue.
-      declare parameter inputNeuron1.
-      declare parameter inputNeuron2.
+      declare parameter inputNeurons.
+      declare parameter hiddenLayer.
       declare parameter outputNeuron.
 
       local intermVal is list().
-      intermVal:add(inputNeuron1["evaluate"](inputValues)).
-      intermVal:add(inputNeuron2["evaluate"](inputValues)).
-      //print "inputValues: "+inputValues at(0,16).
-      //print "intermVal: "+intermVal at(0, 18).
+      from {local i is 0.} until i > inputNeurons:length-1 step {set i to i+1.} do {
+         intermVal:add(inputNeurons[i]["evaluate"](inputValues[i])).
+      }
+
+      local intermVal2 is list().
+      if hiddenLayer:typename = "List" {
+         from {local i is 0.} until i > hiddenLayer:length-1 step {set i to i+1.} do {
+            intermVal2:add(hiddenLayer[i]["evaluate"](intermVal)).
+         }
+      }
+      
       local backProp is list().
-      set backProp to outputNeuron["train"](intermVal, trainValue).
-      //print "backProp: "+backProp at(0, 19).
-      local average is 0.
-      for x in backProp set average to average + x.
-      set average to average/backProp:length.
-      //print "average: "+average at(0, 17).
-      inputNeuron1["train"](inputValues, average).
-      inputNeuron2["train"](inputValues, average).
+      if hiddenLayer:typename = "List" {
+         set backProp to outputNeuron["train"](intermVal2, trainValue).
+         set backProp to trainDenseLayer(intermVal, hiddenLayer, backProp).
+      } else set backProp to outputNeuron["train"](intermVal, trainValue).
+      from {local i is 0.} until i > inputNeurons:length-1 step {set i to i+1.} do {
+         inputNeurons[i]["train"](inputValues[i], backProp[i]).
+      }
    }).
    
 }
 
-declare function throttleFunction {
-   declare parameter targetAltitude.
-   
-   local currentG is (ship:body:mu/((alt:radar+ship:body:radius)^2)).
-   local maxAccel is ship:availablethrust()/ship:mass. // Lose 1 g for hover
-   local throttMaxGees is maxAccel/currentG -1.
-
-   local pitchLimit is arccos(currentG/max(currentG, maxAccel)).
-
-   local gLimit is 0.5.
-   local outputMax is choose max(vang(up:forevector, ship:facing:forevector)/pitchLimit, (1+gLimit)/throttMaxGees) if ship:availablethrust() > 0 else 0.
-   local outputMin is gLimit/throttMaxGees. // Minimum 0.5 G
-   local speedLimit is choose sqrt(abs(alt:radar - targetAltitude)*currentG) if alt:radar < targetAltitude else -sqrt(abs(alt:radar - targetAltitude)*currentG).
-   local vSpeedError is 0.
-   set vSpeedError to ship:verticalspeed - speedLimit.
-   local vSpeedSigmoid is min(outputMax, -vSpeedError/sqrt(currentG+vSpeedError^2)).
-   return vSpeedSigmoid.
-}
 
 set config:ipu to 2000.
-local neuronInput1 is perceptron["new neuron"](2, 0.001, "linear").  // Inputs: ship:verticalspeed, alt:radar
-local neuronInput2 is perceptron["new neuron"](2, 0.001, "linear").  // Inputs: ship:verticalspeed, alt:radar 
-local neuronOutput is perceptron["new neuron"](2, 0.001, "sigmoid"). 
-local targetAlt is 30.
-local tValue is max(0, throttleFunction(targetAlt)).
+local inputLayer is list(
+   perceptron["new neuron"](2, 0.01, "relu"),  // Inputs: ship:verticalspeed
+   perceptron["new neuron"](2, 0.01, "relu")  // Inputs: alt:radar - targetAlt
+).
+local hiddenLayer is list(
+   perceptron["new neuron"](2, 0.001, "relu"),
+   perceptron["new neuron"](2, 0.001, "relu"),
+   perceptron["new neuron"](2, 0.001, "relu")
+).
+local outputNeuron is perceptron["new neuron"](3, 0.001, "sym_sigmoid"). 
+
+local targetAlt is 20.
+local selfTrain is 0.
 local backProp is list().
 local nOutput is 0.
 local throttValue is 0.
@@ -142,52 +163,57 @@ lock steering to up.
 lock throttle to throttValue.
 if ship:availablethrust <= 0 stage.
 local startTime is time:seconds.
-local trainingStartTime is time:seconds.
-until targetAlt < 1.75 {
+until false {
   print "training" at(0, 0).
   
-  perceptron["train network"](list(ship:verticalspeed, alt:radar-targetAlt), tValue, neuronInput1, neuronInput2, neuronOutput).
+  local normalizedInput is list(
+     list(ship:verticalspeed, (targetAlt-alt:radar)),
+     list((targetAlt-alt:radar), ship:verticalspeed)
+  ).
+  perceptron["train network"](
+     normalizedInput,
+     selfTrain, 
+     inputLayer, 
+     hiddenLayer,
+     outputNeuron
+  ).
   
-  set nOutput to neuronOutput["evaluate"](list(
-     neuronInput1["evaluate"](list(ship:verticalspeed, alt:radar-targetAlt)),
-     //neuronInput1["evaluate"](list(ship:verticalspeed)),
-     neuronInput2["evaluate"](list(ship:verticalspeed, alt:radar-targetAlt))
-     //neuronInput2["evaluate"](list(alt:radar-targetAlt))
-   )).
-  set throttValue to min(nOutput, tValue).
+  local layerOutputs is list().
+  from {local i is 0.} until i > inputLayer:length - 1 step {set i to i+1.} do {
+     layerOutputs:add(inputLayer[i]["evaluate"](normalizedInput[i])).
+  }
+  local hiddenLayerOutputs is list().
+  from {local i is 0.} until i > hiddenLayer:length - 1 step {set i to i+1.} do {
+     hiddenLayerOutputs:add(hiddenLayer[i]["evaluate"](layerOutputs)).
+  }
 
-  print "targetAlt: "+targetAlt at(0, 7).
-  print "alt:radar: "+alt:radar at(0, 8).
-  print "tValue: "+tValue at(0, 9).
+  set nOutput to outputNeuron["evaluate"](hiddenLayerOutputs).
+  //set nOutput to outputNeuron["evaluate"](layerOutputs).
+  set error to (targetAlt - alt:radar).
+  set width to 2.
+  set selfTrain to (error/width)/(1+(error/(2*width))^2).
+  set selfTrain to nOutput + selfTrain.
+  set throttValue to selfTrain.
+  // Safety
+  if alt:radar > targetAlt +1 set throttValue to 0.5.
+  if ship:verticalspeed < -10 set throttValue to max(0.6, throttValue*1.5).
+  set selfTrain to throttValue.
+  
+
+  print "targetAlt: "+targetAlt at(0, 6).
+  print "alt:radar: "+alt:radar at(0, 7).
+  print "selfTrain: "+selfTrain+"                      " at(0, 9).
   print "networkOutput: "+ nOutput+"                   " at(0, 10).
-  neuronInput1["print weights"](12).
-  neuronInput2["print weights"](15).
-  neuronOutput["print weights"](18).
-  set tValue to throttleFunction(targetAlt).
-  if abs(alt:radar - targetAlt) < 1 and time:seconds > trainingStartTime + 60 set targetAlt to targetAlt - 0.25.
-  if time:seconds > startTime + 15 {
+  inputLayer[0]["print weights"](12).
+  inputLayer[1]["print weights"](15).
+  hiddenLayer[0]["print weights"](18).
+  hiddenLayer[1]["print weights"](21).
+  hiddenLayer[2]["print weights"](24).
+  outputNeuron["print weights"](27).
+  if time:seconds > startTime + 30 {
     set startTime to time:seconds.
-    set targetAlt to random()*100+2.
+    set targetAlt to random()*25.
   }
   print "targetAlt: "+targetAlt at(0, 1).
-  print "countdown: "+(startTime+15-time:seconds) at(0, 2).
-}
-set targetAlt to 30.
-set startTime to time:seconds.
-local flag is false.
-until flag {
-  print "testing         " at(0, 0).
-  set nOutput to neuronOutput["evaluate"](list(
-  neuronInput1["evaluate"](list(ship:verticalspeed, alt:radar-targetAlt)),
-  neuronInput2["evaluate"](list(ship:verticalspeed, alt:radar-targetAlt))
-  )).
-  set throttValue to nOutput.
-  print "neuronOutput: "+ nOutput+"                   " at(0, 10).
-  if time:seconds > startTime + 15 {
-    set startTime to time:seconds.
-    set targetAlt to random()*100.
-    print "targetAlt: "+targetAlt at(0, 1).
-  }
- print "countdown: "+(startTime+15-time:seconds) at(0, 2).
- if alt:radar > 200 set flag to true.
+  print "countdown: "+(startTime+30-time:seconds) at(0, 2).
 }
