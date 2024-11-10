@@ -1,3 +1,95 @@
+// WernerFlow?  KerboTorch?  Whatever you want to call it, it is my gift to you.
+// A very simple neural network library written in KerboScript for kOS.
+
+// Usage:
+//    perceptron["training supervisor"]([OUTPUT SUPERVISOR], [SESSION MANAGER])
+//       Accepts two delegates to manage your training session.  The first should manage the training values trained against, and the second should handle the training session, saving the model, reverting to launch, etc.
+//       Returns the output of the first delegate.
+// 
+//       Example:
+//          
+//          set nOutput to perceptron["training supervisor"](
+//             // Output supervisor
+//             {
+//                if targetAlt - alt:radar > 1 {
+//                   // Below target
+//                   if ship:verticalspeed > 10 set selfTrain to selfTrain - 0.001.
+//                   else if ship:verticalspeed < 1 set selfTrain to selfTrain + 0.1.
+//                } else if targetAlt - alt:radar < -1 {
+//                  // Above target
+//                   if ship:verticalspeed > -1 set selfTrain to selfTrain - 0.1.
+//                   else if ship:verticalspeed < -10 set selfTrain to selfTrain + 0.001.
+//                }
+//                set selfTrain to min(1, max(-1, selfTrain)).
+//                set nOutput to perceptron["train network"](
+//                   normalizedInput,
+//                   list(nOutput+selfTrain), 
+//                   model["inputLayer"], 
+//                   model["hiddenLayers"],
+//                   model["outputLayer"]
+//                )[0].
+//        
+//                return nOutput.
+//             }, 
+//             // Session supervisor
+//             {
+//                list Engines in engList.
+//                for eng in engList if eng:flameout set flameout to true. 
+//                // Revert
+//                if alt:radar > 2000 or flameout or vang(ship:facing:forevector, up:forevector) > 90 {
+//                   perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/mlp.json").
+//                   wait 1.
+//                   //kuniverse:pause().
+//                   kuniverse:reverttolaunch().
+//                }
+//             }
+//           ).
+
+//   perceptron["load model"]([FILE])
+//      Loads a model from the given json file
+//   
+//   perceptron["save model"]([INPUT LAYER], [HIDDEN LAYERS], [OUTPUT LAYER], [FILE])
+//      Saves a model to the given file
+//      Example model definition:
+//        local model is lexicon().
+//        if exists("0:/mlp.json") {
+//           set model to perceptron["load model"]("0:/mlp.json"). 
+//        } else {
+//           model:add("inputLayer", list(
+//              perceptron["new neuron"](1, 0.001, "relu"),  // ship:verticalspeed
+//              perceptron["new neuron"](1, 0.001, "relu")   // targetAlt - alt:radar
+//           )).
+//           model:add("hiddenLayers", list(
+//              list(
+//                 perceptron["new neuron"](2, 0.001, "relu"),
+//                 perceptron["new neuron"](2, 0.001, "relu"),
+//                 perceptron["new neuron"](2, 0.001, "relu")
+//              ),
+//              list(
+//                 perceptron["new neuron"](3, 0.001, "relu"),
+//                 perceptron["new neuron"](3, 0.001, "relu")
+//              )
+//           )).
+//           model:add("outputLayer", list(
+//              perceptron["new neuron"](2, 0.001, "sigmoid")
+//           )).
+//        }
+// 
+//   perceptron["normalize input"]([UPPER BOUND], [LOWER BOUND], [VALUE])
+//      It is very important to normalize your input.  Training does not work well otherwise.
+//  
+//   perceptron["train network"]([INPUT VALUES], [TRAIN VALUES], [INPUT LAYER], [HIDDEN LAYERS], [OUTPUT LAYER])
+//     Trains the network using the provided inputs and training data.
+//     Returns the output of the network from before training.  (Improves performance, by not evaluating the network a third time.)
+//
+//   perceptron["evaluate network"]([INPUT VALUES], [INPUT LAYER], [HIDDEN LAYERS], [OUTPUT LAYER]))
+//      If you are confident that the network is sufficiently trained, you can use it with this function.
+//      Returns network output for the given inputs.
+//
+//   perceptron["new neuron"]([NUMBER OF INPUTS], [LEARNING RATE], [ACTIVATION FUNCTION])    
+//      Used to create network nodes.
+//      Returns a "neuron" closure.
+
 {
    global perceptron is lexicon().
 
@@ -270,7 +362,7 @@
 
    perceptron:add("training supervisor", {
       
-      // Provides values to train against.
+      // Provides values to train against, and may return control output.
       declare parameter outputSupervisorDelegate.
       // Responsible for managing the training session and reverting when out of defined bounds.
       declare parameter sessionDelegate.
@@ -282,108 +374,3 @@
    
 }
 
-
-set config:ipu to 2000.
-local model is lexicon().
-local nOutput is 0.
-if exists("0:/models/hoverflow.json") {
-   set model to perceptron["load model"]("0:/models/hoverflow.json"). 
-   //deletepath("0:/mlp.json").
-} else {
-   model:add("inputLayer", list(
-      perceptron["new neuron"](1, 0.001, "relu"),  // Inputs: ship:verticalspeed
-      perceptron["new neuron"](1, 0.001, "relu")  // Inputs: alt:radar - targetAlt
-      //perceptron["new neuron"](1, 0.001, "relu")    // nOutput
-   )).
-   model:add("hiddenLayers", list(
-      list(
-         perceptron["new neuron"](2, 0.001, "relu"),
-         perceptron["new neuron"](2, 0.001, "relu"),
-         perceptron["new neuron"](2, 0.001, "relu")
-      ),
-      list(
-         perceptron["new neuron"](3, 0.001, "relu"),
-         perceptron["new neuron"](3, 0.001, "relu")
-      )
-   )).
-   model:add("outputLayer", list(
-      perceptron["new neuron"](2, 0.001, "sigmoid")
-   )).
-}
-
-wait 0.
-
-local targetAlt is 30.
-local selfTrain is 0.
-local throttValue is 0.
-lock steering to up.
-lock throttle to throttValue.
-if ship:availablethrust <= 0 stage.
-local startTime is time:seconds.
-local flameout is false.
-until false {
-  print "training" at(0, 0).
-  
-   local normalizedInput is list(
-     list(perceptron["normalize input"](10, -10, ship:verticalspeed)),
-     list(perceptron["normalize input"](10, -10, (targetAlt-alt:radar)))
-     //list(perceptron["normalize input"](1, 0, nOutput))
-  ).
-  set nOutput to perceptron["training supervisor"](
-     // Output supervisor
-     {
-        if targetAlt - alt:radar > 1 {
-           // Below target
-           if ship:verticalspeed > 10 set selfTrain to selfTrain - 0.001.
-           else if ship:verticalspeed < 1 set selfTrain to selfTrain + 0.1.
-        } else if targetAlt - alt:radar < -1 {
-          // Above target
-           if ship:verticalspeed > -1 set selfTrain to selfTrain - 0.1.
-           else if ship:verticalspeed < -10 set selfTrain to selfTrain + 0.001.
-        }
-        set selfTrain to min(1, max(-1, selfTrain)).
-        set nOutput to perceptron["train network"](
-           normalizedInput,
-           list(nOutput+selfTrain), 
-           model["inputLayer"], 
-           model["hiddenLayers"],
-           model["outputLayer"]
-        )[0].
-
-        return nOutput.
-     }, 
-     // Session supervisor
-     {
-        list Engines in engList.
-        for eng in engList if eng:flameout set flameout to true. 
-        // Revert
-        if alt:radar > 2000 or flameout or vang(ship:facing:forevector, up:forevector) > 90 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow.json").
-           wait 1.
-           //kuniverse:pause().
-           kuniverse:reverttolaunch().
-        }
-     }
-   ).
-  
-  set throttValue to nOutput.
-
-  //print "input:"+normalizedInput at(0, 4).
-  print "targetAlt: "+targetAlt at(0, 6).
-  print "alt:radar: "+alt:radar at(0, 7).
-  print "selfTrain: "+selfTrain+"                      " at(0, 9).
-  print "networkOutput: "+ nOutput+"                   " at(0, 10).
-  model["inputLayer"][0]["print weights"](12).
-  model["inputLayer"][1]["print weights"](15).
-  model["hiddenLayers"][0][0]["print weights"](18).
-  model["hiddenLayers"][0][1]["print weights"](21).
-  model["hiddenLayers"][0][2]["print weights"](24).
-  model["outputLayer"][0]["print weights"](27).
-  if time:seconds > startTime + 30 {
-    set startTime to time:seconds.
-    set targetAlt to random()*100.
-  }
-  print "targetAlt: "+targetAlt at(0, 1).
-  print "countdown: "+(startTime+30-time:seconds) at(0, 2).
-
-}
