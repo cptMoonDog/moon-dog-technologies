@@ -1,6 +1,7 @@
 @lazyglobal off.
 
 until ship:altitude > 80000 {
+      // I think this was used for finding the optimum pitch angle for rocket launches.
       // Tuning Code
       if ship:altitude > 1000 
       if vang(ship:prograde:forevector, up:forevector) > 85 and ship:altitude < ship:orbit:body:atm:height {
