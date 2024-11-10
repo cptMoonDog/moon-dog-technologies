@@ -162,14 +162,14 @@
       local oldOutputs is backProp.
 
       // Back propagate through hidden layers
-      from {local i is hiddenLayers:length-1.} until i <= 0 step {set i to i -1.} do {
+      from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
          if i = 0 set backProp to trainDenseLayer(intermVal, hiddenLayers[i], backProp).
          else set backProp to trainDenseLayer(hiddenLayerIntermVals[i-1], hiddenLayers[i], backProp).
       }
 
       // Train input layer
       from {local i is 0.} until i > inputLayer:length-1 step {set i to i+1.} do {
-         inputLayer[i]["train"](inputValues[i], backProp).
+         inputLayer[i]["train"](inputValues[i], backProp[i]).
       }
 
       return oldOutputs.
@@ -279,17 +279,17 @@ if exists("0:/mlp.json") {
    //deletepath("0:/mlp.json").
 } else {
    model:add("inputLayer", list(
-      perceptron["new neuron"](2, 0.001, "linear"),  // Inputs: ship:verticalspeed
-      perceptron["new neuron"](2, 0.001, "linear"),  // Inputs: alt:radar - targetAlt
-      perceptron["new neuron"](1, 0.001, "linear")    // nOutput
+      perceptron["new neuron"](3, 0.001, "linear"),  // Inputs: ship:verticalspeed
+      perceptron["new neuron"](3, 0.001, "linear"),  // Inputs: alt:radar - targetAlt
+      perceptron["new neuron"](3, 0.001, "linear")    // nOutput
    )).
    model:add("hiddenLayers", list(list(
+      perceptron["new neuron"](3, 0.001, "relu"),
+      perceptron["new neuron"](3, 0.001, "relu"),
       perceptron["new neuron"](3, 0.001, "relu")
-      //perceptron["new neuron"](3, 0.001, "relu"),
-      //perceptron["new neuron"](3, 0.001, "relu")
    ))).
    model:add("outputLayer", list(
-      perceptron["new neuron"](1, 0.001, "sigmoid")
+      perceptron["new neuron"](3, 0.001, "sigmoid")
    )).
 }
 
@@ -316,9 +316,9 @@ until false {
      else if ship:verticalspeed < -10 set selfTrain to selfTrain + 0.001.
   }
   local normalizedInput is list(
-     list(perceptron["normalize input"](10, -10, ship:verticalspeed), perceptron["normalize input"](30, -30, (targetAlt-alt:radar))),
-     list(perceptron["normalize input"](10, -10, ship:verticalspeed), perceptron["normalize input"](30, -30, (targetAlt-alt:radar))),
-     list(nOutput)
+     list(perceptron["normalize input"](10, -10, ship:verticalspeed), perceptron["normalize input"](30, -30, (targetAlt-alt:radar)), nOutput),
+     list(perceptron["normalize input"](10, -10, ship:verticalspeed), perceptron["normalize input"](30, -30, (targetAlt-alt:radar)), nOutput),
+     list(perceptron["normalize input"](10, -10, ship:verticalspeed), perceptron["normalize input"](30, -30, (targetAlt-alt:radar)), nOutput)
   ).
   set nOutput to perceptron["train network"](
      normalizedInput,
