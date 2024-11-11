@@ -108,15 +108,15 @@
 
       if weights:length <> inputSize {
          from {local i is 0.} until i >= inputSize step {set i to i+1.} do{
-            weights:add(random()).
+            weights:add(random()*2-1). // Weights can be negative
          }
       }
       
       declare function activation {
          declare parameter input.
          if activationFunction = "relu" return max(0, input).
-         else if activationFunction = "sym_sigmoid" return 2/(1+constant:e^(-max(0.0000001, input))) - 1.
-         else if activationFunction = "sigmoid" return 1/(1+constant:e^(-max(0.0000001, input))).
+         else if activationFunction = "sym_sigmoid" return 2/(1+constant:e^(-min(100, max(-100, input)))) - 1.
+         else if activationFunction = "sigmoid" return 1/(1+constant:e^(-min(100, max(-100, input)))).
          else if activationFunction = "linear" return input.
          else if activationFunction = "square" return max(0.0000001, min(9999999, input)^2).
          else if activationFunction = "sqrt" return sqrt(abs(input)).
@@ -135,10 +135,11 @@
          return z.
       }
 
-      neuron:add("evaluate", {
+      declare function eval {
          declare parameter inputs.
          return activation(summation(weights, inputs)).
-      }).
+      }
+      neuron:add("evaluate", eval@).
 
       neuron:add("print weights", {
          declare parameter row.
@@ -171,7 +172,7 @@
          }
          if sumOfInputs = 0 set sumOfInputs to 0.000001.
 
-         local current is activation(summation(weights, inputs)). 
+         local current is eval(inputs).
          local delta is current - trainValue.
          set sumOfWeights to sumOfWeights + bias.
 
@@ -184,7 +185,7 @@
             if abs(weights[i]) > 1000000 or 
                abs(weights[i]) < 0.000001 
                //or mod(floor(time:seconds)+i, floor(random()*100+1)) = 0 
-               set weights[i] to random().
+               set weights[i] to random()*2-1.
             set outputWOBias to outputWOBias + inputs[i]*weights[i].
             backPropInputs:add(inputs[i] + deltaWeight*(inputs[i]/sumOfInputs)).
          }
@@ -192,7 +193,7 @@
          set bias to bias+(outputWOBias-trainValue)*learningRate/sumOfWeights.
          if abs(bias) > 1000000 or abs(bias) < 0.000001 
          //or mod(floor(time:seconds), floor(random()*101+1)) = 0 
-            set bias to random().
+            set bias to random()*2-1.
 
          return backPropInputs.
 
@@ -247,11 +248,18 @@
          hiddenLayerIntermVals:add(layerOutputs).
       }
 
+      // Generate output for use.
+      local oldOutputs is list().
+
       // Train output layer and begin back propagating 
       local backProp is list().
-      if hiddenLayers:length = 0 set backProp to trainDenseLayer(intermVal, outputLayer, trainValues).
-      else set backProp to trainDenseLayer(hiddenLayerIntermVals[hiddenLayerIntermVals:length-1], outputLayer, trainValues).
-      local oldOutputs is backProp.
+      if hiddenLayers:length = 0 {
+         for n in outputLayer oldOutputs:add(n["evaluate"](intermVal)).
+         set backProp to trainDenseLayer(intermVal, outputLayer, trainValues).
+      } else {
+         for n in outputLayer oldOutputs:add(n["evaluate"](hiddenLayerIntermVals[hiddenLayerIntermVals:length-1])).
+         set backProp to trainDenseLayer(hiddenLayerIntermVals[hiddenLayerIntermVals:length-1], outputLayer, trainValues).
+      }
 
       // Back propagate through hidden layers
       from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
