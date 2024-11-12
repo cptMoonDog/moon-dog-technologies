@@ -83,8 +83,8 @@ until false {
            else if ship:verticalspeed < -10 set selfTrain to 1.
            else if ship:verticalspeed < -5  set selfTrain to min(nOutput*2, min(0.5, selfTrain + 0.001)).
         }
-        //set selfTrain to throttleFunction(targetAlt).
         if abs(targetAlt - alt:radar) < 1 and abs(ship:verticalspeed) < 1 set selfTrain to nOutput.
+        set selfTrain to min(1, max(0, selfTrain)).
         set nOutput to perceptron["train network"](
            normalizedInput,
            list(nOutput+selfTrain), 
@@ -116,14 +116,16 @@ until false {
   print "selfTrain: "+selfTrain+"                      " at(0, 9).
   print "networkOutput: "+ nOutput+"                   " at(0, 10).
   //print "input: "+normalizedInput at(0, 12).
-  model["inputLayer"][0]["print weights"](15).
-  model["inputLayer"][1]["print weights"](18).
-  model["inputLayer"][2]["print weights"](21).
-  model["outputLayer"][0]["print weights"](18).
-  model["hiddenLayers"][0][0]["print weights"](21).
-  model["hiddenLayers"][0][1]["print weights"](24).
-  model["hiddenLayers"][0][2]["print weights"](27).
-  model["outputLayer"][0]["print weights"](30).
+  //model["inputLayer"][0]["print weights"](15).
+  //model["inputLayer"][1]["print weights"](18).
+  //model["inputLayer"][2]["print weights"](21).
+  //model["hiddenLayers"][0][0]["print weights"](21).
+  //model["hiddenLayers"][0][1]["print weights"](24).
+  //model["hiddenLayers"][0][2]["print weights"](27).
+  //model["hiddenLayers"][1][0]["print weights"](30).
+  //model["hiddenLayers"][1][1]["print weights"](33).
+  //model["hiddenLayers"][1][2]["print weights"](36).
+  //model["outputLayer"][0]["print weights"](39).
   if time:seconds > startTime + 30 {
     set startTime to time:seconds.
     set targetAlt to random()*100+5.
