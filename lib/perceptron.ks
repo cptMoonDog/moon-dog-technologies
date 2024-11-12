@@ -173,7 +173,7 @@
          if abs(sumOfInputs) < 0.00001 set sumOfInputs to 0.00001.
 
          local current is eval(inputs).
-         local delta is current - trainValue.
+         local delta is (trainValue - current)/trainValue.
          //set sumOfWeights to sumOfWeights + bias.
 
          local backPropInputs is list().
