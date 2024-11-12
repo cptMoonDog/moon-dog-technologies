@@ -99,7 +99,7 @@
       declare parameter learningRate.
       declare parameter actFunction is "relu".
       declare parameter w is list().
-      declare parameter b is random().
+      declare parameter b is 1.
 
       local neuron is lexicon().
       local weights is w.
@@ -143,8 +143,8 @@
 
       neuron:add("print weights", {
          declare parameter row.
-         print "Weights: "+weights+"                              " at(0, row).
-         print "Bias: "+bias+"                     " at(0, row+1).
+         print "Bias: "+bias+"                     " at(0, row).
+         print "Weights: "+weights+"                              " at(0, row+1).
       }).
 
       neuron:add("serialize", {
@@ -170,30 +170,24 @@
             //print "sumOfInputs: "+sumOfInputs at(0, 20).
             set sumOfWeights to sumOfWeights + weights[i].
          }
-         if sumOfInputs = 0 set sumOfInputs to 0.000001.
+         if abs(sumOfInputs) < 0.00001 set sumOfInputs to 0.00001.
 
          local current is eval(inputs).
          local delta is current - trainValue.
-         set sumOfWeights to sumOfWeights + bias.
+         //set sumOfWeights to sumOfWeights + bias.
 
          local backPropInputs is list().
-         local outputWOBias is 0.
          local deltaWeight is 0.
          from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-            set deltaWeight to delta*(weights[i]/sumOfWeights)*learningRate.
+            set deltaWeight to delta*(weights[i]/abs(sumOfWeights))*learningRate.
             set weights[i] to weights[i]+deltaWeight.
+            set deltaInput to delta*(inputs[i]/abs(sumOfInputs))*learningRate.
             if abs(weights[i]) > 1000000 or 
                abs(weights[i]) < 0.000001 
                //or mod(floor(time:seconds)+i, floor(random()*100+1)) = 0 
                set weights[i] to random()*2-1.
-            set outputWOBias to outputWOBias + inputs[i]*weights[i].
-            backPropInputs:add(inputs[i] + deltaWeight*(inputs[i]/sumOfInputs)).
+            backPropInputs:add(inputs[i] + deltaInput).
          }
-         set outputWOBias to activation(outputWOBias).
-         set bias to bias+(outputWOBias-trainValue)*learningRate/sumOfWeights.
-         if abs(bias) > 1000000 or abs(bias) < 0.000001 
-         //or mod(floor(time:seconds), floor(random()*101+1)) = 0 
-            set bias to random()*2-1.
 
          return backPropInputs.
 
@@ -311,14 +305,23 @@
 
    }).
 
-   perceptron:add("normalize input", {
+   perceptron:add("normalize value", {
       declare parameter top.
       declare parameter bottom.
       declare parameter value.
 
       local normalizedValue is max(bottom, min(top, value)).
+      local midpoint is (top + bottom)/2.
+      set normalizedValue to normalizedValue - midpoint.
+      return normalizedValue.
+   }).
 
-      return (normalizedValue-bottom)/(top-bottom).
+   perceptron:add("dead zone", {
+      parameter top.
+      parameter bottom.
+      parameter value.
+      if value > bottom and value < top return (top+bottom)/2.
+      else return value.
    }).
 
    perceptron:add("save model", {
