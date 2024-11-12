@@ -173,15 +173,16 @@
          if abs(sumOfInputs) < 0.00001 set sumOfInputs to 0.00001.
 
          local current is eval(inputs).
-         local delta is (trainValue - current)/trainValue.
+         //local delta is choose 0 if not(trainValue) else (trainValue - current)/trainValue.
+         local delta is (current - trainValue)*learningRate.
          //set sumOfWeights to sumOfWeights + bias.
 
          local backPropInputs is list().
          local deltaWeight is 0.
          from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-            set deltaWeight to delta*(weights[i]/abs(sumOfWeights))*learningRate.
+            set deltaWeight to delta*inputs[i].
             set weights[i] to weights[i]+deltaWeight.
-            set deltaInput to delta*(inputs[i]/abs(sumOfInputs))*learningRate.
+            set deltaInput to deltaWeight*inputs[i].
             if abs(weights[i]) > 1000000 or 
                abs(weights[i]) < 0.000001 
                //or mod(floor(time:seconds)+i, floor(random()*100+1)) = 0 

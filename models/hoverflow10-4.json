@@ -39,7 +39,7 @@
                         {
                             "items": [
                                 {
-                                    "value": 0.829754214319406,
+                                    "value": 0.91356423470453363,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
@@ -89,7 +89,7 @@
                         {
                             "items": [
                                 {
-                                    "value": -0.98514289630608232,
+                                    "value": 0.4268352569450139,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
@@ -139,7 +139,7 @@
                         {
                             "items": [
                                 {
-                                    "value": 0.25110135329005068,
+                                    "value": 0.7646773869547121,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
@@ -200,15 +200,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.7182411021774685,
+                                            "value": -0.75331861387119381,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 1.7050887354801204E-06,
+                                            "value": 0.2920404277816338,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.30950979222343988,
+                                            "value": -0.31221688412028542,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
@@ -258,15 +258,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.42936341862160993,
+                                            "value": -0.37524514823559679,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.6320927728523239,
+                                            "value": 0.0051456681851624322,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.92478023792634545,
+                                            "value": -0.36338427848931609,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
@@ -316,15 +316,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.35119649383327506,
+                                            "value": 0.9126980812618144,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.86729687007949507,
+                                            "value": -0.88531545868439065,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.79516413918852347,
+                                            "value": 0.70263429256676213,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
@@ -379,15 +379,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.00034542566268321918,
+                                            "value": 48.594213164747082,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.00028770514554904978,
+                                            "value": 38.047401695301225,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.00021840395971726989,
+                                            "value": 15.847330974223604,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
@@ -437,15 +437,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": -0.00049048526896766067,
+                                            "value": 324482.40850276477,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.00084927290086145909,
+                                            "value": -3683.730736907401,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.00069335512209950378,
+                                            "value": 0.10611874451964649,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
@@ -495,15 +495,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": -0.00033719590842187937,
+                                            "value": 324482.41047090763,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.000519974385660512,
+                                            "value": -3683.9404389047268,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 0.00057970975516819737,
+                                            "value": 0.10574743519563388,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
@@ -565,15 +565,15 @@
                         {
                             "items": [
                                 {
-                                    "value": 11.731694000363914,
+                                    "value": -12.80917677544033,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": -0.00023424885346613666,
+                                    "value": -0.11613413807617759,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": -5.8883568324982451E-05,
+                                    "value": -0.11609972592428201,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],

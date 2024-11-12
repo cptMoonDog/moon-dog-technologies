@@ -1,10 +1,10 @@
 runpath("0:/lib/perceptron.ks").
 
-set config:ipu to 2000.
+//set config:ipu to 2000.
 local model is lexicon().
 local nOutput is 0.
-if exists("0:/models/hoverflow2.json") {
-   set model to perceptron["load model"]("0:/models/hoverflow2.json"). 
+if exists("0:/models/hoverflow10-4.json") {
+   set model to perceptron["load model"]("0:/models/hoverflow10-4.json"). 
 } else {
    model:add("inputLayer", list(
       perceptron["new neuron"](1, 0.001, "linear"),  // Inputs: ship:verticalspeed
@@ -42,16 +42,16 @@ wait 0.
 
 local targetAlt is 30.
 local maxAccel is ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
-//local normalizedInput is list(
-//     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 0.5, -0.5, ship:verticalspeed))),
-//     list(perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar))),
-//     list(perceptron["normalize value"](10, -10, maxAccel)) // acceleration
-//).
 local normalizedInput is list(
-     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
-     perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
-     perceptron["normalize value"](10, -10, maxAccel)) // acceleration
+     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 0.5, -0.5, ship:verticalspeed))),
+     list(perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar))),
+     list(perceptron["normalize value"](10, -10, maxAccel)) // acceleration
 ).
+//local normalizedInput is list(
+//     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
+//     perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
+//     perceptron["normalize value"](10, -10, maxAccel)) // acceleration
+//).
 
 local selfTrain is perceptron["evaluate network"](
    normalizedInput,
@@ -69,16 +69,16 @@ until false {
   print "training" at(0, 0).
   
    set maxAccel to ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
-  //set normalizedInput to list(
-  //     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed))),
-  //     list(perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar))),
-  //     list(perceptron["normalize value"](10, -10, maxAccel)) // acceleration
-  //).
   set normalizedInput to list(
-    list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
-    perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
-    perceptron["normalize value"](10, -10, maxAccel)) // acceleration
+       list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed))),
+       list(perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar))),
+       list(perceptron["normalize value"](10, -10, maxAccel)) // acceleration
   ).
+   //set normalizedInput to list(
+   //  list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
+   //  perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
+   //  perceptron["normalize value"](10, -10, maxAccel)) // acceleration
+   //).
    set nOutput to perceptron["training supervisor"](
      // Output supervisor
      {
@@ -111,7 +111,7 @@ until false {
         for eng in engList if eng:flameout set flameout to true. 
         // Revert
         if alt:radar > 1000 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 15*60 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow2.json").
+           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow10-4.json").
            wait 1.
            //kuniverse:pause().
            kuniverse:reverttolaunch().
@@ -129,8 +129,8 @@ until false {
   //model["inputLayer"][0]["print weights"](15).
   //model["inputLayer"][1]["print weights"](18).
   //model["inputLayer"][2]["print weights"](21).
-  //model["hiddenLayers"][0][0]["print weights"](21).
-  //model["hiddenLayers"][0][1]["print weights"](24).
+  model["hiddenLayers"][0][0]["print weights"](21).
+  model["hiddenLayers"][0][1]["print weights"](24).
   //model["hiddenLayers"][0][2]["print weights"](27).
   //model["hiddenLayers"][1][0]["print weights"](30).
   //model["hiddenLayers"][1][1]["print weights"](33).
