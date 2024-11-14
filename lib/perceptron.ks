@@ -115,12 +115,9 @@
       declare function activation {
          declare parameter input.
          if activationFunction = "relu" return max(0, input).
-         else if activationFunction = "sym_sigmoid" return 2/(1+constant:e^(-min(100, max(-100, input)))) - 1.
          else if activationFunction = "sigmoid" return 1/(1+constant:e^(-min(100, max(-100, input)))).
          else if activationFunction = "linear" return input.
-         else if activationFunction = "square" return max(0.0000001, min(9999999, input)^2).
-         else if activationFunction = "sqrt" return sqrt(abs(input)).
-         else if activationFunction = "cube" return max(0.0000001, min(9999999, input))^3.
+         else return input.
       }
 
       declare function summation {
@@ -131,9 +128,22 @@
          from {local i is 0.} until i > inputs:length-1 step {set i to i+1.} do {
            set z to z + weights[i]*inputs[i]. 
          }
-         set z to z + bias.
+         set z to z + 1*1.
          return z.
       }
+
+      neuron:add("propagate error", {
+         declare parameter wi.
+         declare parameter delta.
+         set weights[wi] to weights[wi] + delta.
+      }).
+
+      neuron:add("pass input", {
+        declare parameter inputs.
+        local sum is 0.
+        for i in inputs set sum to sum+i.
+        return sum+1.
+      }).
 
       declare function eval {
          declare parameter inputs.
@@ -162,35 +172,21 @@
          declare parameter inputs.
          declare parameter trainValue.
 
-         local sumOfInputs is 0.
-         local sumOfWeights is 0.
-         //print "inputs: "+inputs at(0, 22).
-         from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-            set sumOfInputs to sumOfInputs + inputs[i].
-            //print "sumOfInputs: "+sumOfInputs at(0, 20).
-            set sumOfWeights to sumOfWeights + weights[i].
-         }
-         if abs(sumOfInputs) < 0.00001 set sumOfInputs to 0.00001.
-
          local current is eval(inputs).
-         //local delta is choose 0 if not(trainValue) else (trainValue - current)/trainValue.
-         local delta is (current - trainValue)*learningRate.
-         //set sumOfWeights to sumOfWeights + bias.
+         local delta is (trainValue - current).
+         local sumOfz is summation(weights, inputs).
 
-         local backPropInputs is list().
-         local deltaWeight is 0.
+         local backPropError is list().
          from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-            set deltaWeight to delta*inputs[i].
-            set weights[i] to weights[i]+deltaWeight.
-            set deltaInput to deltaWeight*inputs[i].
+            set weights[i] to weights[i]-delta*inputs[i]*learningRate.
+            backPropError:add(weights[i]*delta).  // The error back propagates
+            // Input needs to be adjusted in the same direction as weights?
             if abs(weights[i]) > 1000000 or 
                abs(weights[i]) < 0.000001 
-               //or mod(floor(time:seconds)+i, floor(random()*100+1)) = 0 
                set weights[i] to random()*2-1.
-            backPropInputs:add(inputs[i] + deltaInput).
          }
 
-         return backPropInputs.
+         return backPropError.
 
       }).
       
@@ -201,22 +197,18 @@
       declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
       declare parameter layer.
       declare parameter trainValues. // list. One output for each node.
+      declare parameter learningRate is 0.001.
 
-      local backPropValues is list().
+      local backPropError is list().
       from {local i is 0.} until i > layer:length-1 step {set i to i+1.} do {
          local backP is layer[i]["train"](inputs, trainValues[i]).
-         if i > 0 { // Averages the back prop values from all the hidden layer nodes into one back prop list
-            from {local j is 0.} until j > backPropValues:length-1 step {set j to j+1.} do {
-               set backPropValues[j] to backPropValues[j] + backP[j].
+         if i > 0 { // Sums the back prop error from all the hidden layer nodes into one back prop list
+            from {local j is 0.} until j > backPropError:length-1 step {set j to j+1.} do {
+               set backPropError[j] to backPropError[j] + backP[j].
             }
-         } else set backPropValues to backP.
+         } else set backPropError to backP.
       }
-      // Final part of averaging operation
-      from {local i is 0.} until i > backPropValues:length-1 step {set i to i+1.} do {
-         set backPropValues[i] to backPropValues[i]/inputs:length.
-      }
-
-      return backPropValues.
+      return backPropError.
    }
 
    perceptron:add("train network", {
@@ -230,6 +222,7 @@
       local intermVal is list().
       from {local i is 0.} until i > inputLayer:length-1 step {set i to i+1.} do {
          intermVal:add(inputLayer[i]["evaluate"](inputValues[i])).
+         //intermVal:add(inputLayer[i]["pass input"](inputValues[i])).
       }
 
       // Evaluate hidden layers
@@ -259,7 +252,9 @@
       // Back propagate through hidden layers
       from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
          if i = 0 set backProp to trainDenseLayer(intermVal, hiddenLayers[i], backProp).
-         else set backProp to trainDenseLayer(hiddenLayerIntermVals[i-1], hiddenLayers[i], backProp).
+         else {
+            set backProp to trainDenseLayer(hiddenLayerIntermVals[i-1], hiddenLayers[i], backProp).
+         }
       }
 
       // Train input layer
@@ -307,14 +302,14 @@
    }).
 
    perceptron:add("normalize value", {
-      declare parameter top.
-      declare parameter bottom.
+      declare parameter topi.
+      declare parameter bottomi.
+      declare parameter topo.
+      declare parameter bottomo.
       declare parameter value.
 
-      local normalizedValue is max(bottom, min(top, value)).
-      local midpoint is (top + bottom)/2.
-      set normalizedValue to normalizedValue - midpoint.
-      return normalizedValue.
+      local output is min(topo, max(bottomo, ((value - bottomi)*(topo - bottomo))/(topi - bottomi))).
+      return output.
    }).
 
    perceptron:add("dead zone", {
