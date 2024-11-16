@@ -39,27 +39,19 @@
                         {
                             "items": [
                                 {
-                                    "value": 0.86735116569698945,
+                                    "value": 0.94003324862355331,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": 0.42970558810467441,
+                                    "value": 0.33677341869366778,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": 0.86219806708817059,
+                                    "value": 0.93488015001473446,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.ListValue"
-                        },
-                        {
-                            "value": "bias",
-                            "$type": "kOS.Safe.Encapsulation.StringValue"
-                        },
-                        {
-                            "value": 1,
-                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                         }
                     ],
                     "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -98,7 +90,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -108,19 +100,11 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.52703853223573771,
+                                            "value": -0.32807869199773221,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -148,7 +132,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -158,19 +142,11 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.615911062447527,
+                                            "value": 0.86727781274859361,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -203,7 +179,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -213,23 +189,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": -0.5031349310746499,
+                                            "value": -0.30143271076657663,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.24619723808182092,
+                                            "value": 0.45958886481827133,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -257,7 +225,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -267,23 +235,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": -0.505008959788835,
+                                            "value": -0.38704778936210948,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.050873225920776963,
+                                            "value": 0.58899798472250686,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -316,7 +276,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -326,23 +286,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.97917470964552111,
+                                            "value": 1.0384164634252855,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": 1.3432795153292949,
+                                            "value": 1.4240045579089482,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -370,7 +322,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -380,23 +332,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": -0.55023972412377209,
+                                            "value": -0.69476053434320906,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.38303100870393209,
+                                            "value": -0.56062703339000475,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -429,7 +373,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -439,23 +383,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": 0.75130129524342693,
+                                            "value": 1.0461246806233264,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.21706551719079398,
+                                            "value": -0.18236591229711882,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -483,7 +419,7 @@
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
-                                    "value": "sigmoid",
+                                    "value": "relu",
                                     "$type": "kOS.Safe.Encapsulation.StringValue"
                                 },
                                 {
@@ -493,23 +429,15 @@
                                 {
                                     "items": [
                                         {
-                                            "value": -0.4218676274528485,
+                                            "value": 0.25780664561272948,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         },
                                         {
-                                            "value": -0.67296659612406551,
+                                            "value": -0.49183756345869611,
                                             "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                         }
                                     ],
                                     "$type": "kOS.Safe.Encapsulation.ListValue"
-                                },
-                                {
-                                    "value": "bias",
-                                    "$type": "kOS.Safe.Encapsulation.StringValue"
-                                },
-                                {
-                                    "value": 1,
-                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -559,23 +487,15 @@
                         {
                             "items": [
                                 {
-                                    "value": 0.033360336415998608,
+                                    "value": 0.7900712830739206,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": 0.82769204943416264,
+                                    "value": 1.0252049628411932,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.ListValue"
-                        },
-                        {
-                            "value": "bias",
-                            "$type": "kOS.Safe.Encapsulation.StringValue"
-                        },
-                        {
-                            "value": 1,
-                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                         }
                     ],
                     "$type": "kOS.Safe.Encapsulation.Lexicon"

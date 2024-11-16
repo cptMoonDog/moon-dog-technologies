@@ -3,48 +3,63 @@ runpath("0:/lib/perceptron.ks").
 set config:ipu to 2000.
 local model is lexicon().
 local nOutput is 0.
-if exists("0:/models/hoverflow3731.json") {
-   set model to perceptron["load model"]("0:/models/hoverflow3731.json"). 
+if exists("0:/models/hoverflow6731r.json") {
+   set model to perceptron["load model"]("0:/models/hoverflow6731r.json"). 
 } else {
    model:add("inputLayer", list(
-      perceptron["new neuron"](1, 0.0001, "linear"),  // Inputs: ship:verticalspeed
-      perceptron["new neuron"](1, 0.0001, "linear"),  // Inputs: targetAlt - alt:radar
-      perceptron["new neuron"](1, 0.0001, "linear")   // Maximum acceleration
+      // This arrangment should automatically scale the inputs eventually.
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Positive
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Inverse (negative=positive)
+      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Maximum (Inverse with offset)
+      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Minimum (Positive with offset)
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Positive
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Negative
+      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Maximum
+      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Minimum
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Maximum acceleration / Positive
+      perceptron["new neuron"](1, 0.00001, "relu")   // Maximum acceleration / Maximum
    )).
    model:add("hiddenLayers", list(
       list(
-        perceptron["new neuron"](3, 0.0001, "sigmoid"),
-        perceptron["new neuron"](3, 0.0001, "sigmoid"),
-        perceptron["new neuron"](3, 0.0001, "sigmoid"),
-        perceptron["new neuron"](3, 0.0001, "sigmoid"),
-        perceptron["new neuron"](3, 0.0001, "sigmoid"),
-        perceptron["new neuron"](3, 0.0001, "sigmoid"),
-        perceptron["new neuron"](3, 0.0001, "sigmoid")
+        perceptron["new neuron"](6, 0.00001, "relu"),
+        perceptron["new neuron"](6, 0.00001, "relu"),
+        perceptron["new neuron"](6, 0.00001, "relu"),
+        perceptron["new neuron"](6, 0.00001, "relu"),
+        perceptron["new neuron"](6, 0.00001, "relu"),
+        perceptron["new neuron"](6, 0.00001, "relu"),
+        perceptron["new neuron"](6, 0.00001, "relu")
       ),
       list(
-        perceptron["new neuron"](7, 0.0001, "sigmoid"),
-        perceptron["new neuron"](7, 0.0001, "sigmoid"),
-        perceptron["new neuron"](7, 0.0001, "sigmoid")
+        perceptron["new neuron"](7, 0.00001, "relu"),
+        perceptron["new neuron"](7, 0.00001, "relu"),
+        perceptron["new neuron"](7, 0.00001, "relu")
       )
    )).
    model:add("outputLayer", list(
-      perceptron["new neuron"](3, 0.0001, "sigmoid")
+      perceptron["new neuron"](3, 0.00001, "sigmoid")
    )).
 }
 
 wait 0.
 
 local targetAlt is 30.
-local maxAccel is ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
+local maxAccel is ship:availablethrust()/ship:mass - (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
 local normalizedInput is list(
-     list(perceptron["normalize value"](10, -10, -1, 1, perceptron["dead zone"]( 0.5, -0.5, ship:verticalspeed))),
-     list(perceptron["normalize value"](30, -30, -1, 1, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar))),
-     list(perceptron["normalize value"](10, -10, -1, 1, maxAccel)) // acceleration
+     list(ship:verticalspeed),
+     list(ship:verticalspeed),
+     list(ship:verticalspeed),
+     list(ship:verticalspeed),
+     list(targetAlt-alt:radar),
+     list(targetAlt-alt:radar),
+     list(targetAlt-alt:radar),
+     list(targetAlt-alt:radar),
+     list(maxAccel), // acceleration
+     list(maxAccel) // acceleration
 ).
 //local normalizedInput is list(
-//     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
-//     perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
-//     perceptron["normalize value"](10, -10, maxAccel)) // acceleration
+//     list(perceptron["normalize value"](10, -10, 10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
+//     perceptron["normalize value"](30, -30, 10, -10, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
+//     perceptron["normalize value"](10, -10, 10, -10, maxAccel)) // acceleration
 //).
 
 local selfTrain is perceptron["evaluate network"](
@@ -64,14 +79,21 @@ until false {
   
    set maxAccel to ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    set normalizedInput to list(
-      list(perceptron["normalize value"](10, -10, -1, 1, perceptron["dead zone"]( 0.5, -0.5, ship:verticalspeed))),
-      list(perceptron["normalize value"](30, -30, -1, 1, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar))),
-      list(perceptron["normalize value"](10, -10, -1, 1, maxAccel)) // acceleration
+      list(ship:verticalspeed),
+      list(ship:verticalspeed),
+      list(ship:verticalspeed),
+      list(ship:verticalspeed),
+      list(targetAlt-alt:radar),
+      list(targetAlt-alt:radar),
+      list(targetAlt-alt:radar),
+      list(targetAlt-alt:radar),
+      list(maxAccel), // acceleration
+      list(maxAccel) // acceleration
    ).
 //   set normalizedInput to list(
-//     list(perceptron["normalize value"](10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
-//     perceptron["normalize value"](30, -30, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
-//     perceptron["normalize value"](10, -10, maxAccel)) // acceleration
+//     list(perceptron["normalize value"](10, -10, 10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
+//     perceptron["normalize value"](30, -30, 10, -10, perceptron["dead zone"]( 1, -1, targetAlt-alt:radar)),
+//     perceptron["normalize value"](10, -10, 10, -10, maxAccel)) // acceleration
 //   ).
    set nOutput to perceptron["training supervisor"](
      // Output supervisor
@@ -104,8 +126,8 @@ until false {
         list Engines in engList.
         for eng in engList if eng:flameout set flameout to true. 
         // Revert
-        if alt:radar > 1000 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 15*60 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow3731.json").
+        if alt:radar > 500 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 15*60 {
+           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow6731r.json").
            wait 1.
            //kuniverse:pause().
            kuniverse:reverttolaunch().
@@ -123,7 +145,7 @@ until false {
   //model["inputLayer"][0]["print weights"](15).
   //model["inputLayer"][1]["print weights"](13).
   //model["inputLayer"][2]["print weights"](21).
-  //model["hiddenLayers"][0][0]["print weights"](15).
+ //model["hiddenLayers"][0][0]["print weights"](15).
   //model["hiddenLayers"][0][1]["print weights"](24).
   //model["hiddenLayers"][0][2]["print weights"](27).
   //model["hiddenLayers"][1][0]["print weights"](30).

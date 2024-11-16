@@ -98,8 +98,8 @@
       declare parameter inputSize.
       declare parameter learningRate.
       declare parameter actFunction is "relu".
+      declare parameter b is random().
       declare parameter w is list().
-      declare parameter b is 1.
 
       local neuron is lexicon().
       local weights is w.
@@ -128,22 +128,9 @@
          from {local i is 0.} until i > inputs:length-1 step {set i to i+1.} do {
            set z to z + weights[i]*inputs[i]. 
          }
-         set z to z + 1*1.
+         set z to z + bias*1. // Bias is trainable.  Not always 1, but the corresponding vector input is always 1.
          return z.
       }
-
-      neuron:add("propagate error", {
-         declare parameter wi.
-         declare parameter delta.
-         set weights[wi] to weights[wi] + delta.
-      }).
-
-      neuron:add("pass input", {
-        declare parameter inputs.
-        local sum is 0.
-        for i in inputs set sum to sum+i.
-        return sum+1.
-      }).
 
       declare function eval {
          declare parameter inputs.
@@ -153,7 +140,6 @@
 
       neuron:add("print weights", {
          declare parameter row.
-         print "Bias: "+bias+"                     " at(0, row).
          print "Weights: "+weights+"                              " at(0, row+1).
       }).
 
@@ -162,8 +148,8 @@
          output:add("inputSize", inputSize).
          output:add("learningRate", learningRate).
          output:add("activationFunction", activationFunction).
-         output:add("weights", weights).
          output:add("bias", bias).
+         output:add("weights", weights).
 
          return output.
       }).
@@ -172,21 +158,26 @@
          declare parameter inputs.
          declare parameter trainValue.
 
-         local current is eval(inputs).
-         local delta is (trainValue - current).
-         local sumOfz is summation(weights, inputs).
+         if inputs:length = weights:length {
+            local current is eval(inputs).
+            local delta is (trainValue - current).
 
-         local backPropError is list().
-         from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-            set weights[i] to weights[i]-delta*inputs[i]*learningRate.
-            backPropError:add(weights[i]*delta).  // The error back propagates
-            // Input needs to be adjusted in the same direction as weights?
-            if abs(weights[i]) > 1000000 or 
-               abs(weights[i]) < 0.000001 
-               set weights[i] to random()*2-1.
+            local backPropError is list().
+            from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
+               set weights[i] to weights[i]+delta*inputs[i]*learningRate.
+               backPropError:add(min(1000000, max(-1000000, weights[i]*delta))).  // The error back propagates
+               // Input needs to be adjusted in the same direction as weights?
+               if abs(weights[i]) > 1000000 or 
+                  abs(weights[i]) < 0.0000001 
+                  set weights[i] to random()*2-1.
+            }
+            set bias to bias + delta*1*learningRate. // The vector input for the bias is assumed 1.
+
+            return backPropError.
+         } else {
+            print "weights("+weights:length+") and inputs("+inputs:length+") length mismatch".
+            shutdown.
          }
-
-         return backPropError.
 
       }).
       
@@ -196,9 +187,19 @@
    declare function trainDenseLayer {
       declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
       declare parameter layer.
-      declare parameter trainValues. // list. One output for each node.
+      declare parameter backProp. // list. One output for each node.
       declare parameter learningRate is 0.001.
+      declare parameter isError is true. 
 
+      local trainValues is backProp.
+      if isError {
+      // For the output layer, we train against known values, for prior layers, we train against the prior output plus the received error.
+         from {local i is 0.} until i > trainValues:length-1 step {set i to i+1.} do {
+            local current is layer[i]["evaluate"](inputs).
+            set trainValues[i] to current + trainValues[i].
+         }
+            
+      }
       local backPropError is list().
       from {local i is 0.} until i > layer:length-1 step {set i to i+1.} do {
          local backP is layer[i]["train"](inputs, trainValues[i]).
@@ -218,51 +219,66 @@
       declare parameter hiddenLayers.
       declare parameter outputLayer.
 
+      if outputLayer:length = 0 {
+         local output is list().
+         from {local i is 0.} until i > inputLayer:length - 1 step {set i to i+1.} do {
+            output:add(inputLayer[i]["train"](inputValues[i], trainValues[i])).
+         }
+         return output.
+      }
+      //  Forward pass
       // Evaluate Input layer
-      local intermVal is list().
+      local inputLayerOutput is list().
       from {local i is 0.} until i > inputLayer:length-1 step {set i to i+1.} do {
-         intermVal:add(inputLayer[i]["evaluate"](inputValues[i])).
-         //intermVal:add(inputLayer[i]["pass input"](inputValues[i])).
+         inputLayerOutput:add(inputLayer[i]["evaluate"](inputValues[i])).
       }
 
       // Evaluate hidden layers
-      local hiddenLayerIntermVals is list().
+      local hiddenLayerOutputs is list().
       from {local i is 0.} until i > hiddenLayers:length-1 step {set i to i+1.} do {
          local layerOutputs is list().
          from {local j is 0.} until j > hiddenLayers[i]:length-1 step {set j to j+1.} do {
-            if i = 0 layerOutputs:add(hiddenLayers[i][j]["evaluate"](intermVal)).
-            else layerOutputs:add(hiddenLayers[i][j]["evaluate"](hiddenLayerIntermVals[i-1])).
+            if i = 0 layerOutputs:add(hiddenLayers[i][j]["evaluate"](inputLayerOutput)).
+            else layerOutputs:add(hiddenLayers[i][j]["evaluate"](hiddenLayerOutputs[i-1])).
          }
-         hiddenLayerIntermVals:add(layerOutputs).
+         hiddenLayerOutputs:add(layerOutputs).
       }
 
-      // Generate output for use.
-      local oldOutputs is list().
+      // Evaluate Output layer
+      local outputLayerInputs is list().
+      if hiddenLayers:length = 0 set outputLayerOutputs to inputLayerOutput.
+      else set outputLayerInputs to hiddenLayerOutputs[hiddenLayerOutputs:length-1].
+      local outputLayerOutput is list().
+      from {local i is 0.} until i > outputLayer:length-1 step {set i to i+1.} do {
+         outputLayerOutput:add(outputLayer[i]["evaluate"](outputLayerInputs)).
+      }
+      /////////////////////
 
       // Train output layer and begin back propagating 
-      local backProp is list().
+      local backPropError is list().
       if hiddenLayers:length = 0 {
-         for n in outputLayer oldOutputs:add(n["evaluate"](intermVal)).
-         set backProp to trainDenseLayer(intermVal, outputLayer, trainValues).
+         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, false).
       } else {
-         for n in outputLayer oldOutputs:add(n["evaluate"](hiddenLayerIntermVals[hiddenLayerIntermVals:length-1])).
-         set backProp to trainDenseLayer(hiddenLayerIntermVals[hiddenLayerIntermVals:length-1], outputLayer, trainValues).
+         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, false).
       }
 
       // Back propagate through hidden layers
       from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
-         if i = 0 set backProp to trainDenseLayer(intermVal, hiddenLayers[i], backProp).
-         else {
-            set backProp to trainDenseLayer(hiddenLayerIntermVals[i-1], hiddenLayers[i], backProp).
-         }
+         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError). 
+         else  set backPropError to trainDenseLayer(hiddenLayerOutputs[i-1], hiddenLayers[i], backPropError).
       }
 
-      // Train input layer
-      from {local i is 0.} until i > inputLayer:length-1 step {set i to i+1.} do {
-         inputLayer[i]["train"](inputValues[i], backProp[i]).
+      local inputTrainValues is backPropError.
+      from {local i is 0.} until i > inputLayer:length-1 step {set i to i +1.} do {
+         local current is inputLayer[i]["evaluate"](inputValues[i]).
+         set inputTrainValues[i] to current + inputTrainValues[i].
       }
 
-      return oldOutputs.
+      from {local i is 0.} until i > inputLayer:length-1 step {set i to i +1.} do {
+         inputLayer[i]["train"](inputValues[i], inputTrainValues[i]).
+      }
+
+      return outputLayerOutput.
    }).
 
    perceptron:add("evaluate network", {
@@ -270,6 +286,14 @@
       declare parameter inputLayer.
       declare parameter hiddenLayers.
       declare parameter outputLayer.
+
+      if outputLayer:length = 0 {
+         local output is list().
+         from {local i is 0.} until i > inputLayer:length - 1 step {set i to i+1.} do {
+            output:add(inputLayer[i]["evaluate"](inputValues[i])).
+         }
+         return output.
+      }
 
       // Evaluate Input layer
       local intermVal is list().
@@ -292,6 +316,7 @@
       local intermVal2 is list().
       if hiddenLayers:length = 0 set intermVal2 to intermVal.
       else set intermVal2 to hiddenLayerIntermVals[hiddenLayerIntermVals:length-1].
+
       local output is list().
       from {local i is 0.} until i > outputLayer:length-1 step {set i to i+1.} do {
          output:add(outputLayer[i]["evaluate"](intermVal2)).
@@ -301,7 +326,7 @@
 
    }).
 
-   perceptron:add("normalize value", {
+   declare function normalizeValue {
       declare parameter topi.
       declare parameter bottomi.
       declare parameter topo.
@@ -310,7 +335,8 @@
 
       local output is min(topo, max(bottomo, ((value - bottomi)*(topo - bottomo))/(topi - bottomi))).
       return output.
-   }).
+   }
+   perceptron:add("normalize value", normalizeValue@).
 
    perceptron:add("dead zone", {
       parameter top.
@@ -349,19 +375,19 @@
       local input is readJson(inFile).
       local model is lexicon().
       local currentList is list().
-      for n in input["inputLayer"] currentList:add(perceptron["new neuron"](n["inputSize"], n["learningRate"], n["activationFunction"], n["weights"], n["bias"])).
+      for n in input["inputLayer"] currentList:add(perceptron["new neuron"](n["inputSize"], n["learningRate"], n["activationFunction"], n["bias"], n["weights"])).
       model:add("inputLayer", currentList).
       
       set currentList to list().
       for l in input["hiddenLayers"] {
          local layer is list().
-         for n in l layer:add(perceptron["new neuron"](n["inputSize"], n["learningRate"], n["activationFunction"], n["weights"], n["bias"])).
+         for n in l layer:add(perceptron["new neuron"](n["inputSize"], n["learningRate"], n["activationFunction"], n["bias"], n["weights"])).
          currentList:add(layer).
       }
       model:add("hiddenLayers", currentList).
 
       set currentList to list().
-      for n in input["outputLayer"] currentList:add(perceptron["new neuron"](n["inputSize"], n["learningRate"], n["activationFunction"], n["weights"], n["bias"])).
+      for n in input["outputLayer"] currentList:add(perceptron["new neuron"](n["inputSize"], n["learningRate"], n["activationFunction"], n["bias"], n["weights"])).
       model:add("outputLayer", currentList).
 
       return model.

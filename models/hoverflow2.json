@@ -29,7 +29,7 @@
                             "$type": "kOS.Safe.Encapsulation.StringValue"
                         },
                         {
-                            "value": "linear",
+                            "value": "sigmoid",
                             "$type": "kOS.Safe.Encapsulation.StringValue"
                         },
                         {
@@ -39,27 +39,19 @@
                         {
                             "items": [
                                 {
-                                    "value": 2950.8694503944307,
+                                    "value": 1005.5939729241086,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": 2951.2211179813085,
+                                    "value": -147.73399410931137,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 },
                                 {
-                                    "value": 2950.8667782325224,
+                                    "value": 1005.4255824227237,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.ListValue"
-                        },
-                        {
-                            "value": "bias",
-                            "$type": "kOS.Safe.Encapsulation.StringValue"
-                        },
-                        {
-                            "value": 1,
-                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                         }
                     ],
                     "$type": "kOS.Safe.Encapsulation.Lexicon"
@@ -106,7 +98,7 @@
                             "$type": "kOS.Safe.Encapsulation.StringValue"
                         },
                         {
-                            "value": "sigmoid",
+                            "value": "linear",
                             "$type": "kOS.Safe.Encapsulation.StringValue"
                         },
                         {
@@ -116,19 +108,11 @@
                         {
                             "items": [
                                 {
-                                    "value": 12.5472386693571,
+                                    "value": 14.218557187753648,
                                     "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
                                 }
                             ],
                             "$type": "kOS.Safe.Encapsulation.ListValue"
-                        },
-                        {
-                            "value": "bias",
-                            "$type": "kOS.Safe.Encapsulation.StringValue"
-                        },
-                        {
-                            "value": 1,
-                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
                         }
                     ],
                     "$type": "kOS.Safe.Encapsulation.Lexicon"
