@@ -3,36 +3,38 @@ runpath("0:/lib/perceptron.ks").
 set config:ipu to 2000.
 local model is lexicon().
 local nOutput is 0.
-if exists("0:/models/hoverflow6731r.json") {
-   set model to perceptron["load model"]("0:/models/hoverflow6731r.json"). 
+if exists("0:/models/hoverflow996h31r.json") {
+   set model to perceptron["load model"]("0:/models/hoverflow996h31r.json"). 
 } else {
    model:add("inputLayer", list(
       // This arrangment should automatically scale the inputs eventually.
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Positive
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Inverse (negative=positive)
-      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Maximum (Inverse with offset)
-      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Minimum (Positive with offset)
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Positive
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Negative
-      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Maximum
-      //perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Minimum
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Max
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Min
+      perceptron["new neuron"](1, 0.00001, "linear"),  // Inputs: ship:verticalspeed / 
+      perceptron["new neuron"](1, 0.00001, "square"),  // Inputs: ship:verticalspeed / varies non linearly 
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Max
+      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Min
+      perceptron["new neuron"](1, 0.00001, "linear"),  // Inputs: targetAlt - alt:radar / Positive
+      //perceptron["new neuron"](1, 0.00001, "square"),  // Inputs: targetAlt - alt:radar / Maximum
+      //perceptron["new neuron"](1, 0.00001, "square"),  // Inputs: targetAlt - alt:radar / Minimum
       perceptron["new neuron"](1, 0.00001, "relu"),  // Maximum acceleration / Positive
       perceptron["new neuron"](1, 0.00001, "relu")   // Maximum acceleration / Maximum
    )).
    model:add("hiddenLayers", list(
       list(
-        perceptron["new neuron"](6, 0.00001, "relu"),
-        perceptron["new neuron"](6, 0.00001, "relu"),
-        perceptron["new neuron"](6, 0.00001, "relu"),
-        perceptron["new neuron"](6, 0.00001, "relu"),
-        perceptron["new neuron"](6, 0.00001, "relu"),
-        perceptron["new neuron"](6, 0.00001, "relu"),
-        perceptron["new neuron"](6, 0.00001, "relu")
+        perceptron["new neuron"](9, 0.00001, "relu"),
+        perceptron["new neuron"](9, 0.00001, "relu"),
+        perceptron["new neuron"](9, 0.00001, "relu")
       ),
       list(
-        perceptron["new neuron"](7, 0.00001, "relu"),
-        perceptron["new neuron"](7, 0.00001, "relu"),
-        perceptron["new neuron"](7, 0.00001, "relu")
+        perceptron["new neuron"](3, 0.00001, "relu"),
+        perceptron["new neuron"](3, 0.00001, "relu"),
+        perceptron["new neuron"](3, 0.00001, "relu")
+      ),
+      list(
+        perceptron["new neuron"](3, 0.00001, "relu"),
+        perceptron["new neuron"](3, 0.00001, "relu"),
+        perceptron["new neuron"](3, 0.00001, "relu")
       )
    )).
    model:add("outputLayer", list(
@@ -49,10 +51,13 @@ local normalizedInput is list(
      list(ship:verticalspeed),
      list(ship:verticalspeed),
      list(ship:verticalspeed),
+     //list(ship:verticalspeed),
+     //list(ship:verticalspeed),
      list(targetAlt-alt:radar),
      list(targetAlt-alt:radar),
      list(targetAlt-alt:radar),
-     list(targetAlt-alt:radar),
+     //list(targetAlt-alt:radar),
+     //list(targetAlt-alt:radar),
      list(maxAccel), // acceleration
      list(maxAccel) // acceleration
 ).
@@ -83,10 +88,13 @@ until false {
       list(ship:verticalspeed),
       list(ship:verticalspeed),
       list(ship:verticalspeed),
+      //list(ship:verticalspeed),
+      //list(ship:verticalspeed),
       list(targetAlt-alt:radar),
       list(targetAlt-alt:radar),
       list(targetAlt-alt:radar),
-      list(targetAlt-alt:radar),
+      //list(targetAlt-alt:radar),
+      //list(targetAlt-alt:radar),
       list(maxAccel), // acceleration
       list(maxAccel) // acceleration
    ).
@@ -101,13 +109,16 @@ until false {
         if targetAlt - alt:radar > 0 {
            // Below target
            //set selfTrain to 1-ship:verticalspeed/10.
-           if ship:verticalspeed > 10 set selfTrain to min(selfTrain - 0.01, nOutput).
-           else if ship:verticalspeed < 1 set selfTrain to max(selfTrain + 0.01, nOutput).
+           //if ship:verticalspeed > 10 set selfTrain to nOutput-0.01.
+           if ship:verticalspeed < 1 set selfTrain to nOutput+0.1.
+           else set selfTrain to nOutput.
         } else if targetAlt - alt:radar < -1 {
            // Above target
-           if ship:verticalspeed > -1 set selfTrain to min(nOutput/2, selfTrain - 0.001).
-           else if ship:verticalspeed < -10 set selfTrain to 1.
-           else if ship:verticalspeed < -5  set selfTrain to min(nOutput*2, min(0.5, selfTrain + 0.001)).
+           //if ship:verticalspeed < -20 set selfTrain to nOutput+0.1.
+           if ship:verticalspeed > -1 set selfTrain to nOutput - 0.1.
+           //else if ship:verticalspeed < -5  set selfTrain to nOutput + 0.1.
+           else set selfTrain to nOutput.
+
         }
         if abs(targetAlt - alt:radar) < 1 and abs(ship:verticalspeed) < 1 set selfTrain to nOutput.
         set selfTrain to min(1, max(0, selfTrain)).
@@ -118,6 +129,7 @@ until false {
            model["hiddenLayers"],
            model["outputLayer"]
         )[0].
+        wait 0.
 
         return nOutput.
      }, 
@@ -126,8 +138,8 @@ until false {
         list Engines in engList.
         for eng in engList if eng:flameout set flameout to true. 
         // Revert
-        if alt:radar > 500 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 15*60 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow6731r.json").
+        if engList:length < 3 or alt:radar > 500 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 15*60 {
+           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow996h31r.json").
            wait 1.
            //kuniverse:pause().
            kuniverse:reverttolaunch().
@@ -142,7 +154,7 @@ until false {
   print "selfTrain: "+selfTrain+"                      " at(0, 9).
   print "networkOutput: "+ nOutput+"                   " at(0, 10).
   //print "input: "+normalizedInput at(0, 12).
-  //model["inputLayer"][0]["print weights"](15).
+  model["inputLayer"][0]["print weights"](15).
   //model["inputLayer"][1]["print weights"](13).
   //model["inputLayer"][2]["print weights"](21).
  //model["hiddenLayers"][0][0]["print weights"](15).

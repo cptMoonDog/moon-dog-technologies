@@ -116,6 +116,8 @@
          declare parameter input.
          if activationFunction = "relu" return max(0, input).
          else if activationFunction = "sigmoid" return 1/(1+constant:e^(-min(100, max(-100, input)))).
+         else if activationFunction = "square" return input*input.
+         else if activationFunction = "sine" return sin(input).
          else if activationFunction = "linear" return input.
          else return input.
       }
