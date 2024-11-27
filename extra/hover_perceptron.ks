@@ -8,37 +8,37 @@ if exists("0:/models/hoverflow996h31r.json") {
 } else {
    model:add("inputLayer", list(
       // This arrangment should automatically scale the inputs eventually.
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Max
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: ship:verticalspeed / Min
-      perceptron["new neuron"](1, 0.00001, "linear"),  // Inputs: ship:verticalspeed / 
-      perceptron["new neuron"](1, 0.00001, "square"),  // Inputs: ship:verticalspeed / varies non linearly 
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Max
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Inputs: targetAlt - alt:radar / Min
-      perceptron["new neuron"](1, 0.00001, "linear"),  // Inputs: targetAlt - alt:radar / Positive
+      perceptron["new neuron"](1, 0.001, "relu"),  // Inputs: ship:verticalspeed / Max
+      perceptron["new neuron"](1, 0.001, "relu"),  // Inputs: ship:verticalspeed / Min
+      perceptron["new neuron"](1, 0.001, "linear"),  // Inputs: ship:verticalspeed / 
+      perceptron["new neuron"](1, 0.001, "square"),  // Inputs: ship:verticalspeed / varies non linearly 
+      perceptron["new neuron"](1, 0.001, "relu"),  // Inputs: targetAlt - alt:radar / Max
+      perceptron["new neuron"](1, 0.001, "relu"),  // Inputs: targetAlt - alt:radar / Min
+      perceptron["new neuron"](1, 0.001, "linear"),  // Inputs: targetAlt - alt:radar / Positive
       //perceptron["new neuron"](1, 0.00001, "square"),  // Inputs: targetAlt - alt:radar / Maximum
       //perceptron["new neuron"](1, 0.00001, "square"),  // Inputs: targetAlt - alt:radar / Minimum
-      perceptron["new neuron"](1, 0.00001, "relu"),  // Maximum acceleration / Positive
-      perceptron["new neuron"](1, 0.00001, "relu")   // Maximum acceleration / Maximum
+      perceptron["new neuron"](1, 0.001, "relu"),  // Maximum acceleration / Positive
+      perceptron["new neuron"](1, 0.001, "relu")   // Maximum acceleration / Maximum
    )).
    model:add("hiddenLayers", list(
       list(
-        perceptron["new neuron"](9, 0.00001, "relu"),
-        perceptron["new neuron"](9, 0.00001, "relu"),
-        perceptron["new neuron"](9, 0.00001, "relu")
+        perceptron["new neuron"](9, 0.001, "relu"),
+        perceptron["new neuron"](9, 0.001, "relu"),
+        perceptron["new neuron"](9, 0.001, "relu")
       ),
       list(
-        perceptron["new neuron"](3, 0.00001, "relu"),
-        perceptron["new neuron"](3, 0.00001, "relu"),
-        perceptron["new neuron"](3, 0.00001, "relu")
+        perceptron["new neuron"](3, 0.001, "relu"),
+        perceptron["new neuron"](3, 0.001, "relu"),
+        perceptron["new neuron"](3, 0.001, "relu")
       ),
       list(
-        perceptron["new neuron"](3, 0.00001, "relu"),
-        perceptron["new neuron"](3, 0.00001, "relu"),
-        perceptron["new neuron"](3, 0.00001, "relu")
+        perceptron["new neuron"](3, 0.001, "relu"),
+        perceptron["new neuron"](3, 0.001, "relu"),
+        perceptron["new neuron"](3, 0.001, "relu")
       )
    )).
    model:add("outputLayer", list(
-      perceptron["new neuron"](3, 0.00001, "sigmoid")
+      perceptron["new neuron"](3, 0.001, "sigmoid")
    )).
 }
 
@@ -138,7 +138,7 @@ until false {
         list Engines in engList.
         for eng in engList if eng:flameout set flameout to true. 
         // Revert
-        if engList:length < 3 or alt:radar > 500 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 15*60 {
+        if engList:length < 3 or alt:radar > 1000 or (ship:verticalspeed < -40 and alt:radar < 100) or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 5*60 {
            perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/hoverflow996h31r.json").
            wait 1.
            //kuniverse:pause().

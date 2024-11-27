@@ -168,12 +168,13 @@
             from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
                set weights[i] to weights[i]+delta*inputs[i]*learningRate.
                backPropError:add(min(1000000, max(-1000000, weights[i]*delta))).  // The error back propagates
-               // Input needs to be adjusted in the same direction as weights?
-               if abs(weights[i]) > 1000000 or 
-                  abs(weights[i]) < 0.0000001 
-                  set weights[i] to random()*2-1.
+               if abs(weights[i]) > 1000000 set weights[i] to random()*2-1.
+               else if abs(weights[i]) < 0.0000001 set weights[i] to 0.
             }
-            set bias to bias + delta*1*learningRate. // The vector input for the bias is assumed 1.
+            set bias to bias + delta*learningRate. // The vector input for the bias is assumed 1.
+            if abs(bias) > 1000000 set bias to random()*2-1.
+            else if abs(bias) < 0.0000001 set bias to 0.
+
 
             return backPropError.
          } else {
@@ -190,8 +191,7 @@
       declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
       declare parameter layer.
       declare parameter backProp. // list. One output for each node.
-      declare parameter errorFunction is meanSquaredError@.
-      declare parameter learningRate is 0.001.
+      declare parameter errorFunction is rootMeanSquaredError@.
       declare parameter isError is true. 
 
       local trainValues is backProp.
@@ -210,6 +210,25 @@
       return errorFunction(backPropErrorRaw, inputs:length).
    }
 
+   declare function rootMeanSquaredError {
+      declare parameter errors.
+      declare parameter length.
+
+      local output is list().
+      from {local i is 0.} until i > length-1 step {set i to i+1.} do {
+         local workingVal is 0.
+         from {local j is 0.} until j > errors:length-1 step {set j to j+1.} do {
+            set workingVal to workingVal + errors[j][i]*abs(errors[j][i]).
+         }
+         local dirComp is 1.
+         if workingVal = 0 set dirComp to 1.
+         else set dirComp to (workingVal/abs(workingVal)).
+
+         set workingVal to sqrt(abs(workingVal/errors:length))*dirComp.
+         output:add(workingVal).
+      }
+      return output.
+   }
    declare function meanSquaredError {
       declare parameter errors.
       declare parameter length.
@@ -218,8 +237,9 @@
       from {local i is 0.} until i > length-1 step {set i to i+1.} do {
          local workingVal is 0.
          from {local j is 0.} until j > errors:length-1 step {set j to j+1.} do {
-            set workingVal to workingVal + errors[j][i]^2.
+            set workingVal to workingVal + errors[j][i]*abs(errors[j][i]).
          }
+
          set workingVal to workingVal/errors:length.
          output:add(workingVal).
       }
@@ -286,14 +306,14 @@
       // Train output layer and begin back propagating 
       local backPropError is list().
       if hiddenLayers:length = 0 {
-         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, meanSquaredError@, 0.01, false).
+         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, meanAbsoluteError@, false).
       } else {
-         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, meanSquaredError@, 0.01, false).
+         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, rootMeanSquaredError@, false).
       }
 
       // Back propagate through hidden layers
       from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
-         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError). 
+         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError, meanAbsoluteError@, true). 
          else  set backPropError to trainDenseLayer(hiddenLayerOutputs[i-1], hiddenLayers[i], backPropError).
       }
 
