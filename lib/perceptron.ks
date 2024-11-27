@@ -190,6 +190,7 @@
       declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
       declare parameter layer.
       declare parameter backProp. // list. One output for each node.
+      declare parameter errorFunction is meanSquaredError@.
       declare parameter learningRate is 0.001.
       declare parameter isError is true. 
 
@@ -202,16 +203,42 @@
          }
             
       }
-      local backPropError is list().
+      local backPropErrorRaw is list().
       from {local i is 0.} until i > layer:length-1 step {set i to i+1.} do {
-         local backP is layer[i]["train"](inputs, trainValues[i]).
-         if i > 0 { // Sums the back prop error from all the hidden layer nodes into one back prop list
-            from {local j is 0.} until j > backPropError:length-1 step {set j to j+1.} do {
-               set backPropError[j] to backPropError[j] + backP[j].
-            }
-         } else set backPropError to backP.
+         backPropErrorRaw:add(layer[i]["train"](inputs, trainValues[i])).
       }
-      return backPropError.
+      return errorFunction(backPropErrorRaw, inputs:length).
+   }
+
+   declare function meanSquaredError {
+      declare parameter errors.
+      declare parameter length.
+
+      local output is list().
+      from {local i is 0.} until i > length-1 step {set i to i+1.} do {
+         local workingVal is 0.
+         from {local j is 0.} until j > errors:length-1 step {set j to j+1.} do {
+            set workingVal to workingVal + errors[j][i]^2.
+         }
+         set workingVal to workingVal/errors:length.
+         output:add(workingVal).
+      }
+      return output.
+   }
+   declare function meanAbsoluteError {
+      declare parameter errors.
+      declare parameter length.
+
+      local output is list().
+      from {local i is 0.} until i > length-1 step {set i to i+1.} do {
+         local workingVal is 0.
+         from {local j is 0.} until j > errors:length-1 step {set j to j+1.} do {
+            set workingVal to workingVal + errors[j][i].
+         }
+         set workingVal to workingVal/errors:length.
+         output:add(workingVal).
+      }
+      return output.
    }
 
    perceptron:add("train network", {
@@ -259,9 +286,9 @@
       // Train output layer and begin back propagating 
       local backPropError is list().
       if hiddenLayers:length = 0 {
-         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, false).
+         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, meanSquaredError@, 0.01, false).
       } else {
-         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, false).
+         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, meanSquaredError@, 0.01, false).
       }
 
       // Back propagate through hidden layers

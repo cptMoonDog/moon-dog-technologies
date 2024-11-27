@@ -109,13 +109,13 @@ until false {
         if targetAlt - alt:radar > 0 {
            // Below target
            //set selfTrain to 1-ship:verticalspeed/10.
-           //if ship:verticalspeed > 10 set selfTrain to nOutput-0.01.
-           if ship:verticalspeed < 1 set selfTrain to nOutput+0.1.
+           if ship:verticalspeed > 10 set selfTrain to nOutput-0.01.
+           else if ship:verticalspeed < 1 set selfTrain to nOutput+0.1.
            else set selfTrain to nOutput.
         } else if targetAlt - alt:radar < -1 {
            // Above target
-           //if ship:verticalspeed < -20 set selfTrain to nOutput+0.1.
-           if ship:verticalspeed > -1 set selfTrain to nOutput - 0.1.
+           if ship:verticalspeed < -20 set selfTrain to nOutput+0.01.
+           else if ship:verticalspeed > -1 set selfTrain to nOutput - 0.1.
            //else if ship:verticalspeed < -5  set selfTrain to nOutput + 0.1.
            else set selfTrain to nOutput.
 
