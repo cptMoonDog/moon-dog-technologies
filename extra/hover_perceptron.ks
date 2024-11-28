@@ -143,6 +143,6 @@ until false {
     set startTime to time:seconds.
     set targetAlt to random()*100+5.
   }
-  print "countdown: "+(startTime+30-time:seconds) at(0, 2).
+  print "countdown: "+(startTime+10-time:seconds) at(0, 2).
 
 }
