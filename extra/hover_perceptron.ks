@@ -52,7 +52,6 @@ if ship:availablethrust <= 0 stage.
 local startTime is time:seconds.
 local flameout is false.
 until false {
-  print "training" at(0, 0).
   
    set maxAccel to ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    set normalizedInput to list(
@@ -85,19 +84,24 @@ until false {
             return vSpeedSigmoid.
          }
         set selfTrain to max(0, throttleFunction(targetAlt)).
-        if mod(time:seconds, 2) = 0 set nOutput to perceptron["evaluate network"](
-              normalizedInput,
-              model["inputLayer"], 
-              model["hiddenLayers"],
-              model["outputLayer"]
-           )[0].
-        else set nOutput to perceptron["train network"](
+        if mod(time:seconds-startTime, 30) = 0 {
+           set nOutput to perceptron["train network"](
               normalizedInput,
               list(selfTrain), 
               model["inputLayer"], 
               model["hiddenLayers"],
               model["outputLayer"]
            )[0].
+           print "training" at(0, 0).
+        } else {
+           set nOutput to perceptron["evaluate network"](
+              normalizedInput,
+              model["inputLayer"], 
+              model["hiddenLayers"],
+              model["outputLayer"]
+           )[0].
+           print "NOT training" at(0, 0).
+        }
         wait 0.
 
         if nOutput:typename = "LIST" set nOutput to nOutput[0].
@@ -108,7 +112,7 @@ until false {
         list Engines in engList.
         for eng in engList if eng:flameout set flameout to true. 
         // Revert
-        if engList:length < 3 or alt:radar > 1000 or (ship:verticalspeed < -40 and alt:radar < 100) or ship:verticalspeed < -100 or flameout or vang(ship:facing:forevector, up:forevector) > 90 or missiontime > 5*60 {
+        if engList:length < 3 or alt:radar > 1000 or (ship:verticalspeed < -40 and alt:radar < 100) or ship:verticalspeed < -100 or flameout or vang(ship:facing:forevector, up:forevector) > 90 {
            perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/261.json").
            wait 1.
            //kuniverse:pause().
@@ -135,7 +139,7 @@ until false {
   //model["hiddenLayers"][1][1]["print weights"](33).
   //model["hiddenLayers"][1][2]["print weights"](36).
   model["outputLayer"][0]["print weights"](21, "o").
-  if time:seconds > startTime + 30 {
+  if time:seconds > startTime + 10 {
     set startTime to time:seconds.
     set targetAlt to random()*100+5.
   }
