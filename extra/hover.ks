@@ -1,5 +1,5 @@
-clearscreen.
-if ship:availablethrust <=0 stage.
+//clearscreen.
+//if ship:availablethrust <=0 stage.
 
 declare function throttleFunction {
    declare parameter targetAltitude.
@@ -44,31 +44,36 @@ declare function translationFunction {
 
    local currentG is (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    local maxAccel is (ship:availablethrust()/ship:mass). // Lose 1 g for hover
-   local pitchLimit is min(65, arccos(currentG/max(currentG, maxAccel))).
+   local pitchLimit is min(45, arccos(currentG/max(currentG, maxAccel))).
 
-   print "topSpeed: "+topSpeed at(0, 3).
-   print "topDistance: "+topDistance at(0, 4).
-   print "starSpeed: "+starSpeed at(0, 6).
-   print "starDistance: "+starDistance at(0, 7).
+   //print "topSpeed: "+topSpeed at(0, 3).
+   //print "topDistance: "+topDistance at(0, 4).
+   //print "starSpeed: "+starSpeed at(0, 6).
+   //print "starDistance: "+starDistance at(0, 7).
 
-   print "pitchLimit: "+pitchLimit at(0, 10).
-   print "speedLimit: "+speedLimit at(0, 11).
+   //print "pitchLimit: "+pitchLimit at(0, 10).
+   //print "speedLimit: "+speedLimit at(0, 11).
 
-   print "Target Distance: "+vxcl(up:forevector, tgtGeoPos:position):mag at(0, 13).
-   return up * R(
+   //print "Target Distance: "+vxcl(up:forevector, tgtGeoPos:position):mag at(0, 13).
+   return list(
       axisFunction(topSpeed, ship:velocity:surface*up:topvector, speedLimit, pitchLimit), 
-      axisFunction(starSpeed, -ship:velocity:surface*up:starvector, speedLimit, pitchLimit), 
-      0
+      axisFunction(starSpeed, -ship:velocity:surface*up:starvector, speedLimit, pitchLimit)
    ).
+      
+   //return up * R(
+   //   axisFunction(topSpeed, ship:velocity:surface*up:topvector, speedLimit, pitchLimit), 
+   //   axisFunction(starSpeed, -ship:velocity:surface*up:starvector, speedLimit, pitchLimit), 
+   //   0
+   //).
 }
 
-local tgtGeoPos is latlng(ship:geoposition:lat+1, ship:geoposition:lng+1).
-local tgtAlt is 50.
-lock throttle to throttleFunction(tgtAlt).
-lock steering to translationFunction(tgtGeoPos).
-
-wait until tgtGeoPos:position:mag < 100.
-set tgtAlt to 0.
+//local tgtGeoPos is latlng(ship:geoposition:lat+1, ship:geoposition:lng+1).
+//local tgtAlt is 50.
+//lock throttle to throttleFunction(tgtAlt).
+//lock steering to translationFunction(tgtGeoPos).
+//
+//wait until tgtGeoPos:position:mag < 100.
+//set tgtAlt to 0.
 
 
 //local tgtGeoPos is latlng(0.1, ship:geoposition:lng-0.0108).
@@ -87,5 +92,5 @@ set tgtAlt to 0.
 //wait 5.
 //set tgtAlt to 64.
 //
-wait until ship:status = "LANDED".
+//wait until ship:status = "LANDED".
 

@@ -3,26 +3,46 @@ runpath("0:/lib/perceptron.ks").
 set config:ipu to 2000.
 local model is lexicon().
 local nOutput is 0.
-if exists("0:/models/261.json") {
-   set model to perceptron["load model"]("0:/models/261.json"). 
+if exists("0:/models/37771.json") {
+   set model to perceptron["load model"]("0:/models/37771.json"). 
 } else {
    model:add("inputLayer", list(
       // This arrangment should automatically scale the inputs eventually.
       perceptron["new neuron"](1, 0.01, "linear"),  // Inputs: ship:verticalspeed / Max
-      perceptron["new neuron"](1, 0.01, "linear")  // Inputs: targetAlt - alt:radar / Max
+      perceptron["new neuron"](1, 0.01, "linear"),  // Inputs: targetAlt - alt:radar / Max
+      perceptron["new neuron"](1, 0.01, "linear")  // Inputs: maxAccel
    )).
    model:add("hiddenLayers", list(
       list(
-         perceptron["new neuron"](2, 0.01, "relu"),
-         perceptron["new neuron"](2, 0.01, "relu"),
-         perceptron["new neuron"](2, 0.01, "relu"),
-         perceptron["new neuron"](2, 0.01, "relu"),
-         perceptron["new neuron"](2, 0.01, "relu"),
-         perceptron["new neuron"](2, 0.01, "relu")
+         perceptron["new neuron"](3, 0.01, "relu"),
+         perceptron["new neuron"](3, 0.01, "relu"),
+         perceptron["new neuron"](3, 0.01, "relu"),
+         perceptron["new neuron"](3, 0.01, "relu"),
+         perceptron["new neuron"](3, 0.01, "relu"),
+         perceptron["new neuron"](3, 0.01, "relu"),
+         perceptron["new neuron"](3, 0.01, "relu")
+      ),
+      list(
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu")
+      ),
+      list(
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu"),
+         perceptron["new neuron"](7, 0.01, "relu")
       )
    )).
    model:add("outputLayer", list(
-      perceptron["new neuron"](6, 0.01, "sigmoid")
+      perceptron["new neuron"](7, 0.01, "sigmoid")
    )).
 }
 
@@ -31,7 +51,9 @@ wait 0.
 local targetAlt is 30.
 local maxAccel is ship:availablethrust()/ship:mass - (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
 local normalizedInput is list(
-     list(ship:verticalspeed), list(targetAlt-alt:radar)
+     list(ship:verticalspeed), 
+     list(targetAlt-alt:radar),
+     list(maxAccel)
 ).
 //local normalizedInput is list(
 //     list(perceptron["normalize value"](10, -10, 10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
@@ -55,7 +77,9 @@ until false {
   
    set maxAccel to ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    set normalizedInput to list(
-     list(ship:verticalspeed), list(targetAlt-alt:radar)
+     list(ship:verticalspeed), 
+     list(targetAlt-alt:radar),
+     list(maxAccel)
    ).
 //   set normalizedInput to list(
 //     list(perceptron["normalize value"](10, -10, 10, -10, perceptron["dead zone"]( 1, -1, ship:verticalspeed)),
@@ -83,8 +107,8 @@ until false {
             local vSpeedSigmoid is min(outputMax, -vSpeedError/sqrt(currentG+vSpeedError^2)).
             return vSpeedSigmoid.
          }
-        set selfTrain to max(0, throttleFunction(targetAlt)).
-        if mod(time:seconds-startTime, 30) = 0 {
+        if mod(round(time:seconds-startTime), 15) = 0 {
+           set selfTrain to max(0, throttleFunction(targetAlt)).
            set nOutput to perceptron["train network"](
               normalizedInput,
               list(selfTrain), 
@@ -112,8 +136,9 @@ until false {
         list Engines in engList.
         for eng in engList if eng:flameout set flameout to true. 
         // Revert
-        if engList:length < 3 or alt:radar > 1000 or (ship:verticalspeed < -40 and alt:radar < 100) or ship:verticalspeed < -100 or flameout or vang(ship:facing:forevector, up:forevector) > 90 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/261.json").
+        if engList:length < 3 or alt:radar > 1000 or 
+        (ship:verticalspeed < -40 and alt:radar < 50) or ship:verticalspeed < -100 or flameout or vang(ship:facing:forevector, up:forevector) > 90 {
+           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/37771.json").
            wait 1.
            //kuniverse:pause().
            kuniverse:reverttolaunch().
@@ -139,10 +164,10 @@ until false {
   //model["hiddenLayers"][1][1]["print weights"](33).
   //model["hiddenLayers"][1][2]["print weights"](36).
   model["outputLayer"][0]["print weights"](21, "o").
-  if time:seconds > startTime + 10 {
+  if time:seconds > startTime + 30 {
     set startTime to time:seconds.
     set targetAlt to random()*100+5.
   }
-  print "countdown: "+(startTime+10-time:seconds) at(0, 2).
+  print "countdown: "+(startTime+30-time:seconds) at(0, 2).
 
 }
