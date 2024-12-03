@@ -1,0 +1,667 @@
+{
+    "entries": [
+        {
+            "value": "inputLayer",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "items": [
+                {
+                    "entries": [
+                        {
+                            "value": "inputSize",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 1,
+                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                        },
+                        {
+                            "value": "learningRate",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.01,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "activationFunction",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "linear",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "bias",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.8675889465329425,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "weights",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "items": [
+                                {
+                                    "value": -0.93254792290250976,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.ListValue"
+                        }
+                    ],
+                    "$type": "kOS.Safe.Encapsulation.Lexicon"
+                },
+                {
+                    "entries": [
+                        {
+                            "value": "inputSize",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 1,
+                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                        },
+                        {
+                            "value": "learningRate",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.01,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "activationFunction",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "linear",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "bias",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.69000705851971533,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "weights",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "items": [
+                                {
+                                    "value": -0.11690756126880797,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.ListValue"
+                        }
+                    ],
+                    "$type": "kOS.Safe.Encapsulation.Lexicon"
+                },
+                {
+                    "entries": [
+                        {
+                            "value": "inputSize",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 1,
+                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                        },
+                        {
+                            "value": "learningRate",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.01,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "activationFunction",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "linear",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "bias",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.5201366550371368,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "weights",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "items": [
+                                {
+                                    "value": 0.16509031252866677,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.ListValue"
+                        }
+                    ],
+                    "$type": "kOS.Safe.Encapsulation.Lexicon"
+                }
+            ],
+            "$type": "kOS.Safe.Encapsulation.ListValue"
+        },
+        {
+            "value": "hiddenLayers",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "items": [
+                {
+                    "items": [
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.81737506239841218,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": 0.89063039583331138,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.13127436975888573,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": -0.12839748714479729,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        },
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.37567185051252977,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": 0.26578385643037772,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.30568496300126607,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.52731135419969788,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        },
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.12048986147935599,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": -0.91606664297128026,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": -0.45133184374511737,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": -0.36239218325478595,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        },
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.5926307351033816,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": 1.005978769750786,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 1.0411556870636003,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.87679134914680912,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        },
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.48872588079986973,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": -0.40464661502108007,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.36782041439322349,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.14154137736855993,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        },
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.71532945884283827,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": 0.39314518817259081,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": -0.48429563348240723,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.95988316697639731,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        },
+                        {
+                            "entries": [
+                                {
+                                    "value": "inputSize",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 3,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                                },
+                                {
+                                    "value": "learningRate",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.01,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "activationFunction",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "relu",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": "bias",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "value": 0.75505164296925464,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": "weights",
+                                    "$type": "kOS.Safe.Encapsulation.StringValue"
+                                },
+                                {
+                                    "items": [
+                                        {
+                                            "value": 0.85810410451282,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.02158694845474211,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        },
+                                        {
+                                            "value": 0.13754758664300235,
+                                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                        }
+                                    ],
+                                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.Lexicon"
+                        }
+                    ],
+                    "$type": "kOS.Safe.Encapsulation.ListValue"
+                }
+            ],
+            "$type": "kOS.Safe.Encapsulation.ListValue"
+        },
+        {
+            "value": "outputLayer",
+            "$type": "kOS.Safe.Encapsulation.StringValue"
+        },
+        {
+            "items": [
+                {
+                    "entries": [
+                        {
+                            "value": "inputSize",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 7,
+                            "$type": "kOS.Safe.Encapsulation.ScalarIntValue"
+                        },
+                        {
+                            "value": "learningRate",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 0.01,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "activationFunction",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "sigmoid",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": "bias",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "value": 1.0443121060361182,
+                            "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                        },
+                        {
+                            "value": "weights",
+                            "$type": "kOS.Safe.Encapsulation.StringValue"
+                        },
+                        {
+                            "items": [
+                                {
+                                    "value": 0.86337925052723008,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": 0.32076376354079444,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": -0.4820456652313384,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": -0.78437768482543613,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": -0.14889491129888877,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": 0.049469114366749209,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                },
+                                {
+                                    "value": 0.17506561738396234,
+                                    "$type": "kOS.Safe.Encapsulation.ScalarDoubleValue"
+                                }
+                            ],
+                            "$type": "kOS.Safe.Encapsulation.ListValue"
+                        }
+                    ],
+                    "$type": "kOS.Safe.Encapsulation.Lexicon"
+                }
+            ],
+            "$type": "kOS.Safe.Encapsulation.ListValue"
+        }
+    ],
+    "$type": "kOS.Safe.Encapsulation.Lexicon"
+}

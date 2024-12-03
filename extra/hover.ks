@@ -56,8 +56,8 @@ declare function translationFunction {
 
    //print "Target Distance: "+vxcl(up:forevector, tgtGeoPos:position):mag at(0, 13).
    return list(
-      axisFunction(topSpeed, ship:velocity:surface*up:topvector, speedLimit, pitchLimit), 
-      axisFunction(starSpeed, -ship:velocity:surface*up:starvector, speedLimit, pitchLimit)
+      axisFunction(topSpeed, ship:velocity:surface*up:topvector, speedLimit), 
+      axisFunction(starSpeed, -ship:velocity:surface*up:starvector, speedLimit)
    ).
       
    //return up * R(

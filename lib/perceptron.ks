@@ -175,10 +175,14 @@
       neuron:add("train", {
          declare parameter inputs.
          declare parameter trainValue.
+         declare parameter valueIsError is false.
 
          if inputs:length = weights:length {
-            local current is eval(inputs).
-            local delta is (trainValue - current).
+            local delta is trainValue.
+            if valueIsError = false {
+               local current is eval(inputs).
+               set delta to (trainValue - current).
+            }
 
             local backPropError is list().
             from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
@@ -210,17 +214,17 @@
       declare parameter errorFunction is meanSquaredError@.
       declare parameter isError is true. 
 
-      local trainValues is backProp.
-      if isError {
-      // For the output layer, we train against known values, for prior layers, we train against the prior output plus the received error.
-         from {local i is 0.} until i > trainValues:length-1 step {set i to i+1.} do {
-            local current is layer[i]["evaluate"](inputs).
-            set trainValues[i] to current + trainValues[i].
-         }
-      }
+      local trainValues is backProp.  // Calculating the trainingValues will just return the same error value.
+      //if isError {
+      //// For the output layer, we train against known values, for prior layers, we train against the prior output plus the received error.
+      //   from {local i is 0.} until i > trainValues:length-1 step {set i to i+1.} do {
+      //      local current is layer[i]["evaluate"](inputs).
+      //      set trainValues[i] to current + trainValues[i].
+      //   }
+      //}
       local backPropErrorRaw is list().
       from {local i is 0.} until i > layer:length-1 step {set i to i+1.} do {
-         backPropErrorRaw:add(layer[i]["train"](inputs, trainValues[i])).
+         backPropErrorRaw:add(layer[i]["train"](inputs, trainValues[i], isError)).
       }
 
       return errorFunction(backPropErrorRaw, inputs:length).
@@ -346,15 +350,15 @@
       // Train output layer and begin back propagating 
       local backPropError is list().
       if hiddenLayers:length = 0 {
-         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, meanAbsoluteError@, false).
+         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, meanSquaredError@, false).
       } else {
-         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, meanAbsoluteError@, false).
+         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, meanSquaredError@, false).
       }
 
       // Back propagate through hidden layers
       from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
-         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError, meanAbsoluteError@, true). 
-         else  set backPropError to trainDenseLayer(hiddenLayerOutputs[i-1], hiddenLayers[i], backPropError, meanAbsoluteError@, true).
+         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError, meanSquaredError@, true). 
+         else  set backPropError to trainDenseLayer(hiddenLayerOutputs[i-1], hiddenLayers[i], backPropError, meanSquaredError@, true).
       }
 
       local inputTrainValues is backPropError.
