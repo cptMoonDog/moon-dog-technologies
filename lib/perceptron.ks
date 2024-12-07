@@ -186,13 +186,17 @@
 
             local backPropError is list().
             from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-               backPropError:add(min(100000000, max(-100000000, weights[i]*delta))).  // The error back propagates
+               backPropError:add(abs(weights[i]*delta)*weights[i]*delta).  // The squared error back propagates
                set weights[i] to weights[i]+delta*inputs[i]*learningRate.
-               if abs(weights[i]) > 1000000 set weights[i] to random()*2-1.
+               //if abs(weights[i]) > 10000 set weights[i] to 10000*weights[i]/abs(weights[i]).//random()*2-1.
+               if abs(weights[i]) > 1000000 set weights[i] to weights[i]*(random()*2-1). // Randomly reduces scale and sign
+               //if abs(weights[i]) > 1000000 set weights[i] to 0. 
                else if abs(weights[i]) < 0.0000001 set weights[i] to 0.
             }
             set bias to bias + delta*learningRate. // The vector input for the bias is assumed 1.
-            if abs(bias) > 1000000 set bias to random()*2-1.
+            //if abs(bias) > 10000 set bias to 10000*bias/abs(bias).//random()*2-1.
+            if abs(bias) > 1000000 set bias to (random()*2-1)*bias.
+            //if abs(bias) > 1000000 set bias to 0. 
             else if abs(bias) < 0.0000001 set bias to 0.
 
 
@@ -211,7 +215,7 @@
       declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
       declare parameter layer.
       declare parameter backProp. // list. One output for each node.
-      declare parameter errorFunction is meanSquaredError@.
+      declare parameter errorFunction is rootMeanSquaredError@.
       declare parameter isError is true. 
 
       local trainValues is backProp.  // Calculating the trainingValues will just return the same error value.
@@ -350,15 +354,15 @@
       // Train output layer and begin back propagating 
       local backPropError is list().
       if hiddenLayers:length = 0 {
-         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, meanSquaredError@, false).
+         set backPropError to trainDenseLayer(inputLayerOutput, outputLayer, trainValues, rootMeanSquaredError@, false).
       } else {
-         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, meanSquaredError@, false).
+         set backPropError to trainDenseLayer(hiddenLayerOutputs[hiddenLayerOutputs:length-1], outputLayer, trainValues, rootMeanSquaredError@, false).
       }
 
       // Back propagate through hidden layers
       from {local i is hiddenLayers:length-1.} until i < 0 step {set i to i -1.} do {
-         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError, meanSquaredError@, true). 
-         else  set backPropError to trainDenseLayer(hiddenLayerOutputs[i-1], hiddenLayers[i], backPropError, meanSquaredError@, true).
+         if i = 0 set backPropError to trainDenseLayer(inputLayerOutput, hiddenLayers[i], backPropError, rootMeanSquaredError@, true). 
+         else  set backPropError to trainDenseLayer(hiddenLayerOutputs[i-1], hiddenLayers[i], backPropError, rootMeanSquaredError@, true).
       }
 
       local inputTrainValues is backPropError.
