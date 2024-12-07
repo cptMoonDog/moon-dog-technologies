@@ -120,7 +120,7 @@ until false {
      // Output supervisor
      {
         local tgtDist is vxcl(up:forevector, targetGeoPos:position):mag.
-        local trainingFreq is 2.
+        local trainingFreq is 3.
         // Training Frequency
         if mod(round(time:seconds-startTime), trainingFreq) = 0 {
            set temp to translationFunction(targetGeoPos).
@@ -188,12 +188,12 @@ until false {
   if alt:radar < 5 {
      //set throttValue to 0.
      set throttValue to 1.
-     set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
+     set steeringValue to up*R(max(-12.5, min(12.5, (nOutput[1]*2-1)*12.5)), max(-12.5, min(12.5, (nOutput[2]*2-1)*12.5)), 0).
   } else {
      //set throttValue to 0.
      set throttValue to nOutput[0].
      //set steeringValue to up.
-     set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
+     set steeringValue to up*R(max(-12.5, min(12.5, (nOutput[1]*2-1)*12.5)), max(-12.5, min(12.5, (nOutput[2]*2-1)*12.5)), 0).
   }
   print "nPitch: "+(nOutput[1]*2-1)*45+"            " at(0, 18).
   print "nYaw: "+(nOutput[2]*2-1)*45+"            " at(0, 21).
