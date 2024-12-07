@@ -186,7 +186,9 @@
 
             local backPropError is list().
             from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-               backPropError:add(abs(weights[i]*delta)*weights[i]*delta).  // The squared error back propagates
+               local error is weights[i]*delta.
+               if error > 1 backPropError:add(error*abs(error)).  // The squared error back propagates
+               else backPropError:add(error).  // The error back propagates
                set weights[i] to weights[i]+delta*inputs[i]*learningRate.
                //if abs(weights[i]) > 10000 set weights[i] to 10000*weights[i]/abs(weights[i]).//random()*2-1.
                if abs(weights[i]) > 1000000 set weights[i] to weights[i]*(random()*2-1). // Randomly reduces scale and sign
