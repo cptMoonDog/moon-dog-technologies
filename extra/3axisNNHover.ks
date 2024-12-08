@@ -187,7 +187,8 @@ until false {
   // Training Overlord
   if alt:radar < 5 {
      //set throttValue to 0.
-     set throttValue to 1.
+     set throttValue to nOutput[0].
+     //set throttValue to 1.
      set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
   } else {
      //set throttValue to 0.
