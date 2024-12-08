@@ -120,14 +120,14 @@ until false {
      // Output supervisor
      {
         local tgtDist is vxcl(up:forevector, targetGeoPos:position):mag.
-        local trainingFreq is 3.
+        local trainingFreq is 4.
         // Training Frequency
         if mod(round(time:seconds-startTime), trainingFreq) = 0 {
            set temp to translationFunction(targetGeoPos).
            print "train pitch: "+temp[0]+"            " at(0, 17).
            print "train yaw: "+temp[1]+"            " at(0, 20).
-           local pitch is ((temp[0]/12.5)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
-           local yaw is ((temp[1]/12.5)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
+           local pitch is ((temp[0]/45)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
+           local yaw is ((temp[1]/45)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
            //if alt:radar < 5 set pitch to 0.5.
            //if alt:radar < 5 set yaw to 0.5.
            //set selfTrain to list(0.5, pitch, yaw).
@@ -188,12 +188,12 @@ until false {
   if alt:radar < 5 {
      //set throttValue to 0.
      set throttValue to 1.
-     set steeringValue to up*R(max(-12.5, min(12.5, (nOutput[1]*2-1)*12.5)), max(-12.5, min(12.5, (nOutput[2]*2-1)*12.5)), 0).
+     set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
   } else {
      //set throttValue to 0.
      set throttValue to nOutput[0].
      //set steeringValue to up.
-     set steeringValue to up*R(max(-12.5, min(12.5, (nOutput[1]*2-1)*12.5)), max(-12.5, min(12.5, (nOutput[2]*2-1)*12.5)), 0).
+     set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
   }
   print "nPitch: "+(nOutput[1]*2-1)*45+"            " at(0, 18).
   print "nYaw: "+(nOutput[2]*2-1)*45+"            " at(0, 21).

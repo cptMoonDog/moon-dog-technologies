@@ -25,7 +25,7 @@ declare function axisFunction {
    declare parameter targetSpeed is 0.
    declare parameter currentSpeed is 0.
    declare parameter speedLimit is 0.
-   declare parameter pitchLimit is 12.5.
+   declare parameter pitchLimit is 45.
 
    local error is currentSpeed - min(speedLimit, max(-speedLimit, targetSpeed)).
    if abs(error) < 0.1 set error to 0.
