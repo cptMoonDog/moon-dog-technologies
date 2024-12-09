@@ -103,7 +103,7 @@ local flameout is false.
 until false {
   
    set maxAccel to ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
-   print "maxAccel: "+maxAccel at(0, 30).
+   print "maxAccel: "+maxAccel at(0, 18).
    set normalizedInput to list(
      list(max(-30, min(30, ship:verticalspeed))/30), 
      list(max(-100, min(100, targetAlt-alt:radar))/100),
@@ -120,12 +120,12 @@ until false {
      // Output supervisor
      {
         local tgtDist is vxcl(up:forevector, targetGeoPos:position):mag.
-        local trainingFreq is 4.
+        local trainingFreq is 3.
         // Training Frequency
         if mod(round(time:seconds-startTime), trainingFreq) = 0 {
            set temp to translationFunction(targetGeoPos).
-           print "train pitch: "+temp[0]+"            " at(0, 17).
-           print "train yaw: "+temp[1]+"            " at(0, 20).
+           print "train pitch: "+temp[0]+"            " at(0, 10).
+           print "train yaw: "+temp[1]+"            " at(0, 15).
            local pitch is ((temp[0]/45)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
            local yaw is ((temp[1]/45)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
            //if alt:radar < 5 set pitch to 0.5.
@@ -176,6 +176,7 @@ until false {
            (ship:verticalspeed < -50 and alt:radar < 100) or 
            ship:verticalspeed < -100 or flameout or 
            vang(ship:facing:forevector, up:forevector) > 90 {
+           log "" to "0:/trainingLog.txt".
            perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/"+modelName+".json").
            wait 0.
            //kuniverse:pause().
@@ -189,29 +190,29 @@ until false {
      //set throttValue to 0.
      set throttValue to nOutput[0].
      //set throttValue to 1.
-     set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
+     set steeringValue to up.
+     //set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
   } else {
      //set throttValue to 0.
      set throttValue to nOutput[0].
      //set steeringValue to up.
      set steeringValue to up*R(max(-45, min(45, (nOutput[1]*2-1)*45)), max(-45, min(45, (nOutput[2]*2-1)*45)), 0).
   }
-  print "nPitch: "+(nOutput[1]*2-1)*45+"            " at(0, 18).
-  print "nYaw: "+(nOutput[2]*2-1)*45+"            " at(0, 21).
 
   print "model: "+modelName at(0, 1).
   print "targetAlt: "+targetAlt at(0, 4).
   print "alt:radar: "+alt:radar at(0, 5).
-  print "selfTrain: "+selfTrain[0] +"                                 "at(0, 6).
-  print "networkOutput0: "+ nOutput[0]+"                    " at(0, 7).
+  print "0 (T:N): "+round(selfTrain[0], 3)+":"+round(nOutput[0], 3)+"      " at(0, 6).
 
-  print "tgtOffsetTop: "+ targetGeoPos:position*up:topvector at(0, 9).
-  print "selfTrain: "+selfTrain[1] +"                                 "at(0, 10).
-  print "networkOutput1: "+ nOutput[1]+"                    " at(0, 11).
+  print "tgtOffsetTop: "+ targetGeoPos:position*up:topvector at(0, 8).
+  print "networkOutput1Error: "+ round(selfTrain[1]-nOutput[1], 3) at(0, 9).
+  print "nPitch: "+round((nOutput[1]*2-1)*45, 2) at(0, 11).
 
   print "tgtOffsetStar: "+ targetGeoPos:position*up:starvector at(0, 13).
-  print "selfTrain: "+selfTrain[2] +"                                 "at(0, 14).
-  print "networkOutput2: "+ nOutput[2]+"                    " at(0, 15).
+  print "networkOutput2Error: "+ round(selfTrain[2]-nOutput[2], 3) at(0, 14).
+  print "nYaw: "+round((nOutput[2]*2-1)*45, 2) at(0, 16).
+  local loss is abs((selfTrain[1]-nOutput[1])+(selfTrain[2]-nOutput[2]))/2.
+  print "loss: "+loss at(0, 20).
   if time:seconds > startTime + 60 {
     set startTime to time:seconds.
     set count to count +1.
@@ -219,6 +220,7 @@ until false {
     set targetXCoord to random()/10-0.050.
     set targetYCoord to random()/10-0.050.
     set targetGeoPos to latlng(startGeoPos:lat+targetXCoord, startGeoPos:lng+targetYCoord).
+    log loss to "0:/trainingLog.txt".
   }
   print "countdown: "+(startTime+60-time:seconds) at(0, 2).
 
