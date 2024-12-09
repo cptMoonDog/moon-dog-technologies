@@ -120,7 +120,9 @@ until false {
      // Output supervisor
      {
         local tgtDist is vxcl(up:forevector, targetGeoPos:position):mag.
-        local trainingFreq is 3.
+        local trainingFreq is 5.
+        if (ship:verticalspeed < 0 and alt:radar < targetAlt-1) set trainingFreq to 2.
+        if abs(targetGeoPos:position*up:topvector) < 10 or abs(targetGeoPos:position*up:starvector) < 10 set trainingFreq to 1.
         // Training Frequency
         if mod(round(time:seconds-startTime), trainingFreq) = 0 {
            set temp to translationFunction(targetGeoPos).
