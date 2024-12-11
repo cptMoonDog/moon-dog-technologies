@@ -162,9 +162,10 @@
       }).
 
       neuron:add("serialize", {
+         declare parameter newLearningRate is learningRate.
          local output is lexicon().
          output:add("inputSize", inputSize).
-         output:add("learningRate", learningRate).
+         output:add("learningRate", newLearningRate).
          output:add("activationFunction", activationFunction).
          output:add("bias", bias).
          output:add("weights", weights).
@@ -448,20 +449,21 @@
       declare parameter hiddenLayers.
       declare parameter outputLayer.
       declare parameter outFile.
+      declare parameter newLearningRate.
 
       local output is lexicon().
       local currentList is list().
-      for n in inputLayer currentList:add(n:serialize()).
+      for n in inputLayer currentList:add(n:serialize(newLearningRate)).
       output:add("inputLayer", currentList).
       set currentList to list().
       for l in hiddenLayers {
          local layerlist is list().
-         for n in l layerlist:add(n:serialize()).
+         for n in l layerlist:add(n:serialize(newLearningRate)).
          currentList:add(layerlist).
       }
       output:add("hiddenLayers", currentList).
       set currentList to list().
-      for n in outputLayer currentList:add(n:serialize()).
+      for n in outputLayer currentList:add(n:serialize(newLearningRate)).
       output:add("outputLayer", currentList).
       
       writeJson(output, outFile).

@@ -67,29 +67,31 @@ wait 0.
 
 local targetAlt is 30.
 local pitchLimit is 60.
-local horzSpeedMax is 10.
-local horzDistMax is 100.
+local horzSpeedMax is 20.
+local horzDistMax is 1000.
 local startGeoPos is ship:geoposition.
 local targetGeoPos is startGeoPos.
 set targetXCoord to random()/10-0.050.
 set targetYCoord to random()/10-0.050.
 set targetGeoPos to latlng(startGeoPos:lat+targetXCoord, startGeoPos:lng+targetYCoord).
 local maxAccel is ship:availablethrust()/ship:mass - (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
-local normalizedInput is list(
-     list(max(-3, min(3, ship:verticalspeed))/3), 
-     list(max(-10, min(10, targetAlt-alt:radar))/10),
-     list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:starvector, ship:facing:forevector), up:forevector)))/pitchLimit),
-     list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:topvector, ship:facing:forevector), up:forevector)))/pitchLimit),
-     list(max(-pitchLimit, min(pitchLimit, vang(up:forevector, ship:facing:forevector)))/pitchLimit),
-     list(max(0, min(50, maxAccel))/50), // Acceleration m/s
-     list(max(-horzDistMax, min(horzDistMax, targetGeoPos:position*up:topvector))/horzDistMax),
-     list(max(-horzDistMax, min(horzDistMax, targetGeoPos:position*up:starvector))/horzDistMax),
-     list(max(-horzSpeedMax, min(horzSpeedMax, vxcl(up:forevector, ship:velocity:surface)*up:topvector))/horzSpeedMax),
-     list(max(-horzSpeedMax, min(horzSpeedMax, vxcl(up:forevector, ship:velocity:surface)*up:starvector))/horzSpeedMax)
-).
+declare function normalizedInput {
+   return list(
+        list(max(-3, min(3, ship:verticalspeed))/3), 
+        list(max(-5, min(5, targetAlt-alt:radar))/5),
+        list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:starvector, ship:facing:forevector), up:forevector)))/pitchLimit),
+        list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:topvector, ship:facing:forevector), up:forevector)))/pitchLimit),
+        list(max(-pitchLimit, min(pitchLimit, vang(up:forevector, ship:facing:forevector)))/pitchLimit),
+        list(max(0, min(50, maxAccel))/50), // Acceleration m/s
+        list(max(-horzDistMax, min(horzDistMax, abs(targetGeoPos:position*up:topvector)*targetGeoPos:position*up:topvector))/horzDistMax),
+        list(max(-horzDistMax, min(horzDistMax, abs(targetGeoPos:position*up:starvector)*targetGeoPos:position*up:starvector))/horzDistMax),
+        list(max(-horzSpeedMax, min(horzSpeedMax, abs(vxcl(up:forevector, ship:velocity:surface)*up:topvector)*vxcl(up:forevector, ship:velocity:surface)*up:topvector))/horzSpeedMax),
+        list(max(-horzSpeedMax, min(horzSpeedMax, abs(vxcl(up:forevector, ship:velocity:surface)*up:starvector)*vxcl(up:forevector, ship:velocity:surface)*up:starvector))/horzSpeedMax)
+   ).
+}
 
 local selfTrain is perceptron["evaluate network"](
-   normalizedInput,
+   normalizedInput(),
    model["inputLayer"], 
    model["hiddenLayers"],
    model["outputLayer"]
@@ -107,28 +109,11 @@ until false {
   
    set maxAccel to ship:availablethrust()/ship:mass - (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    print "maxAccel: "+maxAccel at(0, 18).
-   set normalizedInput to list(
-     list(max(-3, min(3, ship:verticalspeed))/3), 
-     list(max(-10, min(10, targetAlt-alt:radar))/10),
-     list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:starvector, ship:facing:forevector), up:forevector)))/pitchLimit),
-     list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:topvector, ship:facing:forevector), up:forevector)))/pitchLimit),
-     list(max(-pitchLimit, min(pitchLimit, vang(up:forevector, ship:facing:forevector)))/pitchLimit),
-     list(max(0, min(50, maxAccel))/50), // Acceleration m/s
-     list(max(-horzDistMax, min(horzDistMax, targetGeoPos:position*up:topvector))/horzDistMax),
-     list(max(-horzDistMax, min(horzDistMax, targetGeoPos:position*up:starvector))/horzDistMax),
-     list(max(-horzSpeedMax, min(horzSpeedMax, vxcl(up:forevector, ship:velocity:surface)*up:topvector))/horzSpeedMax),
-     list(max(-horzSpeedMax, min(horzSpeedMax, vxcl(up:forevector, ship:velocity:surface)*up:starvector))/horzSpeedMax)
-   ).
    set nOutput to perceptron["training supervisor"](
      // Output supervisor
      {
         local tgtDist is vxcl(up:forevector, targetGeoPos:position):mag.
-        local trainingFreq is 2.
-        //if (ship:verticalspeed < 0 and alt:radar < targetAlt-3) set trainingFreq to 3.
-        //if (ship:verticalspeed > 0 and alt:radar > targetAlt+3) set trainingFreq to 3.
-        //if abs(targetGeoPos:position*up:topvector) > 500 or abs(targetGeoPos:position*up:starvector) < 500 set trainingFreq to 3.
-        //if abs(targetGeoPos:position*up:topvector) < 30 or abs(targetGeoPos:position*up:starvector) < 30 set trainingFreq to 3.
-        //if alt:radar < 5 set trainingFreq to 1.
+        local trainingFreq is 4.
         // Training Frequency
         if mod(round(time:seconds-startTime), trainingFreq) = 0 {
            set temp to translationFunction(targetGeoPos, pitchLimit).
@@ -136,22 +121,9 @@ until false {
            print "train yaw: "+temp[1]+"            " at(0, 15).
            local pitch is ((temp[0]/pitchLimit)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
            local yaw is ((temp[1]/pitchLimit)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
-           //if alt:radar < 5 set pitch to 0.5.
-           //if alt:radar < 5 set yaw to 0.5.
-           //set selfTrain to list(0.5, pitch, yaw).
            set selfTrain to list(max(0, throttleFunction(targetAlt)), pitch, yaw).
-           //if mod(round(time:seconds-startTime), trainingFreq*4) = 0 {
-           //   set selfTrain[1] to nOutput[1].
-           //   set selfTrain[2] to nOutput[2].
-           //} else if mod(round(time:seconds-startTime), trainingFreq*3) = 0 {
-           //   set selfTrain[0] to nOutput[0].
-           //   set selfTrain[2] to nOutput[2].
-           //} else if mod(round(time:seconds-startTime), trainingFreq*2) = 0 {
-           //   set selfTrain[0] to nOutput[0].
-           //   set selfTrain[1] to nOutput[1].
-           //}
            set nOutput to perceptron["train network"](
-              normalizedInput,
+              normalizedInput(),
               selfTrain, 
               model["inputLayer"], 
               model["hiddenLayers"],
@@ -162,7 +134,7 @@ until false {
            //set latNeuronOutput to latNeuron["evaluate"](list(targetGeoPos:lat-ship:geoposition:lat)).
            //set lngNeuronOutput to lngNeuron["evaluate"](list(targetGeoPos:lng-ship:geoposition:lng)).
            set nOutput to perceptron["evaluate network"](
-              normalizedInput,
+              normalizedInput(),
               model["inputLayer"], 
               model["hiddenLayers"],
               model["outputLayer"]
@@ -184,7 +156,7 @@ until false {
            (ship:verticalspeed < -50 and alt:radar < 100) or 
            ship:verticalspeed < -100 or flameout or 
            vang(ship:facing:forevector, up:forevector) > 90 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/"+modelName+".json").
+           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/"+modelName+".json", 0.0001).
            wait 0.
            //kuniverse:pause().
            kuniverse:reverttolaunch().
@@ -213,11 +185,11 @@ until false {
 
   print "tgtOffsetTop: "+ targetGeoPos:position*up:topvector at(0, 8).
   print "networkOutput1Error: "+ round(selfTrain[1]-nOutput[1], 3) at(0, 9).
-  print "nPitch: "+round((nOutput[1]*2-1)*45, 2) at(0, 11).
+  print "nPitch: "+round((nOutput[1]*2-1)*pitchLimit, 2) at(0, 11).
 
   print "tgtOffsetStar: "+ targetGeoPos:position*up:starvector at(0, 13).
   print "networkOutput2Error: "+ round(selfTrain[2]-nOutput[2], 3) at(0, 14).
-  print "nYaw: "+round((nOutput[2]*2-1)*45, 2) at(0, 16).
+  print "nYaw: "+round((nOutput[2]*2-1)*pitchLimit, 2) at(0, 16).
   local loss is abs((selfTrain[1]-nOutput[1])+(selfTrain[2]-nOutput[2]))/2.
   print "loss: "+loss at(0, 20).
   if time:seconds > startTime + 120 {

@@ -45,7 +45,7 @@ declare function translationFunction {
 
    local currentG is (ship:body:mu/((alt:radar+ship:body:radius)^2)).
    local maxAccel is (ship:availablethrust()/ship:mass). // Lose 1 g for hover
-   local pitchLimit is min(45, arccos(currentG/max(currentG, maxAccel))).
+   local pitchLimit is min(pitchLimit, arccos(currentG/max(currentG, maxAccel))).
 
    //print "topSpeed: "+topSpeed at(0, 3).
    //print "topDistance: "+topDistance at(0, 4).
