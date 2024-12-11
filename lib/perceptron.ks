@@ -178,24 +178,22 @@
          declare parameter valueIsError is false.
 
          if inputs:length = weights:length {
-            local delta is trainValue.
+            local error is trainValue.
             if valueIsError = false {
                local current is eval(inputs).
-               set delta to (trainValue - current).
+               set error to (current - trainValue).
             }
 
             local backPropError is list().
             from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
-               local error is weights[i]*delta.
-               if error > 1 backPropError:add(error*abs(error)).  // The squared error back propagates
-               else backPropError:add(error).  // The error back propagates
-               set weights[i] to weights[i]+delta*inputs[i]*learningRate.
-               //if abs(weights[i]) > 10000 set weights[i] to 10000*weights[i]/abs(weights[i]).//random()*2-1.
+               local gradient is weights[i]*error.
+               if gradient > 1 backPropError:add(gradient*abs(gradient)).  // The squared error back propagates
+               else backPropError:add(gradient).  // The error back propagates
+               set weights[i] to weights[i]-2*error*inputs[i]*learningRate. // The derivative of the squared error function * ...
                if abs(weights[i]) > 1000000 set weights[i] to weights[i]*(random()*2-1). // Randomly reduces scale and sign
-               //if abs(weights[i]) > 1000000 set weights[i] to 0. 
                else if abs(weights[i]) < 0.0000001 set weights[i] to 0.
             }
-            set bias to bias + delta*learningRate. // The vector input for the bias is assumed 1.
+            set bias to bias - 2*error*learningRate. // The vector input for the bias is assumed 1.
             //if abs(bias) > 10000 set bias to 10000*bias/abs(bias).//random()*2-1.
             if abs(bias) > 1000000 set bias to (random()*2-1)*bias.
             //if abs(bias) > 1000000 set bias to 0. 
