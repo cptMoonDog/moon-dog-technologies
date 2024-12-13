@@ -66,7 +66,7 @@ if exists("0:/models/"+modelName+".json") {
 wait 0.
 
 local targetAlt is 30.
-local pitchLimit is 60.
+local pitchLimit is 30.
 local horzSpeedMax is 20.
 local horzDistMax is 1000.
 local startGeoPos is ship:geoposition.
@@ -76,6 +76,10 @@ set targetYCoord to random()/10-0.050.
 set targetGeoPos to latlng(startGeoPos:lat+targetXCoord, startGeoPos:lng+targetYCoord).
 local maxAccel is ship:availablethrust()/ship:mass - (ship:body:mu/((ship:altitude+ship:body:radius)^2)).
 declare function normalizedInput {
+   local topDist is targetGeoPos:position*up:topvector.
+   local starDist is targetGeoPos:position*up:starVector.
+   local topSpeed is vxcl(up:forevector, ship:velocity:surface)*up:topvector.
+   local starSpeed is vxcl(up:forevector, ship:velocity:surface)*up:starvector.
    return list(
         list(max(-3, min(3, ship:verticalspeed))/3), 
         list(max(-5, min(5, targetAlt-alt:radar))/5),
@@ -83,10 +87,10 @@ declare function normalizedInput {
         list(max(-pitchLimit, min(pitchLimit, vang(vxcl(up:topvector, ship:facing:forevector), up:forevector)))/pitchLimit),
         list(max(-pitchLimit, min(pitchLimit, vang(up:forevector, ship:facing:forevector)))/pitchLimit),
         list(max(0, min(50, maxAccel))/50), // Acceleration m/s
-        list(max(-horzDistMax, min(horzDistMax, abs(targetGeoPos:position*up:topvector)*targetGeoPos:position*up:topvector))/horzDistMax),
-        list(max(-horzDistMax, min(horzDistMax, abs(targetGeoPos:position*up:starvector)*targetGeoPos:position*up:starvector))/horzDistMax),
-        list(max(-horzSpeedMax, min(horzSpeedMax, abs(vxcl(up:forevector, ship:velocity:surface)*up:topvector)*vxcl(up:forevector, ship:velocity:surface)*up:topvector))/horzSpeedMax),
-        list(max(-horzSpeedMax, min(horzSpeedMax, abs(vxcl(up:forevector, ship:velocity:surface)*up:starvector)*vxcl(up:forevector, ship:velocity:surface)*up:starvector))/horzSpeedMax)
+        list(max(-horzDistMax, min(horzDistMax, abs(topDist)*topDist))/horzDistMax),
+        list(max(-horzDistMax, min(horzDistMax, abs(starDist)*starDist))/horzDistMax),
+        list(max(-horzSpeedMax, min(horzSpeedMax, abs(topSpeed)*topSpeed))/horzSpeedMax),
+        list(max(-horzSpeedMax, min(horzSpeedMax, abs(starSpeed)*starSpeed))/horzSpeedMax)
    ).
 }
 
@@ -156,7 +160,7 @@ until false {
            (ship:verticalspeed < -50 and alt:radar < 100) or 
            ship:verticalspeed < -100 or flameout or 
            vang(ship:facing:forevector, up:forevector) > 90 {
-           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/"+modelName+".json", 0.0001).
+           perceptron["save model"](model["inputLayer"], model["hiddenLayers"], model["outputLayer"], "0:/models/"+modelName+".json", 0.001).
            wait 0.
            //kuniverse:pause().
            kuniverse:reverttolaunch().
@@ -176,6 +180,7 @@ until false {
      set throttValue to nOutput[0].
      //set steeringValue to up.
      set steeringValue to up*R(max(-pitchLimit, min(pitchLimit, (nOutput[1]*2-1)*pitchLimit)), max(-pitchLimit, min(pitchLimit, (nOutput[2]*2-1)*pitchLimit)), 0).
+     //set steeringValue to up*R(0, max(-pitchLimit, min(pitchLimit, (nOutput[2]*2-1)*pitchLimit)), 0).
   }
 
   print "model: "+modelName at(0, 1).

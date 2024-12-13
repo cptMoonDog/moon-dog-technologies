@@ -215,18 +215,10 @@
    declare function trainDenseLayer {
       declare parameter inputs. // list. Multiple inputs for each node, but the same inputs for each node. 
       declare parameter layer.
-      declare parameter backProp. // list. One output for each node.
+      declare parameter trainValues. // list. One output for each node.
       declare parameter errorFunction is rootMeanSquaredError@.
       declare parameter isError is true. 
 
-      local trainValues is backProp.  // Calculating the trainingValues will just return the same error value.
-      //if isError {
-      //// For the output layer, we train against known values, for prior layers, we train against the prior output plus the received error.
-      //   from {local i is 0.} until i > trainValues:length-1 step {set i to i+1.} do {
-      //      local current is layer[i]["evaluate"](inputs).
-      //      set trainValues[i] to current + trainValues[i].
-      //   }
-      //}
       local backPropErrorRaw is list().
       from {local i is 0.} until i > layer:length-1 step {set i to i+1.} do {
          backPropErrorRaw:add(layer[i]["train"](inputs, trainValues[i], isError)).
@@ -275,7 +267,7 @@
    }
 
 
-   declare function absoluteSumError {
+   declare function meanAbsoluteSumError {
       declare parameter errors.
       declare parameter length.
 
