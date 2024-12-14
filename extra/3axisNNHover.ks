@@ -66,7 +66,7 @@ if exists("0:/models/"+modelName+".json") {
 wait 0.
 
 local targetAlt is 30.
-local pitchLimit is 30.
+local pitchLimit is 45.
 local horzSpeedMax is 20.
 local horzDistMax is 1000.
 local startGeoPos is ship:geoposition.
