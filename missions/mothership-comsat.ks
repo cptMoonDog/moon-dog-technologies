@@ -14,6 +14,7 @@ if ship:status = "PRELAUNCH" {
    local data is core:tag:split(",").
    if name {
       if ship:name <> name  set ship:name to name.
+      //
       set data[0] to data[0]:split(":")[1].
    }
    local engineName is data[1]:tolower:trim.

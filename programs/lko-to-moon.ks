@@ -45,7 +45,11 @@ kernel_ctl["availablePrograms"]:add(programName, {
    // to it to the MISSION_PLAN instead, like so: kernel_ctl["MissionPlanAdd"](named_function@).
          kernel_ctl["MissionPlanAdd"](programName, {
             until ship:maxthrust < 1.01*maneuver_ctl["engineStat"](engineName, "thrust") and ship:maxthrust > 0.99*maneuver_ctl["engineStat"](engineName, "thrust") {
-               stage. 
+               stage.
+               if kuniverse:activevessel <> ship {
+                  print "There has been an error".
+                  kuniverse:pause.
+               }
             }
             wait 5.
             set target to body(targetBody).

@@ -185,19 +185,23 @@
                set error to (current - trainValue).
             }
 
+            local runawayLimit is 100.
+            //local avgWeights is 0.
+            //for x in weights set avgWeights to avgWeights +x.
+            //set avgWeights to avgWeights + bias.
+            //set avgWeights to avgWeights/(weights:length+1).
+            //if runawayLimit > avgWeights*10 set runawayLimit to avgWeights*10.
+
             local backPropError is list().
             from {local i is 0.} until i > weights:length-1 step {set i to i+1.} do {
                local gradient is weights[i]*error.
-               if gradient > 1 backPropError:add(gradient*abs(gradient)).  // The squared error back propagates
-               else backPropError:add(gradient).  // The error back propagates
+               backPropError:add(gradient).  // The error back propagates
                set weights[i] to weights[i]-2*error*inputs[i]*learningRate. // The derivative of the squared error function * ...
-               if abs(weights[i]) > 1000000 set weights[i] to weights[i]*(random()*2-1). // Randomly reduces scale and sign
+               if abs(weights[i]) > runawayLimit set weights[i] to (weights[i]/abs(weights[i]))*runawayLimit. //weights[i]*(random()*2-1). // Randomly reduces scale and sign
                else if abs(weights[i]) < 0.0000001 set weights[i] to 0.
             }
             set bias to bias - 2*error*learningRate. // The vector input for the bias is assumed 1.
-            //if abs(bias) > 10000 set bias to 10000*bias/abs(bias).//random()*2-1.
-            if abs(bias) > 1000000 set bias to (random()*2-1)*bias.
-            //if abs(bias) > 1000000 set bias to 0. 
+            if abs(bias) > runawayLimit set bias to (bias/abs(bias))*runawayLimit. //(random()*2-1)*bias.
             else if abs(bias) < 0.0000001 set bias to 0.
 
 
@@ -441,21 +445,32 @@
       declare parameter hiddenLayers.
       declare parameter outputLayer.
       declare parameter outFile.
-      declare parameter newLearningRate.
+      declare parameter inputLayerLR is 0.
+      declare parameter hiddenLayerLR is 0.
+      declare parameter outputLayerLR is 0.
 
       local output is lexicon().
       local currentList is list().
-      for n in inputLayer currentList:add(n:serialize(newLearningRate)).
+      if inputLayerLR <> 0 
+         for n in inputLayer currentList:add(n:serialize(inputLayerLR)).
+      else 
+         for n in inputLayer currentList:add(n:serialize()).
       output:add("inputLayer", currentList).
       set currentList to list().
       for l in hiddenLayers {
          local layerlist is list().
-         for n in l layerlist:add(n:serialize(newLearningRate)).
+         if inputLayerLR <> 0 
+            for n in l layerlist:add(n:serialize(hiddenLayerLR)).
+         else 
+            for n in l layerlist:add(n:serialize()).
          currentList:add(layerlist).
       }
       output:add("hiddenLayers", currentList).
       set currentList to list().
-      for n in outputLayer currentList:add(n:serialize(newLearningRate)).
+      if inputLayerLR <> 0 
+         for n in outputLayer currentList:add(n:serialize(outputLayerLR)).
+      else 
+         for n in outputLayer currentList:add(n:serialize()).
       output:add("outputLayer", currentList).
       
       writeJson(output, outFile).

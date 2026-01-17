@@ -37,7 +37,7 @@ if ship:status = "PRELAUNCH" {
       kernel_ctl["add"]("match-plane", "terrier 90:135").
       kernel_ctl["add"]("change-apsis", "terrier ap 592500").
       kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
-         set core:tag to "Munflower, terrier, 4".
+         set core:tag to "Munflower:mothership-comsat, terrier, 4".
          set core:bootfilename to "/boot/mothership-comsat.ksm".
          reboot.
          return OP_FINISHED.

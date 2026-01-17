@@ -23,27 +23,47 @@ if ship:status = "PRELAUNCH" {
 
 // boot/payload.ks will compile and swap this in as the new boot file.  So, what follows should, in theory, only ever be executed on subsequent boots.
 // Thus, you define the mission firmware below:
+} else if ship:body:name = "Minmus" {
+   if exists("1:/lib/core/kernel.ksm") { 
+      runpath("1:/lib/core/kernel.ksm").
+      kernel_ctl["import-lib"]("programs/powered-capture").
+      //kernel_ctl["import-lib"]("programs/circularize").
+      kernel_ctl["import-lib"]("programs/match-plane").
+      kernel_ctl["import-lib"]("programs/change-apsis").
+      
+      kernel_ctl["add"]("powered-capture", "terrier Minmus").
+      kernel_ctl["add"]("match-plane", "terrier 0:135").
+      kernel_ctl["add"]("change-apsis", "terrier pe 50000").
+      kernel_ctl["add"]("change-apsis", "terrier ap 750000").
+      kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
+         set core:tag to "Minflower:mothership-comsat, terrier, 4".
+         set core:bootfilename to "/boot/mothership-comsat.ksm".
+         reboot.
+         return OP_FINISHED.
+      }).
+      
+      kernel_ctl["start"]().                                                        // Execute the mission plan.
+      shutdown.
+   } else {
+      print "there has been an error".
+      shutdown.
+   }
+   print "Minmus-orbit-script finished in capture mode".
+   shutdown.
 } else if ship:status = "SUB_ORBITAL" OR (ship:status = "ORBITING" AND ship:orbit:eccentricity < 0.01) {
    if exists("1:/lib/core/kernel.ksm") { 
       runpath("1:/lib/core/kernel.ksm").
       kernel_ctl["import-lib"]("programs/lko-to-moon").
-      kernel_ctl["import-lib"]("programs/warp-to-soi").
-      kernel_ctl["import-lib"]("programs/powered-capture").
-      kernel_ctl["import-lib"]("programs/match-plane").
-      kernel_ctl["import-lib"]("programs/change-apsis").
+      //kernel_ctl["import-lib"]("programs/warp-to-soi").
       
-      kernel_ctl["add"]("lko-to-moon", "swivel Minmus").
-      kernel_ctl["add"]("powered-capture", "Minmus").
-      kernel_ctl["add"]("powered-capture", "terrier Minmus").
-      kernel_ctl["add"]("change-apsis", "terrier pe 50000").
-      kernel_ctl["add"]("circularize", "terrier pe").
-      kernel_ctl["add"]("match-plane", "terrier 0:135").
-      kernel_ctl["add"]("change-apsis", "terrier ap 750000").
-      kernel_ctl["MissionPlanAdd"]("Change bootfile to next mission", {
-         set core:tag to "Minflower, terrier, 4".
-         set core:bootfilename to "/boot/mothership-comsat.ksm".
-         reboot.
-         return OP_FINISHED.
+      kernel_ctl["add"]("lko-to-moon", "terrier Minmus").
+      //kernel_ctl["add"]("warp-to-soi", "Minmus").
+
+      kernel_ctl["MissionPlanAdd"]("Reboot for next segment", {
+         if ship:body:name = "Minmus" {
+            reboot.
+            return OP_FINISHED.
+         } else return OP_CONTINUE.
       }).
       
       kernel_ctl["start"]().                                                        // Execute the mission plan.
