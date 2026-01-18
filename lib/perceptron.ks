@@ -427,7 +427,7 @@
       declare parameter bottomo.
       declare parameter value.
 
-      local output is min(topo, max(bottomo, ((value - bottomi)*(topo - bottomo))/(topi - bottomi))).
+      local output is min(topo, max(bottomo, ((value - bottomi)/(topi - bottomi))*(topo - bottomo) + bottomo)).
       return output.
    }
    perceptron:add("normalize value", normalizeValue@).
@@ -509,6 +509,49 @@
       sessionDelegate().
       return outputSupervisorDelegate().
 
+   }).
+   
+   perceptron:add("new coach", {
+      declare parameter top_output, bottom_output. // Range
+      declare parameter kpp is 1.
+      declare parameter kip is 1.
+      declare parameter kdp is 1.
+
+      local p is 0.
+      local i is 0.
+      local d is 0.
+      local kp is kpp.
+      local ki is kip.
+      local kd is kdp.
+
+      local coach is lexicon().
+      local lastTime is 0.
+       
+      coach:add("update", {
+         declare parameter error.
+
+         if lastTime = 0 {
+            set lastTime to timestamp().
+            return 0.
+         }
+         
+         set d to ((p - error*kp)*kd)/(timestamp()-lastTime):seconds.
+         set i to (i + d)*ki.
+         local output is error*kp + i.
+         set p to error*kp.
+         set output to min(top_output, max(bottom_output, output)).
+         set output to (top_output - bottom_output)*output + bottom_output.
+         set lastTime to time().
+         return (output-bottom_output)/(top_output-bottom_output).
+      }).
+
+      coach:add("reset", {
+         set p to 0.
+         set i to 0.
+         set d to 0.
+      }).
+
+      return coach.
    }).
    
 }

@@ -5,7 +5,7 @@ runpath("0:/extra/hover.ks").
 
 set config:ipu to 2000.
 local model is lexicon().
-local modelName is "3nx9-17-9-3".
+local modelName is "3nx5-5-3".
 if exists("0:/models/"+modelName+".json") {
    set model to perceptron["load model"]("0:/models/"+modelName+".json"). 
 } else {
@@ -26,40 +26,20 @@ if exists("0:/models/"+modelName+".json") {
          perceptron["new neuron"](9, 0.001, "relu"),
          perceptron["new neuron"](9, 0.001, "relu"),
          perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         perceptron["new neuron"](9, 0.001, "relu"),
-         
-         perceptron["new neuron"](9, 0.001, "relu"),
          perceptron["new neuron"](9, 0.001, "relu")
       ),
       list(
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu"),
-
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu"),
-         perceptron["new neuron"](17, 0.001, "relu")
+         perceptron["new neuron"](5, 0.001, "relu"),
+         perceptron["new neuron"](5, 0.001, "relu"),
+         perceptron["new neuron"](5, 0.001, "relu"),
+         perceptron["new neuron"](5, 0.001, "relu"),
+         perceptron["new neuron"](5, 0.001, "relu")
       )
    )).
    model:add("outputLayer", list(
-      perceptron["new neuron"](9, 0.001, "sigmoid"),
-      perceptron["new neuron"](9, 0.001, "sigmoid"),
-      perceptron["new neuron"](9, 0.001, "sigmoid")
+      perceptron["new neuron"](5, 0.001, "sigmoid"),
+      perceptron["new neuron"](5, 0.001, "sym_sigmoid"),
+      perceptron["new neuron"](5, 0.001, "sym_sigmoid")
    )).
 }
 
@@ -96,18 +76,18 @@ declare function normalizedInput {
    local modifiedPitchLimit is max(0.001, pitchLimit*min(1, (targetGeoPos:position:mag/horzDistHiRez))).
    local topDist is targetGeoPos:position*up:topvector.
    local starDist is targetGeoPos:position*up:starVector.
-   local topSpeed is vxcl(up:forevector, ship:velocity:surface)*up:topvector.
-   local starSpeed is vxcl(up:forevector, ship:velocity:surface)*up:starvector.
+   local topSpeed is ship:velocity:surface*up:topvector.
+   local starSpeed is ship:velocity:surface*up:starvector.
    local inputList is list(
-        max(-vertSpeedMax, min(vertSpeedMax, ship:verticalspeed))/vertSpeedMax, 
-        max(-vertDistMax, min(vertDistMax, targetAlt-alt:radar))/vertDistMax,
-        max(-modifiedPitchLimit, min(modifiedPitchLimit, vang(vxcl(up:starvector, ship:facing:forevector), up:forevector)*abs(starDist)/starDist))/modifiedPitchLimit,
-        max(-modifiedPitchLimit, min(modifiedPitchLimit, vang(vxcl(up:topvector, ship:facing:forevector), up:forevector)*abs(topDist)/topDist))/modifiedPitchLimit,
-        max(0, min(50, maxAccel))/50, // Acceleration m/s
-        max(-horzDistHiRez, min(horzDistHiRez, abs(topDist)*topDist))/horzDistHiRez,
-        max(-horzDistHiRez, min(horzDistHiRez, abs(starDist)*starDist))/horzDistHiRez,
-        max(-horzSpeedMax, min(horzSpeedMax, abs(topSpeed)*topSpeed))/horzSpeedMax,
-        max(-horzSpeedMax, min(horzSpeedMax, abs(starSpeed)*starSpeed))/horzSpeedMax
+        perceptron["normalize value"](vertSpeedMax, -vertSpeedMax, 1, -1, ship:verticalspeed),
+        perceptron["normalize value"](vertDistMax, -vertDistMax, 1, -1, targetAlt-alt:radar),
+        perceptron["normalize value"](modifiedPitchLimit, -modifiedPitchLimit, 1, -1, vang(vxcl(up:starvector, ship:facing:forevector), up:forevector)*abs(topDist)/topDist),
+        perceptron["normalize value"](modifiedPitchLimit, -modifiedPitchLimit, 1, -1, vang(vxcl(up:topvector, ship:facing:forevector), up:forevector)*abs(starDist)/starDist),
+        perceptron["normalize value"](50, 0, 1, 0, maxAccel),
+        perceptron["normalize value"](horzDistHiRez, -horzDistHiRez, 1, -1, abs(topDist)*topDist),
+        perceptron["normalize value"](horzDistHiRez, -horzDistHiRez, 1, -1, abs(starDist)*starDist),
+        perceptron["normalize value"](horzSpeedMax, -horzSpeedMax, 1, -1, abs(topSpeed)*topSpeed),
+        perceptron["normalize value"](horzSpeedMax, -horzSpeedMax, 1, -1, abs(starSpeed)*starSpeed)
    ).
    return list(
       inputList,
@@ -122,6 +102,11 @@ declare function normalizedInput {
    ).
 }
 
+local coaches is list(
+   perceptron["new coach"](1, 0, 1.0, 0.0, 0.7),
+   perceptron["new coach"](1, -1, 0.01, 0, 0.01),
+   perceptron["new coach"](1, -1, 0.01, 0, 0.01)
+).
 local selfTrain is perceptron["evaluate network"](
    normalizedInput(),
    model["inputLayer"], 
@@ -156,29 +141,29 @@ until false {
            //   model["hiddenLayers"],
            //   model["outputLayer"]
            //).
-           local topVel is vxcl(up:starvector, vxcl(up:forevector, ship:velocity:surface)).
-           local starVel is vxcl(up:topvector, vxcl(up:forevector, ship:velocity:surface)).
-           local topDistance is vxcl(up:starvector, vxcl(up:forevector, targetGeoPos:position)).
-           local starDistance is vxcl(up:topvector, vxcl(up:forevector, targetGeoPos:position)).
+           local topSpeed is ship:velocity:surface*up:topvector.
+           local starSpeed is ship:velocity:surface*up:starvector.
+           local topDistance is targetGeoPos:position*up:topvector.
+           local starDistance is targetGeoPos:position*up:starvector.
 
-           local trainingRate is 0.1.
-           if  alt:radar > targetAlt+1 or ship:verticalspeed > 10 { 
-              set selfTrain[0] to nOutput[0]+((nOutput[0]/abs(nOutput[0]))*(-trainingRate)).
-           } else if alt:radar < targetAlt-1 or abs(nOutput[1]) > 0.25 or abs(nOutput[2]) > 0.25 
-              set selfTrain[0] to nOutput[0]+(nOutput[0]/abs(nOutput[0]))*(trainingRate).
-           if abs(nOutput[1]) > 0.25 or (topVel - topDistance):mag-1 > 0 or topVel:mag > 20 { 
-              set selfTrain[1] to nOutput[1]+(nOutput[1]/abs(nOutput[1]))*(-trainingRate).
-           } else if abs(topDistance:mag) > 1 set selfTrain[1] to nOutput[1]+(nOutput[1]/abs(nOutput[1]))*(trainingRate).
-           if abs(nOutput[2]) > 0.25 or (starVel - starDistance):mag-1 > 0 or starVel:mag > 20 { 
-              set selfTrain[2] to nOutput[2]+(nOutput[2]/abs(nOutput[2]))*(-trainingRate).
-           } else if abs(starDistance:mag) > 1 set selfTrain[2] to nOutput[2]+(nOutput[2]/abs(nOutput[2]))*(trainingRate).
-           //set temp to translationFunction(targetGeoPos, modifiedPitchLimit).
-           //print "train pitch: "+temp[0]+"            " at(0, 10).
-           //print "train yaw: "+temp[1]+"            " at(0, 15).
-           //local pitch is ((temp[0]/modifiedPitchLimit)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
-           //local yaw is ((temp[1]/modifiedPitchLimit)+1)/2.// if mod(round(time:seconds-startTime), 31) = 0 else 0.5.
-           //set selfTrain to list(max(0, throttleFunction(targetAlt)), pitch, yaw).
-           //if ship:verticalspeed < -vertSpeedMax set selfTrain[0] to 1.
+           set selfTrain[0] to coaches[0]["update"](
+              (targetAlt-alt:radar) // 
+              //+(choose min(0, ship:verticalspeed) if alt:radar < targetAlt else max(0, ship:verticalspeed))  // If low ignore positive values, if high ignore negative.
+           ).
+          
+           // Pitch
+           //set selfTrain[1] to 0.
+           set selfTrain[1] to coaches[1]["update"](
+              (-topDistance) // 
+              //+topSpeed  //
+           ).
+            
+           // Yaw
+           //set selfTrain[2] to 0.
+           set selfTrain[2] to coaches[2]["update"](
+              (starDistance) // 
+              //-starSpeed  //
+           ).
            set nOutput to perceptron["train network"](
               normalizedInput(),
               selfTrain, 
@@ -186,7 +171,9 @@ until false {
               model["hiddenLayers"],
               model["outputLayer"]
            ).
+
            print "training                   " at(0, 0).
+
         } else {
            set nOutput to perceptron["evaluate network"](
               normalizedInput(),
@@ -225,7 +212,7 @@ until false {
      set steeringValue to up.
   } else {
      set throttValue to nOutput[0].
-     set steeringValue to up*R(max(-modifiedPitchLimit, min(modifiedPitchLimit, (nOutput[1]*2-1)*modifiedPitchLimit)), max(-modifiedPitchLimit, min(modifiedPitchLimit, (nOutput[2]*2-1)*modifiedPitchLimit)), 0).
+     set steeringValue to up*R(max(-modifiedPitchLimit, min(modifiedPitchLimit, (nOutput[1])*modifiedPitchLimit)), max(-modifiedPitchLimit, min(modifiedPitchLimit, (nOutput[2])*modifiedPitchLimit)), 0).
   }
 
   print "model: "+modelName at(0, 1).
@@ -234,12 +221,12 @@ until false {
   print "0 (T:N): "+round(selfTrain[0], 3)+":"+round(nOutput[0], 3)+"      " at(0, 6).
 
   print "tgtOffsetTop: "+ targetGeoPos:position*up:topvector at(0, 8).
-  //print "top (T:N): "+ round(selfTrain[1], 3)+":"+round(nOutput[1], 3) at(0, 9).
-  print "nPitch: "+round((nOutput[1]*2-1)*modifiedPitchLimit, 2) at(0, 11).
+  print "top (T:N): "+ round(selfTrain[1], 3)+":"+round(nOutput[1], 3) at(0, 9).
+  print "nPitch: "+round((nOutput[1])*modifiedPitchLimit, 2) at(0, 11).
 
   print "tgtOffsetStar: "+ targetGeoPos:position*up:starvector at(0, 13).
-  //print "top (T:N): "+ round(selfTrain[2], 3)+":"+round(nOutput[2], 3) at(0, 14).
-  print "nYaw: "+round((nOutput[2]*2-1)*modifiedPitchLimit, 2) at(0, 16).
+  print "top (T:N): "+ round(selfTrain[2], 3)+":"+round(nOutput[2], 3) at(0, 14).
+  print "nYaw: "+round((nOutput[2])*modifiedPitchLimit, 2) at(0, 16).
   if time:seconds > startTime + 60 {
     set startTime to time:seconds.
     set count to count +1.
